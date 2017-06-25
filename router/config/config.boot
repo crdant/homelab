@@ -5,6 +5,337 @@ firewall {
     ipv6-src-route disable
     ip-src-route disable
     log-martians enable
+    name ERT_ROUTER {
+        default-action drop
+        description "Access to the Elastic Runtime routers"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow load balancers to access ERT routers"
+            destination {
+                address 172.20.0.0/22
+                port 22,80,443,1024-65535
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.16.0.0/24
+            }
+        }
+    }
+    name INFRASTRUCTURE {
+        default-action drop
+        description "Access to the PCF infrastructure subnet"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 25 {
+            action accept
+            description "Allow infrastructure to manage tiles"
+            destination {
+                address 172.24.0.0/22
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.20.0.0/24
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow local access to vSphere and Cloud Foundry Infrastructure"
+            destination {
+                address 172.20.0.0/22
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.16.0.0/24
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow VPN access to vSphere and Cloud Foundry Infrastructure"
+            destination {
+                address 172.20.0.0/22
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.17.0.0/24
+            }
+        }
+        rule 50 {
+            action accept
+            description "Allow ERT access to infrastructure (may need tweaks)"
+            destination {
+                address 172.20.0.0/22
+                port 80,443,8443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.17.0.0/24
+            }
+        }
+    }
+    name MANAGEMENT {
+        default-action drop
+        description "Management network"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow Local Access"
+            destination {
+                address 172.18.0.0/24
+                port 22,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.16.0.0/24
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow VPN Access to management tools"
+            destination {
+                address 172.18.0.0/24
+                port 22,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.17.0.0/24
+            }
+        }
+        rule 50 {
+            action accept
+            description "Allow syslog to syslog server"
+            destination {
+                address 172.18.0.0/24
+                port 514
+            }
+            log disable
+            protocol udp
+            source {
+                address 172.24.0.0/22
+            }
+        }
+        rule 60 {
+            action accept
+            description "Allow ERT access to management layer tools"
+            destination {
+                address 172.18.0.0/24
+                port 8443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.20.0.0/24
+            }
+        }
+    }
+    name VSPHERE {
+        default-action drop
+        description "vSphere Management network"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow Local Access"
+            destination {
+                address 172.19.0.0/26
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.16.0.0/24
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow VPN Access"
+            destination {
+                address 172.19.0.0/26
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.17.0.0/24
+            }
+        }
+    }
+    name SERVICES {
+        default-action drop
+        description "Access to on-demand services network"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow ERT access to managed services"
+            destination {
+                address 172.24.0.0/22
+            }
+            log disable
+            protocol tcp
+            source {
+                address 172.21.0.0/22
+            }
+        }
+    }
+    name VPN_INBOUND {
+        default-action drop
+        description "VPN subnet"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action accept
+            description "Allow LAN access"
+            destination {
+                address 172.16.0.0/24
+            }
+            log disable
+            protocol all
+        }
+    }
     name WAN_IN {
         default-action drop
         description "WAN to internal"
@@ -76,293 +407,6 @@ firewall {
             protocol udp
         }
     }
-    name VPN_INBOUND {
-      default-action drop
-      description "VPN subnet"
-      rule 10 {
-          action accept
-          description "Allow established/related"
-          log disable
-          protocol all
-          state {
-              established enable
-              invalid disable
-              new disable
-              related enable
-          }
-      }
-      rule 20 {
-          action drop
-          description "Drop invalid state"
-          log disable
-          protocol all
-          state {
-              established disable
-              invalid enable
-              new disable
-              related disable
-          }
-      }
-      rule 30 {
-          action accept
-          description "Allow LAN access"
-          destination {
-              address 172.16.0.0/24
-          }
-          log disable
-          protocol all
-      }
-    }
-    name MANAGEMENT {
-      default-action drop
-      description "Management network"
-      rule 10 {
-          action accept
-          description "Allow established/related"
-          log disable
-          protocol all
-          state {
-              established enable
-              invalid disable
-              new disable
-              related enable
-          }
-      }
-      rule 20 {
-          action drop
-          description "Drop invalid state"
-          log disable
-          protocol all
-          state {
-              established disable
-              invalid enable
-              new disable
-              related disable
-          }
-      }
-      rule 30 {
-          action accept
-          description "Allow Local Access"
-          source {
-              address 172.16.0.0/24
-          }
-          destination {
-              address 172.18.0.0/24
-              port 22,443
-          }
-          log disable
-          protocol tcp
-      }
-      rule 40 {
-          action accept
-          description "Allow VPN Access to management tools"
-          source {
-              address 172.17.0.0/24
-          }
-          destination {
-              address 172.18.0.0/24
-              port 22,443
-          }
-          log disable
-          protocol tcp
-      }
-      rule 50 {
-        action accept
-        description "Allow syslog to syslog server"
-        source {
-            address 172.16.0.0/24
-            address 172.17.0.0/24
-            address 172.20.0.0/22
-            address 172.21.0.0/22
-            address 172.22.0.0/26
-            address 172.23.0.0/22
-            address 172.24.0.0/22
-        }
-        destination {
-            address 172.18.0.0/24
-            port 514
-        }
-        log disable
-        protocol tcp
-        protocol udp
-      }
-      rule 60 {
-          action accept
-          description "Allow ERT access to management layer tools"
-          source {
-              address 172.20.0.0/24
-          }
-          destination {
-              address 172.18.0.0/24
-              port 8443
-          }
-          log disable
-          protocol tcp
-      }
-    }
-    name INFRASTRUCTURE {
-      default-action drop
-      description "Access to the PCF infrastructure subnet"
-      rule 10 {
-          action accept
-          description "Allow established/related"
-          log disable
-          protocol all
-          state {
-              established enable
-              invalid disable
-              new disable
-              related enable
-          }
-      }
-      rule 20 {
-          action drop
-          description "Drop invalid state"
-          log disable
-          protocol all
-          state {
-              established disable
-              invalid enable
-              new disable
-              related disable
-          }
-      }
-      rule 25 {
-        action accept
-        description "Allow infrastructure to manage tiles"
-        source {
-            address 172.20.0.0/24
-        }
-        destination {
-            address 172.21.0.0/22
-            address 172.23.0.0/22
-            address 172.24.0.0/22
-        }
-        log disable
-        protocol tcp
-      }
-      rule 30 {
-          action accept
-          description "Allow local access to vSphere and Cloud Foundry Infrastructure"
-          source {
-              address 172.16.0.0/24
-          }
-          destination {
-              address 172.20.0.0/22
-              port 22,80,443
-          }
-          log disable
-          protocol tcp
-      }
-      rule 40 {
-          action accept
-          description "Allow VPN access to vSphere and Cloud Foundry Infrastructure"
-          source {
-              address 172.17.0.0/24
-          }
-          destination {
-              address 172.20.0.0/22
-              port 22,80,443
-          }
-          log disable
-          protocol tcp
-      }
-      rule 50 {
-        action accept
-        description "Allow ERT access to infrastructure (may need tweaks)"
-        source {
-            address 172.17.0.0/24
-        }
-        destination {
-            address 172.20.0.0/22
-            port 80,443,8443
-        }
-        log disable
-        protocol tcp
-      }
-    }
-    name ERT_ROUTER {
-      default-action drop
-      description "Access to the Elastic Runtime routers"
-      rule 10 {
-          action accept
-          description "Allow established/related"
-          log disable
-          protocol all
-          state {
-              established enable
-              invalid disable
-              new disable
-              related enable
-          }
-      }
-      rule 20 {
-          action drop
-          description "Drop invalid state"
-          log disable
-          protocol all
-          state {
-              established disable
-              invalid enable
-              new disable
-              related disable
-          }
-      }
-      rule 30 {
-          action accept
-          description "Allow load balancers to access ERT routers"
-          source {
-              address 172.16.0.0/24
-          }
-          destination {
-              address 172.20.0.0/22
-              port 22,80,443,1024-65535
-          }
-          log disable
-          protocol tcp
-      }
-    }
-    name SERVICES {
-      default-action drop
-      description "Access to on-demand services network"
-      rule 10 {
-          action accept
-          description "Allow established/related"
-          log disable
-          protocol all
-          state {
-              established enable
-              invalid disable
-              new disable
-              related enable
-          }
-      }
-      rule 20 {
-          action drop
-          description "Drop invalid state"
-          log disable
-          protocol all
-          state {
-              established disable
-              invalid enable
-              new disable
-              related disable
-          }
-      }
-      rule 30 {
-          action accept
-          description "Allow ERT access to managed services"
-          source {
-              address 172.21.0.0/22
-          }
-          destination {
-              address 172.23.0.0/22
-              address 172.24.0.0/22
-          }
-          log disable
-          protocol tcp
-      }
-    }
     receive-redirects disable
     send-redirects enable
     source-validation disable
@@ -390,12 +434,12 @@ interfaces {
         speed auto
     }
     ethernet eth2 {
+        address 172.19.0.1/26
         address 172.20.0.1/22
         address 172.21.0.1/22
         address 172.22.0.1/26
         address 172.23.0.1/22
         address 172.24.0.1/22
-        description "vSphere Server"
         description Local
         duplex auto
         speed auto
@@ -483,6 +527,10 @@ system {
         user ubnt {
             authentication {
                 encrypted-password $6$Py7QMd9.9Osw$mmmSaJ1owmC1J757HELrIHspzI8.FrLDIHdhEOYFOGJ2T23lYHXj6442xbhWMfdc2vs6.w/1cx5C7Ve.XGI.F/
+                public-keys crdant@natarajasana.local {
+                    key AAAAB3NzaC1yc2EAAAADAQABAAACAQDYoucqC+eBcdKoKvKmu7NgIz7LQhWCdCZXAQFrjj+goO0iXecyO/MmM++PaN+wdNzZpZ2V0M333khXynFW8L+NHq2t2sI9R4n00np/y+t0PU7nDEqK6b3tbTzeTCIUnh+akwG9USjOzkTeXKxaZCgnni5cgrGiVb7cDGEhMconNZamdiGPhpHzpZAosATcydmRCKpvM0fGjhHX09RFG+ukva4v//6RVn5wQWYrYlKJrAnk7YUIWddhuRZqRwFbJh6aDUsDN0naevjn6gFfdEpkGZozx7w0eZ7KRAkk6aVVyRgiXDi/HykCefou7kJFqmwRxthNwPfoKQEDKeQtL1AGmUiFcAMU1eDT56U2cRd/Tpx300iEmoGsem93zRMRPJa3Uot3v8bQabHcM0UdSDD7/gOLOwtVFpflLVNmSoW0R9bH7h/3+zdNPbCp7yH9HLP1py5QMTfMCdCR5aXxkZCJlMIBdG+Lj6QGmZ9BuUrmP1XUzrw9x76jbIkxGyr0+sZAz+5Vj1Us4UroVaKDehZvwut03E4etZFud4D7PKtXPDHYbMyIm3PZKJGFQh7sRjcCQCBMRABkQj8+NqSVMs0g3AU/fJOenY0QvmP/8Fr7AiVnCfvSu1MROGogx4KOpEFSYNWR/jVuebjia/zP/OHcJyY3MAbvJAysMT1NciwdDQ==
+                    type ssh-rsa
+                }
             }
             level admin
         }
