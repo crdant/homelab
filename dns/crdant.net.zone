@@ -1,0 +1,24 @@
+$ORIGIN crdant.net.
+@	900	IN	SOA	ns-1474.awsdns-56.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+@	172800	IN	NS	ns-1474.awsdns-56.org.
+@	172800	IN	NS	ns-336.awsdns-42.com.
+@	172800	IN	NS	ns-526.awsdns-01.net.
+@	172800	IN	NS	ns-1749.awsdns-26.co.uk.
+*.apps.cloud	300	IN	A	172.22.0.10
+*.system.cloud	300	IN	A	172.22.0.20
+*.tcp.apps.cloud	300	IN	A	172.22.0.30
+apanasana	300	IN	A	172.18.0.10
+director.cloud	300	IN	A	172.20.0.20
+esxi	300	IN	CNAME	tadasana.crdant.net
+garundasana	300	IN	A	172.19.0.20
+identity	300	IN	CNAME	padmasana.crdant.net
+kapotasana	300	IN	A	66.30.250.128
+manager.cloud	300	IN	A	172.20.0.10
+mysql.cloud	300	IN	A	172.21.0.10
+mysql.cloud	300	IN	A	172.21.0.11
+padmasana	300	IN	A	172.18.0.20
+pigeon	300	IN	CNAME	kapotasana.crdant.net
+savasana	300	IN	A	172.16.0.1
+shiboleth	300	IN	CNAME	apanasana.crdant.net
+tadasana	300	IN	A	172.19.0.10
+vcenter	300	IN	CNAME	garundasana.crdant.net
