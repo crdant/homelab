@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+set -e
+
+ip_base=$(echo ${bootstrap_cidr} | awk -F. '{print $1 "." $2 "." $3}')
+gateway_ip="${ip_base}.1"
+internal_ip="${ip_base}.6"
+
+bosh create-env ${BASEDIR}/bosh/bosh-deployment/bosh.yml \
+    --state=${BASEDIR}/bosh/state.json \
+    --vars-store=${BASEDIR}/bosh/creds.yml \
+    -o ${BASEDIR}/bosh/bosh-deployment/vsphere/cpi.yml \
+    -v director_name="${env_id}" \
+    -v internal_cidr="${bootstrap_cidr}" \
+    -v internal_gw="${gateway_ip}" \
+    -v internal_ip="${internal_ip}" \
+    -v network_name="${vcenter_network}" \
+    -v vcenter_dc="${vcenter_data_center}" \
+    -v vcenter_ds="${vcenter_fast_datastore}" \
+    -v vcenter_ip="${vcenter_host}" \
+    -v vcenter_user="${bosh_service_account}" \
+    -v vcenter_password=$(op get item xrfzecwzyfg7volpoq7yuhaxtm | jq -r '.details.password') \
+    -v vcenter_templates=bosh-${env_id}-templates \
+    -v vcenter_vms=bosh-${env_id}-vms \
+    -v vcenter_disks=bosh-${env_id}-disks \
+    -v vcenter_cluster=primary-cluster
+
+bosh alias-env ${env_id} -e https://${internal_ip} --ca-cert <(bosh int ${BASEDIR}/bosh/creds.yml --path /director_ssl/ca)

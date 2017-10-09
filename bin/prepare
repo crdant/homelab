@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+set -e
+
+if [ ! -d ${work_dir} ] ; then
+  mkdir -p ${work_dir}
+fi
+
+if [ ! -d ${key_dir} ] ; then
+  mkdir -p ${key_dir}
+fi
+
+if [ ! -f ${state_file} ] ; then
+  env_id="homelab-$(generate_passphrase 2)"
+  cat <<STATE > ${state_file}
+env_id=${env_id}
+STATE
+fi
