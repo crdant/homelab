@@ -9,8 +9,8 @@ gateway_ip="${ip_base}.1"
 internal_ip="${ip_base}.6"
 
 bosh create-env ${BASEDIR}/bosh/bosh-deployment/bosh.yml \
-    --state=${BASEDIR}/bosh/state.json \
-    --vars-store=${BASEDIR}/bosh/creds.yml \
+    --state=${work_dir}/state.json \
+    --vars-store=${key_dir}/creds.yml \
     -o ${BASEDIR}/bosh/bosh-deployment/vsphere/cpi.yml \
     -v director_name="${env_id}" \
     -v internal_cidr="${bootstrap_cidr}" \
@@ -27,4 +27,4 @@ bosh create-env ${BASEDIR}/bosh/bosh-deployment/bosh.yml \
     -v vcenter_disks=bosh-${env_id}-disks \
     -v vcenter_cluster=primary-cluster
 
-bosh alias-env ${env_id} -e https://${internal_ip} --ca-cert <(bosh int ${BASEDIR}/bosh/creds.yml --path /director_ssl/ca)
+bosh alias-env ${env_id} -e https://${internal_ip} --ca-cert <(bosh int ${key_dir}/creds.yml --path /director_ssl/ca)
