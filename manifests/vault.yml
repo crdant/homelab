@@ -1,0 +1,50 @@
+---
+name: vault
+
+releases:
+- name: vault
+  version: latest
+
+instance_groups:
+- instances: 1
+  name: vault
+  networks: [{name: private, static_ips: ((vault-static-ip)), default: [dns, gateway]}]
+  persistent_disk: 4096
+  properties:
+    vault:
+      backend:
+        use_file: true
+
+  vm_type:  n1-standard-1
+  vm_extensions:
+    - vault-lb
+  stemcell: trusty
+  azs: [z1]
+  jobs:
+  - name: vault
+    release: vault
+    properties:
+      vault:
+        storage:
+          use_file: true
+          file:
+            path: /var/vcap/store/vault/data
+        listener:
+          tcp:
+            tls:
+              certificate: ((vault-cert))
+              key: ((vault-key))
+        ha:
+          redirect_address: ((vault-addr))
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+update:
+  canaries: 1
+  canary_watch_time: 1000-30000
+  max_in_flight: 50
+  serial: false
+  update_watch_time: 1000-30000
