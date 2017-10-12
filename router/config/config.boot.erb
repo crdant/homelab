@@ -19,6 +19,7 @@
        _to_string(@addr) + "/" + prefix.to_s
     end
   end
+  esxi_addr = `dig +short #{ENV["esxi_host"]}`.rstrip
   vsphere_port_addr = IPAddr.new(ENV["vmware_cidr"]).succ.to_cidr
   bootstrap_port_addr = IPAddr.new(ENV["bootstrap_cidr"]).succ.to_cidr
   pcf_port_addr = IPAddr.new(ENV["pcf_cidr"]).succ.to_cidr
@@ -82,6 +83,22 @@ firewall {
                 invalid disable
                 new disable
                 related enable
+            }
+        }
+        rule 15 {
+            action accept
+            description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
+            destination {
+                address <%= esxi_addr %>
+                port 443
+            }
+            log disable
+            protocol tcp
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
             }
         }
         rule 20 {
@@ -217,6 +234,22 @@ firewall {
                 invalid disable
                 new disable
                 related enable
+            }
+        }
+        rule 15 {
+            action accept
+            description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
+            destination {
+                address <%= esxi_addr %>
+                port 443
+            }
+            log disable
+            protocol tcp
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
             }
         }
         rule 20 {
@@ -640,9 +673,8 @@ system {
         user ubnt {
             authentication {
                 encrypted-password $6$Py7QMd9.9Osw$mmmSaJ1owmC1J757HELrIHspzI8.FrLDIHdhEOYFOGJ2T23lYHXj6442xbhWMfdc2vs6.w/1cx5C7Ve.XGI.F/
-                public-keys crdant@natarajasana.local {
-                    key AAAAB3NzaC1yc2EAAAADAQABAAACAQDYoucqC+eBcdKoKvKmu7NgIz7LQhWCdCZXAQFrjj+goO0iXecyO/MmM++PaN+wdNzZpZ2V0M333khXynFW8L+NHq2t2sI9R4n00np/y+t0PU7nDEqK6b3tbTzeTCIUnh+akwG9USjOzkTeXKxaZCgnni5cgrGiVb7cDGEhMconNZamdiGPhpHzpZAosATcydmRCKpvM0fGjhHX09RFG+ukva4v//6RVn5wQWYrYlKJrAnk7YUIWddhuRZqRwFbJh6aDUsDN0naevjn6gFfdEpkGZozx7w0eZ7KRAkk6aVVyRgiXDi/HykCefou7kJFqmwRxthNwPfoKQEDKeQtL1AGmUiFcAMU1eDT56U2cRd/Tpx300iEmoGsem93zRMRPJa3Uot3v8bQabHcM0UdSDD7/gOLOwtVFpflLVNmSoW0R9bH7h/3+zdNPbCp7yH9HLP1py5QMTfMCdCR5aXxkZCJlMIBdG+Lj6QGmZ9BuUrmP1XUzrw9x76jbIkxGyr0+sZAz+5Vj1Us4UroVaKDehZvwut03E4etZFud4D7PKtXPDHYbMyIm3PZKJGFQh7sRjcCQCBMRABkQj8+NqSVMs0g3AU/fJOenY0QvmP/8Fr7AiVnCfvSu1MROGogx4KOpEFSYNWR/jVuebjia/zP/OHcJyY3MAbvJAysMT1NciwdDQ==
-                    type ssh-rsa
+                public-keys <%= ENV["router_user"] %>@<%= ENV["router_host"] %> {
+                    <%= ENV["ssh_public_key"] %>
                 }
             }
             level admin
