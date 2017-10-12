@@ -1,0 +1,45 @@
+# The format of this file is documented in the dhcpd.leases(5) manual page.
+# This lease file was written by isc-dhcp-4.1-ESV-R7
+
+lease 172.18.0.39 {
+  starts 0 2017/05/14 03:30:52;
+  ends 1 2017/05/15 03:30:52;
+#shared-network: LAN2
+  tstp 1 2017/05/15 03:30:52;
+  cltt 0 2017/05/14 03:30:52;
+  binding state free;
+  hardware ethernet 58:ef:68:7b:c6:b8;
+  uid "\001X\357h{\306\270";
+}
+lease 172.18.0.38 {
+  starts 1 2017/05/15 08:16:53;
+  ends 2 2017/05/16 08:16:53;
+#shared-network: LAN2
+  cltt 1 2017/05/15 08:16:53;
+  binding state active;
+  next binding state free;
+  hardware ethernet 0c:c4:7a:93:9c:c4;
+  uid "\001\014\304z\223\234\304";
+}
+lease 172.16.0.38 {
+  starts 6 2017/05/13 17:59:48;
+  ends 6 2017/05/13 18:00:53;
+#shared-network: LAN1
+  tstp 6 2017/05/13 18:00:53;
+  cltt 6 2017/05/13 17:59:48;
+  binding state free;
+  hardware ethernet 58:ef:68:7b:c6:b8;
+  uid "\001X\357h{\306\270";
+}
+lease 172.16.0.39 {
+  starts 1 2017/05/15 04:26:23;
+  ends 2 2017/05/16 04:26:23;
+#shared-network: LAN1
+  cltt 1 2017/05/15 04:26:23;
+  binding state active;
+  next binding state free;
+  hardware ethernet 00:1e:06:31:a3:f1;
+  client-hostname "odroid";
+}
+server-duid "\000\001\000\001\0347MG\200*\250\235[\251";
+
