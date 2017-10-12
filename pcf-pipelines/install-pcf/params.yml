@@ -22,7 +22,7 @@ om_dns_servers:                 ((dns-servers))                 # Comma-separate
 om_gateway:                     ((infrastructure-gateway))      # Gateway for Ops Manager network
 om_netmask:                     ((om-netmask))                  # Netmask for Ops Manager network
 om_ip:                          ((om-ip-address))               # IP to assign to Ops Manager VM
-om_vm_network:                  ((infrastructure_network))      # vCenter network name to use to deploy Ops Manager in
+om_vm_network:                  ((infrastructure-network))      # vCenter network name to use to deploy Ops Manager in
 om_vm_name:                     ((env-id))-ops-manager          # Name to use for Ops Manager VM
 opsman_disk_type:               "thin"                          # Disk type for Ops Manager VM (thick|thin)
 om_vm_power_state:              true                            # Whether to power on Ops Manager VM after creation
