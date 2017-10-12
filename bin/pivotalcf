@@ -135,7 +135,7 @@ params() {
     --var fast-storage=${vcenter_fast_datastore} \
     --var slow-storage=${vcenter_slow_datastore} \
     --var director-host-name=${director_host_name} \
-    --var infrastructure_network=${infrastructure_network} \
+    --var infrastructure-network=${infrastructure_network} \
     --var infrastructure-cidr=${infrastructure_cidr} \
     --var infrastructure-gateway=${infrastructure_gateway} \
     --var infrastructure-excluded=${infrastructure_gateway}-${infrastructure_ex_limit} \
