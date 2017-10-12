@@ -63,6 +63,15 @@ up () {
   PATH=${old_path}
 }
 
+login() {
+  old_path=${PATH}
+  PATH=${bucc_dir}/bin:${PATH}
+  bucc uaac
+  bucc credhub
+  bucc fly
+  PATH=${old_path}
+}
+
 down () {
   old_path=${PATH}
   PATH=${bucc_dir}/bin:${PATH}
@@ -70,11 +79,6 @@ down () {
     bucc down
   popd
   PATH=${old_path}
-}
-
-integrate () {
-  bosh -e ${env_id} -d ${concourse_deployment} manifest > work/concourse.yml
-  bosh -e ${env_id} -d ${concourse_deployment}
 }
 
 cleanup () {
@@ -117,6 +121,9 @@ if [ $# -gt 0 ]; then
       up )
         up
         ;;
+      login )
+        login
+        ;;
       down )
         down
         ;;
@@ -146,3 +153,4 @@ fi
 
 prepare
 up
+login
