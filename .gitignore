@@ -3,3 +3,4 @@ keys/*
 !keys/README.md
 work/*
 !work/README.md
+.DS_Store
