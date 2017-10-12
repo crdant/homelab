@@ -1,3 +1,28 @@
+<%
+  require 'ipaddr'
+  class IPAddr
+     def to_cidr
+      case @family
+       when Socket::AF_INET
+         n = IN4MASK ^ @mask_addr
+         prefix = 32
+       when Socket::AF_INET6
+         n = IN6MASK ^ @mask_addr
+         prefix = 128
+       else
+         raise AddressFamilyError, "unsupported address family"
+       end
+       while n > 0
+         n >>= 1
+         prefix -= 1
+       end
+       _to_string(@addr) + "/" + prefix.to_s
+    end
+  end
+  vsphere_port_addr = IPAddr.new(ENV["vmware_cidr"]).succ.to_cidr
+  bootstrap_port_addr = IPAddr.new(ENV["bootstrap_cidr"]).succ.to_cidr
+  pcf_port_addr = IPAddr.new(ENV["pcf_cidr"]).succ.to_cidr
+%>
 firewall {
     all-ping enable
     broadcast-ping disable
@@ -37,7 +62,7 @@ firewall {
             action accept
             description "Allow LAN access"
             destination {
-                address 172.16.0.0/24
+                address <%= ENV["local_cidr"] %>
             }
             log disable
             protocol all
@@ -75,50 +100,50 @@ firewall {
             action accept
             description "Allow Local Access to the vSphere environment"
             destination {
-                address 172.19.0.0/26
+                address <%= ENV["vmware_cidr"] %>
                 port 22,80,443
             }
             log disable
             protocol tcp
             source {
-                address 172.16.0.0/24
+                address <%= ENV["local_cidr"] %>
             }
         }
         rule 40 {
             action accept
             description "Allow VPN Access to the vSphere environment"
             destination {
-                address 172.19.0.0/26
+                address <%= ENV["vmware_cidr"] %>
                 port 22,80,443
             }
             log disable
             protocol tcp
             source {
-                address 172.17.0.0/24
+                address <%= ENV["vpn_cidr"] %>
             }
         }
         rule 50 {
             action accept
             description "Allow Bootstrap access to the vSphere environment"
             destination {
-                address 172.19.0.0/26
+                address <%= ENV["vmware_cidr"] %>
             }
             log disable
             protocol tcp
             source {
-                address 172.20.0.0/26
+                address <%= ENV["bootstrap_cidr"] %>
             }
         }
         rule 60 {
             action accept
             description "Allow PCF infrastructure access to the vSphere environment"
             destination {
-                address 172.19.0.0/26
+                address <%= ENV["vmware_cidr"] %>
             }
             log disable
             protocol tcp
             source {
-                address 172.24.0.0/26
+                address <%= ENV["infrastructure_cidr"] %>
             }
         }
     }
@@ -266,26 +291,26 @@ firewall {
             action accept
             description "Allow local access to bootstrap environment"
             destination {
-                address 172.20.0.0/26
+                address <%= ENV["bootstrap_cidr"] %>
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address 172.16.0.0/24
+                address <%= ENV["local_cidr"] %>
             }
         }
         rule 35 {
             action accept
             description "Allow VPN access to bootstrap environment"
             destination {
-                address 172.20.0.0/26
+                address <%= ENV["bootstrap_cidr"] %>
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address 172.17.0.0/24
+                address <%= ENV["vpn_cidr"] %>
             }
         }
     }
@@ -493,7 +518,7 @@ interfaces {
         speed auto
     }
     ethernet eth1 {
-        address 172.19.0.1/26
+        address <%= vsphere_port_addr %>
         description "vSphere Management Network"
         duplex auto
         firewall {
@@ -507,7 +532,7 @@ interfaces {
         speed auto
     }
     ethernet eth2 {
-        address 172.20.0.1/26
+        address <%= bootstrap_port_addr %>
         description "Bootstrap Network"
         duplex auto
         firewall {
@@ -521,7 +546,7 @@ interfaces {
         speed auto
     }
     ethernet eth3 {
-        address 172.24.0.1/13
+        address <%= pcf_port_addr %>
         description "PCF Networks"
         duplex auto
         firewall {
@@ -561,7 +586,7 @@ service {
         hostfile-update disable
         shared-network-name LAN1 {
             authoritative enable
-            subnet 172.16.0.0/24 {
+            subnet <%= ENV["local_cidr"] %> {
                 default-router 172.16.0.1
                 dns-server 172.16.0.1
                 lease 86400

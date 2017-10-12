@@ -27,14 +27,17 @@ vpn_cidr="172.17.0.0/26"
 management_cidr="172.18.0.0/26"
 vmware_cidr="172.19.0.0/26"
 bootstrap_cidr="172.20.0.0/26"
+pcf_cidr="172.24.0.0/13"
 infrastructure_cidr="172.24.0.0/26"
 infrastructure_netmask="255.255.255.192"
 deployment_cidr="172.25.0.0/22"
 load_balancer_cidr="172.26.0.0/26"
 services_cidr="172.27.0.0/22"
 dynamic_cidr="172.28.0.0/22"
+kubernetes_cidr="172.29.0.0/22"
 
 # static hosts
+router_host="savasana.crdant.net"
 vcenter_host="garundasana.crdant.net"
 
 # vcenter configuration
@@ -52,7 +55,7 @@ deployment_network=deployment-port-group
 services_network=services-port-group
 dynamic_network=dynamic-port-group
 dns_servers="8.8.8.8,8.8.4.4"
-dns_servers_array="[ 172.20.0.1, 8.8.4.4 ]"
+dns_servers_array="[ 172.20.0.0, 8.8.4.4 ]"
 
 # PCF configuration
 om_host_name=manager
