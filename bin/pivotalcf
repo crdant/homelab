@@ -3,8 +3,6 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
 . "${BASEDIR}/lib/secrets.sh"
-
-. "${BASEDIR}/lib/util.sh"
 set -e
 
 concourse_team=pcf
@@ -79,7 +77,7 @@ set_key () {
 generate_credential () {
   local name=${1}
   local user=${2}
-  credhub set --type user --name ${secret_root}/${name} --username ${name} --password "$(generate_passphrase 4)"
+  credhub set --type user --name ${secret_root}/${name} --username ${user} --password "$(generate_passphrase 4)"
 }
 
 generate_value () {
@@ -128,7 +126,7 @@ params() {
     --var ntp-servers=${ntp_servers} \
     --var dns-servers=${dns_servers} \
     --var om-netmask=${infrastructure_netmask} \
-    --var om-ip-address=${om_ip} \
+    --var om-ip-address=${om_ip_address} \
     --var vcenter-data-center=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
     --var vcenter-resource-pool-1=${vcenter_resource_pool_1} \

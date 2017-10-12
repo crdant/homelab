@@ -37,8 +37,9 @@ dynamic_cidr="172.28.0.0/22"
 kubernetes_cidr="172.29.0.0/22"
 
 # static hosts
-router_host="savasana.crdant.net"
-vcenter_host="garundasana.crdant.net"
+router_host="savasana.${domain}"
+esxi_host="tadasana.${domain}"
+vcenter_host="garundasana.${domain}"
 
 # vcenter configuration
 bucc_service_account=crdant.net\\bucc
@@ -59,6 +60,7 @@ dns_servers_array="[ 172.20.0.0, 8.8.4.4 ]"
 
 # PCF configuration
 om_host_name=manager
+om_ip_address=$(dig +short ${om_host_name}.${subdomain})
 director_host_name=director
 om_admin_user=arceus
 
