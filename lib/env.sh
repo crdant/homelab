@@ -34,7 +34,7 @@ deployment_cidr="172.25.0.0/22"
 load_balancer_cidr="172.26.0.0/26"
 services_cidr="172.27.0.0/22"
 dynamic_cidr="172.28.0.0/22"
-kubernetes_cidr="172.29.0.0/22"
+container_cidr="172.29.0.0/22"
 
 # static hosts
 router_host="savasana.${domain}"
