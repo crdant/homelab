@@ -732,7 +732,7 @@ vpn {
             ipsec-settings {
                 authentication {
                     mode pre-shared-secret
-                    pre-shared-secret alone-diction-odyssey-backache
+                    pre-shared-secret <%= vpn_psk %>
                 }
                 ike-lifetime 3600
             }

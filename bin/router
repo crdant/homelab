@@ -8,15 +8,18 @@ router_user=ubnt
 router_work_dir=/tmp
 
 prepare () {
+  echo "---" >> ${key_dir}/router-creds.yml
   local ssh_key_file="${key_dir}/id_${router_user}"
   if [ ! -f "${ssh_key_file}" ]; then
     ssh-keygen -P "" -t rsa -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
   fi
   ssh_public_key="$(cat ${ssh_key_file}.pub)"
+  vpn_psk=`generate_passphrase 4`
+  echo "vpn_pre_shared_key: ${vpn_psk}" >> ${key_dir}/router-creds.yml
   (
-    export router_user router_host ssh_public_key local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
+    export router_user router_host ssh_public_key vpn_psk local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
     erb router/config/config.boot.erb > ${work_dir}/config.boot
-    unset router_user router_host ssh_public_key local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
+    unset router_user router_host ssh_public_key vpn_psk local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
   )
 }
 
