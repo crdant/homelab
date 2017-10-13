@@ -49,6 +49,9 @@ transform_pipeline() {
   sed -i -e 's/}}/))/g' "${pipeline_file}"
   sed -i -e 's/_username/.username/g' "${pipeline_file}"
   sed -i -e 's/_password/.password/g' "${pipeline_file}"
+  # we aren't doing anything with NSX, but it gets caught up in the previous replace
+  sed -i -e 's/nsx.username/nsx_username/g' "${pipeline_file}"
+  sed -i -e 's/nsx.password/nsx_password/g' "${pipeline_file}"
 }
 
 get_credential () {
