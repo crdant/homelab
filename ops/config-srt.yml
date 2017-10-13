@@ -1,0 +1,13 @@
+- type: replace
+  path: /resources/-
+  value:
+    name: homelab
+    type: git
+    source:
+      uri: git@github.com:crdant/homelab.git
+      branch: master
+      private_key: ((git-private-key))
+
+- type: replace
+  path: /jobs/name=deploy-ert/plan/task=configure/file
+  value: homelab/tasks/config-srt/task.yml

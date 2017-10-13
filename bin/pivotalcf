@@ -52,6 +52,9 @@ transform_pipeline() {
   # we aren't doing anything with NSX, but it gets caught up in the previous replace
   sed -i -e 's/nsx.username/nsx_username/g' "${pipeline_file}"
   sed -i -e 's/nsx.password/nsx_password/g' "${pipeline_file}"
+
+  cp ${pipeline_file} ${pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/config-srt.yml" "${pipeline_file}.bak" > ${pipeline_file}
 }
 
 get_credential () {
