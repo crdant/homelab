@@ -40,7 +40,7 @@ bosh_vm_folder: ((env-id))-vms                     # vSphere datacenter folder (
 bosh_template_folder: ((env-id))-pcf-templates     # vSphere datacenter folder (such as pcf_templates) where templates will be placed
 bosh_disk_path: ((env-id))-pcf-disk                # vSphere datastore folder (such as pcf_disk) where attached disk images will be created
 
-trusted_certificates:         # Trusted certificates to be deployed along with all VM's provisioned by BOSH
+trusted_certificates: ''        # Trusted certificates to be deployed along with all VM's provisioned by BOSH
 vm_disk_type: "thin"         # Disk type for BOSH provisioned VM. (thick|thin)
 
 # AZ configuration for Ops Director
@@ -60,7 +60,7 @@ enable_vm_resurrector: true   # Whether to enable BOSH VM resurrector
 max_threads: 30               # Max threads count for deploying VMs
 
 # Network configuration for Ops Director
-icmp_checks_enabled: true     # Enable or disable ICMP checks
+icmp_checks_enabled: false     # Enable or disable ICMP checks
 
 infra_network_name: "INFRASTRUCTURE"
 infra_vsphere_network:        ((infrastructure-network))        # vCenter Infrastructure network name
