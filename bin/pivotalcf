@@ -111,6 +111,10 @@ params() {
   deployment_gateway="${deployment_base}.1"
   deployment_ex_limit="${deployment_base}.9"
 
+  router_static_ips=${deployment_base}.240,${deployment_base}.241,${deployment_base}.242
+  tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment_base}.245
+  brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
+
   services_base=$(echo ${services_cidr} | awk -F. '{print $1 "." $2 "." $3}')
   services_gateway="${services_base}.1"
   services_ex_limit="${services_base}.9"
@@ -154,7 +158,13 @@ params() {
     --var dynamic-cidr=${dynamic_cidr} \
     --var dynamic-gateway=${dynamic_gateway} \
     --var dynamic-excluded=${dynamic_gateway}-${dynamic_ex_limit} \
+    --var router-static-ips=${router_static_ips} \
+    --var tcp-router-static-ips=${tcp_router_static_ips} \
+    --var ssh-static-ips=${brain_static_ips} \
+    --var mysql-monitor-email=${email} \
     ${parameter_source} > ${parameter_file}
+
+    sed -i -e 's/null/""/g' "${parameter_file}"
 }
 
 pipeline () {
