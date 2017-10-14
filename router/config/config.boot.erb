@@ -37,9 +37,19 @@
   services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
   dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
   container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
+  management_port_addr =  IPAddr.new(vars["managment_cidr"]).succ.to_cidr
 
   vpn_start_addr = IPAddr.new(vars["vpn_cidr"]).add(38)
   vpn_end_addr = IPAddr.new(vars["vpn_cidr"]).add(50)
+
+  local_router_addr = IPAddr.new(vars["local_cidr"]).to_s
+  local_dhcp_start_addr = IPAddr.new(vars["local_cidr"]).add(38)
+  local_dhcp_end_addr = IPAddr.new(vars["local_cidr"]).add(234)
+
+  management_router_addr = IPAddr.new(vars["local_cidr"]).to_s
+  management_dhcp_start_addr = IPAddr.new(vars["local_cidr"]).add(38)
+  management_dhcp_end_addr = IPAddr.new(vars["local_cidr"]).add(234)
+
 %>
 firewall {
     all-ping enable
@@ -723,7 +733,7 @@ interfaces {
     loopback lo {
     }
     switch switch0 {
-        address 172.18.0.1/24
+        address <%= management_port_addr %>
         description Local
         firewall {
 
@@ -743,22 +753,22 @@ service {
         shared-network-name LAN1 {
             authoritative enable
             subnet <%= vars["local_cidr"] %> {
-                default-router 172.16.0.1
-                dns-server 172.16.0.1
+                default-router <%= local_router_addr %>
+                dns-server <%= local_router_addr %>
                 lease 86400
-                start 172.16.0.38 {
-                    stop 172.16.0.243
+                start <%= local_dhcp_start_addr %>  {
+                    stop <%= local_dhcp_end_addr %>
                 }
             }
         }
         shared-network-name LAN2 {
             authoritative enable
-            subnet 172.18.0.0/24 {
-                default-router 172.18.0.1
-                dns-server 172.18.0.1
+            subnet <%= vars["management_cidr"] {
+                default-router <%= management_router_addr %>
+                dns-server <%= management_router_addr %>
                 lease 86400
-                start 172.18.0.38 {
-                    stop 172.18.0.243
+                start <%= management_dhcp_start_addr %> {
+                    stop <%= management_dhcp_end_addr %>
                 }
             }
         }
