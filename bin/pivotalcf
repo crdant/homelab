@@ -47,11 +47,15 @@ download () {
 transform_pipeline() {
   sed -i -e 's/{{/((/g' "${pipeline_file}"
   sed -i -e 's/}}/))/g' "${pipeline_file}"
+  sed -i -e 's/_private_key/.private_key/g' "${pipeline_file}"
   sed -i -e 's/_username/.username/g' "${pipeline_file}"
   sed -i -e 's/_password/.password/g' "${pipeline_file}"
   # we aren't doing anything with NSX, but it gets caught up in the previous replace
   sed -i -e 's/nsx.username/nsx_username/g' "${pipeline_file}"
   sed -i -e 's/nsx.password/nsx_password/g' "${pipeline_file}"
+  # also gets caught up in previous replace
+  sed -i -e 's/saml_ssl.private_key/saml_ssl_private_key/g' "${pipeline_file}"
+  sed -i -e 's/ssl.private_key/ssl_private_key/g' "${pipeline_file}"
 
   cp ${pipeline_file} ${pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/config-srt.yml" "${pipeline_file}.bak" > ${pipeline_file}
@@ -98,7 +102,7 @@ get_secret () {
 
 secrets () {
   echo "Configuring secrets at ${secret_root}..."
-  set_key git_private_key "$(cat ${HOME}/.ssh/concourse_github)"
+  set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
   generate_credential opsman_admin ${om_admin_user}
   generate_value om-ssh-password

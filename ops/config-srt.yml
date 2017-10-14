@@ -6,8 +6,13 @@
     source:
       uri: git@github.com:crdant/homelab.git
       branch: master
-      private_key: ((git-private-key))
+      private_key: ((git.private_key))
 
 - type: replace
   path: /jobs/name=deploy-ert/plan/task=configure/file
   value: homelab/tasks/config-srt/task.yml
+
+- type: replace
+  path: /jobs/name=deploy-ert/plan/0/aggregate/-
+  value:
+    get: homelab

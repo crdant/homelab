@@ -1,7 +1,6 @@
 # Pipeline resource configuration
 opsman_major_minor_version: ^1\.12\..*$ # PCF Ops Manager minor version to track
 ert_major_minor_version: ^1\.12\..*-srt.*$ # PCF Elastic Runtime minor version to track
-git_private_key:
 
 # vCenter configuration
 vcenter_host:             garundasana.crdant.net    # vCenter host or IP
@@ -227,7 +226,7 @@ diego_cell_instances: 3
 loggregator_traffic_controller_instances: 3
 syslog_adapter_instances: 3
 doppler_instances: 3
-tcp_router_instances: 0
+tcp_router_instances: 3
 
 # leave nsx fields empty if you are not leveraging the nsx features for a given component
 tcp_router_nsx_security_group:
