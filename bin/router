@@ -10,16 +10,42 @@ router_work_dir=/tmp
 prepare () {
   echo "---" >> ${key_dir}/router-creds.yml
   local ssh_key_file="${key_dir}/id_${router_user}"
+
   if [ ! -f "${ssh_key_file}" ]; then
     ssh-keygen -P "" -t rsa -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
   fi
   ssh_public_key="$(cat ${ssh_key_file}.pub)"
   vpn_psk=`generate_passphrase 4`
-  echo "vpn_pre_shared_key: ${vpn_psk}" >> ${key_dir}/router-creds.yml
+
+  cat <<CREDS > ${key_dir}/router_creds.yml
+    vpn_psk: ${vpn_psk}
+CREDS
+
+  cat <<VARS > ${work_dir}/router_vars.yml
+    router_user: ${router_user}
+    router_host: ${router_host}
+    ssh_public_key: ${ssh_public_key}
+    dns_servers: [ ${dns_servers} ]
+    local_cidr: ${local_cidr}
+    vpn_cidr: ${vpn_cidr}
+    vmware_cidr: ${vmware_cidr}
+    bootstrap_cidr: ${bootstrap_cidr}
+    pcf_cidr: ${pcf_cidr}
+    infrastructure_cidr: ${infrastructure_cidr}
+    deployment_cidr: ${deployment_cidr}
+    services_cidr: ${services_cidr}
+    dynamic_cidr: ${dynamic_cidr}
+    container_cidr: ${container_cidr}
+    esxi_host: ${esxi_host}
+    router_static_ips: [ ${router_static_ips} ]
+    tcp_router_static_ips: [ ${tcp_router_static_ips} ]
+    brain_static_ips: [ ${brain_static_ips} ]
+VARS
+
   (
-    export router_user router_host ssh_public_key vpn_psk local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
-    erb router/config/config.boot.erb > ${work_dir}/config.boot
-    unset router_user router_host ssh_public_key vpn_psk local_cidr vpn_cidr bootstrap_cidr pcf_cidr infrastructure_cidr deployment_cidr services_cidr dynamic_cidr kubernetes_cidr esxi_host
+    export work_dir key_dir
+    erb -T- router/config/config.boot.erb > ${work_dir}/config.boot
+    unset work_dir key_dir
   )
 }
 

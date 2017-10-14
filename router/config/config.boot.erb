@@ -1,32 +1,77 @@
 <%
+  require 'yaml'
   require 'ipaddr'
+
+  vars = YAML::load_file("#{ENV["work_dir"]}/router_vars.yml")
+  creds = YAML::load_file("#{ENV["key_dir"]}/router_creds.yml")
+
   class IPAddr
-     def to_cidr
-      case @family
-       when Socket::AF_INET
-         n = IN4MASK ^ @mask_addr
-         prefix = 32
-       when Socket::AF_INET6
-         n = IN6MASK ^ @mask_addr
-         prefix = 128
-       else
-         raise AddressFamilyError, "unsupported address family"
-       end
-       while n > 0
-         n >>= 1
-         prefix -= 1
-       end
-       _to_string(@addr) + "/" + prefix.to_s
+   def add(num)
+     return self.clone.set(@addr + num, @family)
+   end
+   def to_cidr
+    case @family
+     when Socket::AF_INET
+       n = IN4MASK ^ @mask_addr
+       prefix = 32
+     when Socket::AF_INET6
+       n = IN6MASK ^ @mask_addr
+       prefix = 128
+     else
+       raise AddressFamilyError, "unsupported address family"
+     end
+     while n > 0
+       n >>= 1
+       prefix -= 1
+     end
+     _to_string(@addr) + "/" + prefix.to_s
     end
   end
-  esxi_addr = `dig +short #{ENV["esxi_host"]}`.rstrip
-  vsphere_port_addr = IPAddr.new(ENV["vmware_cidr"]).succ.to_cidr
-  bootstrap_port_addr = IPAddr.new(ENV["bootstrap_cidr"]).succ.to_cidr
-  pcf_port_addr = IPAddr.new(ENV["pcf_cidr"]).succ.to_cidr
+
+  esxi_addr = `dig +short #{vars["esxi_host"]}`.rstrip
+  vsphere_port_addr = IPAddr.new(vars["vmware_cidr"]).succ.to_cidr
+  bootstrap_port_addr = IPAddr.new(vars["bootstrap_cidr"]).succ.to_cidr
+  pcf_port_addr = IPAddr.new(vars["pcf_cidr"]).succ.to_cidr
+  infrastructure_port_addr = IPAddr.new(vars["infrastructure_cidr"]).succ.to_cidr
+  deployment_port_addr = IPAddr.new(vars["deployment_cidr"]).succ.to_cidr
+  services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
+  dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
+  container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
+
+  vpn_start_addr = IPAddr.new(vars["vpn_cidr"]).add(38)
+  vpn_end_addr = IPAddr.new(vars["vpn_cidr"]).add(50)
 %>
 firewall {
     all-ping enable
     broadcast-ping disable
+    group {
+      address-group pcf-routers {
+          description "PCF HTTP/S Routers"
+          <%- vars['router_static_ips'].each do |ip| -%>
+            address <%= ip %>
+          <%- end -%>
+      }
+      address-group pcf-tcp-routers {
+          description "PCF TCP Routers"
+          <%- vars['tcp_router_static_ips'].each do |ip| -%>
+            address <%= ip %>
+          <%- end -%>
+      }
+      address-group pcf-diego-brains {
+          description "Diego Brains"
+          <%- vars['brain_static_ips'].each do |ip| -%>
+            address <%= ip %>
+          <%- end -%>
+      }
+      network-group pcf-subnets {
+            description "PCF Subnets"
+            network <%= vars['infrastructure_cidr'] %>
+            network <%= vars['deployment_cidr'] %>
+            network <%= vars['services_cidr'] %>
+            network <%= vars['dynamic_cidr'] %>
+            network <%= vars['container_cidr'] %>
+        }
+    }
     ipv6-receive-redirects disable
     ipv6-src-route disable
     ip-src-route disable
@@ -63,7 +108,7 @@ firewall {
             action accept
             description "Allow LAN access"
             destination {
-                address <%= ENV["local_cidr"] %>
+                address <%= vars["local_cidr"] %>
             }
             log disable
             protocol all
@@ -117,50 +162,50 @@ firewall {
             action accept
             description "Allow Local Access to the vSphere environment"
             destination {
-                address <%= ENV["vmware_cidr"] %>
+                address <%= vars["vmware_cidr"] %>
                 port 22,80,443
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["local_cidr"] %>
+                address <%= vars["local_cidr"] %>
             }
         }
         rule 40 {
             action accept
             description "Allow VPN Access to the vSphere environment"
             destination {
-                address <%= ENV["vmware_cidr"] %>
+                address <%= vars["vmware_cidr"] %>
                 port 22,80,443
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["vpn_cidr"] %>
+                address <%= vars["vpn_cidr"] %>
             }
         }
         rule 50 {
             action accept
             description "Allow Bootstrap access to the vSphere environment"
             destination {
-                address <%= ENV["vmware_cidr"] %>
+                address <%= vars["vmware_cidr"] %>
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["bootstrap_cidr"] %>
+                address <%= vars["bootstrap_cidr"] %>
             }
         }
         rule 60 {
             action accept
             description "Allow PCF infrastructure access to the vSphere environment"
             destination {
-                address <%= ENV["vmware_cidr"] %>
+                address <%= vars["vmware_cidr"] %>
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["infrastructure_cidr"] %>
+                address <%= vars["infrastructure_cidr"] %>
             }
         }
     }
@@ -324,26 +369,26 @@ firewall {
             action accept
             description "Allow local access to bootstrap environment"
             destination {
-                address <%= ENV["bootstrap_cidr"] %>
+                address <%= vars["bootstrap_cidr"] %>
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["local_cidr"] %>
+                address <%= vars["local_cidr"] %>
             }
         }
         rule 35 {
             action accept
             description "Allow VPN access to bootstrap environment"
             destination {
-                address <%= ENV["bootstrap_cidr"] %>
+                address <%= vars["bootstrap_cidr"] %>
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address <%= ENV["vpn_cidr"] %>
+                address <%= vars["vpn_cidr"] %>
             }
         }
     }
@@ -377,6 +422,38 @@ firewall {
         }
         rule 30 {
             action accept
+            description "Allow PCF internal calls"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol tcp_udp
+            source {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow PCF internal pings"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol icmp
+            source {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+        }
+        rule 50 {
+            action accept
             description "Allow outbound web traffiC"
             destination {
                 port 80,443
@@ -384,7 +461,7 @@ firewall {
             log disable
             protocol tcp
         }
-        rule 40 {
+        rule 60 {
             action accept
             description "Allow outbound DNS traffic"
             destination {
@@ -393,7 +470,7 @@ firewall {
             log disable
             protocol tcp_udp
         }
-        rule 50 {
+        rule 70 {
             action accept
             description "Allow outbound NTP traffic"
             destination {
@@ -433,30 +510,71 @@ firewall {
         }
         rule 30 {
             action accept
+            description "Allow PCF internal calls"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol tcp_udp
+            source {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow PCF internal pings"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol icmp
+            source {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+        }
+        rule 50 {
+            action accept
             description "Allow access to PCF web APIs and routers"
             destination {
+                group {
+                    address-group pcf-routers
+                }
                 port 80,443
             }
             log disable
             protocol tcp
         }
-        rule 40 {
+        rule 60 {
             action accept
             description "Allow access to TCP routers"
             destination {
+                group {
+                    address-group pcf-tcp-routers
+                }
                 port 1024-65535
             }
             log disable
             protocol tcp_udp
         }
-        rule 50 {
+        rule 70 {
             action accept
             description "Allow SSH access to applications"
             destination {
+                group {
+                    address-group pcf-diego-brains
+                }
                 port 22
             }
             log disable
-            protocol udp
+            protocol tcp
         }
     }
     name WAN_IN {
@@ -580,6 +698,11 @@ interfaces {
     }
     ethernet eth3 {
         address <%= pcf_port_addr %>
+        address <%= infrastructure_port_addr %>
+        address <%= deployment_port_addr %>
+        address <%= services_port_addr %>
+        address <%= dynamic_port_addr %>
+        address <%= container_port_addr %>
         description "PCF Networks"
         duplex auto
         firewall {
@@ -619,7 +742,7 @@ service {
         hostfile-update disable
         shared-network-name LAN1 {
             authoritative enable
-            subnet <%= ENV["local_cidr"] %> {
+            subnet <%= vars["local_cidr"] %> {
                 default-router 172.16.0.1
                 dns-server 172.16.0.1
                 lease 86400
@@ -673,8 +796,8 @@ system {
         user ubnt {
             authentication {
                 encrypted-password $6$Py7QMd9.9Osw$mmmSaJ1owmC1J757HELrIHspzI8.FrLDIHdhEOYFOGJ2T23lYHXj6442xbhWMfdc2vs6.w/1cx5C7Ve.XGI.F/
-                public-keys <%= ENV["router_user"] %>@<%= ENV["router_host"] %> {
-                    <%= ENV["ssh_public_key"] %>
+                public-keys <%= vars["router_user"] %>@<%= vars["router_host"] %> {
+                    <%= vars["ssh_public_key"] %>
                 }
             }
             level admin
@@ -721,18 +844,18 @@ vpn {
                 mode local
             }
             client-ip-pool {
-                start 172.17.0.38
-                stop 172.17.0.50
+                start <%= vpn_start_addr %>
+                stop <%= vpn_end_addr %>
             }
             dhcp-interface eth0
             dns-servers {
-                server-1 8.8.8.8
-                server-2 8.8.4.4
+                server-1 <%= vars["dns_servers"][0] %>
+                server-2 <%= vars["dns_servers"][1] %>
             }
             ipsec-settings {
                 authentication {
                     mode pre-shared-secret
-                    pre-shared-secret <%= vpn_psk %>
+                    pre-shared-secret <%= creds["vpn_psk"] %>
                 }
                 ike-lifetime 3600
             }

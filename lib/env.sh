@@ -65,6 +65,12 @@ om_ip_address=$(dig +short ${om_host_name}.${subdomain})
 director_host_name=director
 om_admin_user=arceus
 
+# PCF static IPs
+deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')
+router_static_ips=${deployment_base}.240,${deployment_base}.241,${deployment_base}.242
+tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment_base}.245
+brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
+
 if [ -f ${state_file} ] ; then
   . ${state_file}
 fi
