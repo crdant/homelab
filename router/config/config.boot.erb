@@ -34,6 +34,7 @@
   pcf_port_addr = IPAddr.new(vars["pcf_cidr"]).succ.to_cidr
   infrastructure_port_addr = IPAddr.new(vars["infrastructure_cidr"]).succ.to_cidr
   deployment_port_addr = IPAddr.new(vars["deployment_cidr"]).succ.to_cidr
+  balancer_port_addr = IPAddr.new(vars["balancer_cidr"]).succ.to_cidr
   services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
   dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
   container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
@@ -559,6 +560,9 @@ firewall {
                 }
                 port 80,443
             }
+            source {
+              address <%= vars["balancer_cidr"] %>
+            }
             log disable
             protocol tcp
         }
@@ -571,8 +575,11 @@ firewall {
                 }
                 port 1024-65535
             }
+            source {
+              address <%= vars["balancer_cidr"] %>
+            }
             log disable
-            protocol tcp_udp
+            protocol tcp
         }
         rule 70 {
             action accept
@@ -583,8 +590,37 @@ firewall {
                 }
                 port 22
             }
+            source {
+              address <%= vars["balancer_cidr"] %>
+            }
             log disable
             protocol tcp
+        }
+        rule 80 {
+            action accept
+            description "Allow local access to configure the load balancer environment"
+            destination {
+                address <%= vars["balancer_cidr"] %>
+                port 4444
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["local_cidr"] %>
+            }
+        }
+        rule 90 {
+            action accept
+            description "Allow VPN Access to configure the load balancer environment"
+            destination {
+                address <%= vars["balancer_cidr"] %>
+                port 4444
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["vpn_cidr"] %>
+            }
         }
     }
     name WAN_IN {

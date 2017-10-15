@@ -33,6 +33,7 @@ CREDS
     pcf_cidr: ${pcf_cidr}
     infrastructure_cidr: ${infrastructure_cidr}
     deployment_cidr: ${deployment_cidr}
+    balancer_cidr: ${balancer_cidr}
     services_cidr: ${services_cidr}
     dynamic_cidr: ${dynamic_cidr}
     container_cidr: ${container_cidr}
