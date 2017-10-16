@@ -77,6 +77,7 @@ params () {
     --var kubo-datastore=${vcenter_fast_datastore} \
     --var vcenter-data-center=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
+    --var vcenter-resource-pool=${vcenter-resource-pool-1} \
     --var container-network=${container_network} \
     --var container-cidr=${container_cidr} \
     --var container-gateway=${container_gateway} \

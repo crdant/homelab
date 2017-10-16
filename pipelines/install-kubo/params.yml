@@ -1,28 +1,37 @@
 # pipeline configuration
+iaas: vsphere
 
 # vCenter configuration
 vcenter-host:             ((vcenter-host))          # vCenter host or IP
 vcenter-datacenter:       ((vcenter-datacenter))    # vCenter datacenter
+vcenter-cluster:          ((vcenter-cluster))
+
 
 # Kubo basics
 kubo-environment:         ((env-id))                # environment identifier for this Kubo installation
+kubo-director-name:       ((env-id))-kubo-director
 
 # vCenter Cluster or Resource Pool to use to deploy Kubo.
 # Possible formats:
 #   cluster:       /<Data Center Name>/host/<Cluster Name>
 #   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
-kubo-resource-pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool-1))
+kubo-resource-pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool))
 
 # Datastore to use for K8s machines and persistenet volumes
 kubo-datastore:   ((kubo_datastore))
 
+# folders/paths for vCenter
+kubo-vm-folder: kubo-vms
+kubo-template-folder: kubo-templates
+kubo-disk-path: kubo-disks
+
 # network configuration
-network-name: "INFRASTRUCTURE"
+network-name: "CONTAINERS"
 vsphere-network:        ((container-network))        # vCenter Infrastructure network name
 network-cidr:           ((container-cidr))           # Infrastructure network CIDR, ex: 10.0.0.0/22
 excluded-range:         ((container-excluded))       # Infrastructure network exclusion range
-network-dns:            ((dns-servers))         # Infrastructure network DNS
-network-gateway:        ((container-gateway))              # Infrastructure network Gateway
+network-dns:            ((dns-servers))              # Infrastructure network DNS
+network-gateway:        ((container-gateway))        # Infrastructure network Gateway
 
 # routing configuration
 routing_mode: cf
