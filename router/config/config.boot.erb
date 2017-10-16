@@ -50,7 +50,6 @@
   management_router_addr = IPAddr.new(vars["local_cidr"]).to_s
   management_dhcp_start_addr = IPAddr.new(vars["local_cidr"]).add(38)
   management_dhcp_end_addr = IPAddr.new(vars["local_cidr"]).add(234)
-
 %>
 firewall {
     all-ping enable
@@ -236,7 +235,7 @@ firewall {
             description "Allow Local Access to the vSphere environment"
             destination {
                 address <%= vars["vmware_cidr"] %>
-                port 22,80,443
+                port 22,80,443,5480
             }
             log disable
             protocol tcp
@@ -249,7 +248,7 @@ firewall {
             description "Allow VPN Access to the vSphere environment"
             destination {
                 address <%= vars["vmware_cidr"] %>
-                port 22,80,443
+                port 22,80,443,5480
             }
             log disable
             protocol tcp
