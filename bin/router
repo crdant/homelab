@@ -9,12 +9,13 @@ router_work_dir=/tmp
 prepare () {
   echo "---" >> ${key_dir}/router-creds.yml
   local ssh_key_file="${key_dir}/id_${router_user}"
-
+  local ssh_key_type="rsa"
+  
   router_password="$(generate_passphrase 4)"
   if [ ! -f "${ssh_key_file}" ]; then
-    ssh-keygen -P "" -t rsa -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
+    ssh-keygen -P "" -t ${ssh_key_type} -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
   fi
-  ssh_public_key="$(cat ${ssh_key_file}.pub)"
+  ssh_public_key="$(cat ${ssh_key_file}.pub | awk '{ print $2 }')"
   vpn_psk="$(generate_passphrase 4)"
   vpn_password="$(generate_passphrase 4)"
 
@@ -29,6 +30,7 @@ router_user: ${router_user}
 router_host: ${router_host}
 vpn_user: ${vpn_user}
 ssh_public_key: ${ssh_public_key}
+ssh_key_type: ${ssh_key_type}
 dns_servers: [ ${dns_servers} ]
 local_cidr: ${local_cidr}
 vpn_cidr: ${vpn_cidr}

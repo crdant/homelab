@@ -920,7 +920,8 @@ system {
             authentication {
                 plaintext-password <%= creds["router_password"] %>
                 public-keys <%= vars["router_user"] %>@<%= vars["router_host"] %> {
-                    <%= vars["ssh_public_key"] %>
+                    key <%= vars["ssh_public_key"] %>
+                    type <% vars["ssh_key_type"] %>
                 }
             }
             level admin
