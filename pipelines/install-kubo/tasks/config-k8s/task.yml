@@ -25,4 +25,4 @@ inputs:
   - name: homelab
 
 run:
-  path: homelab/pipelines/install-kubo/tasks/configure-router/task.sh
+  path: homelab/pipelines/install-kubo/tasks/config-k8s/task.sh
