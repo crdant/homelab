@@ -38,7 +38,7 @@
   services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
   dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
   container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
-  management_port_addr =  IPAddr.new(vars["managment_cidr"]).succ.to_cidr
+  management_port_addr =  IPAddr.new(vars["management_cidr"]).succ.to_cidr
 
   vpn_start_addr = IPAddr.new(vars["vpn_cidr"]).add(38)
   vpn_end_addr = IPAddr.new(vars["vpn_cidr"]).add(50)
@@ -56,6 +56,12 @@ firewall {
     all-ping enable
     broadcast-ping disable
     group {
+      address-group dns-servers {
+          description "DNS Servers"
+          <%- vars['dns_servers'].each do |ip| -%>
+            address <%= ip %>
+          <%- end -%>
+      }
       address-group pcf-routers {
           description "PCF HTTP/S Routers"
           <%- vars['router_static_ips'].each do |ip| -%>
@@ -125,101 +131,6 @@ firewall {
             protocol all
         }
     }
-    name VSPHERE_OUT {
-        default-action drop
-        description "Access from the vSphere environment"
-        enable-default-log
-        rule 10 {
-            action accept
-            description "Allow established/related"
-            log disable
-            protocol all
-            state {
-                established enable
-                invalid disable
-                new disable
-                related enable
-            }
-        }
-        rule 15 {
-            action accept
-            description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
-            destination {
-                address <%= esxi_addr %>
-                port 443
-            }
-            log disable
-            protocol tcp
-            state {
-                established disable
-                invalid enable
-                new disable
-                related disable
-            }
-        }
-        rule 20 {
-            action drop
-            description "Drop invalid state"
-            log disable
-            protocol all
-            state {
-                established disable
-                invalid enable
-                new disable
-                related disable
-            }
-        }
-        rule 30 {
-            action accept
-            description "Allow Local Access to the vSphere environment"
-            destination {
-                address <%= vars["vmware_cidr"] %>
-                port 22,80,443
-            }
-            log disable
-            protocol tcp
-            source {
-                address <%= vars["local_cidr"] %>
-            }
-        }
-        rule 40 {
-            action accept
-            description "Allow VPN Access to the vSphere environment"
-            destination {
-                address <%= vars["vmware_cidr"] %>
-                port 22,80,443
-            }
-            log disable
-            protocol tcp
-            source {
-                address <%= vars["vpn_cidr"] %>
-            }
-        }
-        rule 50 {
-            action accept
-            description "Allow Bootstrap access to the vSphere environment"
-            destination {
-                address <%= vars["vmware_cidr"] %>
-            }
-            log disable
-            protocol tcp
-            source {
-                address <%= vars["bootstrap_cidr"] %>
-            }
-        }
-        rule 60 {
-            action accept
-            description "Allow PCF infrastructure access to the vSphere environment"
-            destination {
-                address <%= vars["vmware_cidr"] %>
-            }
-            log disable
-            protocol tcp
-            source {
-                address <%= vars["infrastructure_cidr"] %>
-            }
-        }
-    }
     name VSPHERE_IN {
         default-action drop
         description "Access from the vSphere environment"
@@ -276,6 +187,101 @@ firewall {
             protocol udp
         }
     }
+    name VSPHERE_OUT {
+        default-action drop
+        description "Access from the vSphere environment"
+        enable-default-log
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 20 {
+            action accept
+            description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
+            destination {
+                address <%= esxi_addr %>
+                port 443
+            }
+            log disable
+            protocol tcp
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
+            action drop
+            description "Drop invalid state"
+            log disable
+            protocol all
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 40 {
+            action accept
+            description "Allow Local Access to the vSphere environment"
+            destination {
+                address <%= vars["vmware_cidr"] %>
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["local_cidr"] %>
+            }
+        }
+        rule 50 {
+            action accept
+            description "Allow VPN Access to the vSphere environment"
+            destination {
+                address <%= vars["vmware_cidr"] %>
+                port 22,80,443
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["vpn_cidr"] %>
+            }
+        }
+        rule 60 {
+            action accept
+            description "Allow Bootstrap access to the vSphere environment"
+            destination {
+                address <%= vars["vmware_cidr"] %>
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["bootstrap_cidr"] %>
+            }
+        }
+        rule 70 {
+            action accept
+            description "Allow PCF infrastructure access to the vSphere environment"
+            destination {
+                address <%= vars["vmware_cidr"] %>
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["infrastructure_cidr"] %>
+            }
+        }
+    }
     name BOOTSTRAP_IN {
         default-action drop
         description "Access to the Elastic Runtime routers"
@@ -292,7 +298,7 @@ firewall {
                 related enable
             }
         }
-        rule 15 {
+        rule 20 {
             action accept
             description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
             destination {
@@ -308,7 +314,7 @@ firewall {
                 related disable
             }
         }
-        rule 20 {
+        rule 30 {
             action drop
             description "Drop invalid state"
             log disable
@@ -320,7 +326,7 @@ firewall {
                 related disable
             }
         }
-        rule 30 {
+        rule 40 {
             action accept
             description "Allow outbound web traffiC"
             destination {
@@ -329,16 +335,19 @@ firewall {
             log disable
             protocol tcp
         }
-        rule 40 {
+        rule 50 {
             action accept
             description "Allow outbound DNS traffic"
             destination {
+                group {
+                    address-group dns-servers
+                }
                 port 53
             }
             log disable
             protocol tcp_udp
         }
-        rule 50 {
+        rule 60 {
             action accept
             description "Allow outbound NTP traffic"
             destination {
@@ -346,6 +355,26 @@ firewall {
             }
             log disable
             protocol udp
+        }
+        rule 61 {
+            action accept
+            description "Allow SSH traffic to GitHub"
+            destination {
+                address 192.30.252.0/22
+                port 22
+            }
+            log disable
+            protocol tcp
+        }
+        rule 62 {
+            action accept
+            description "All SSH traffic to GitHub"
+            destination {
+                address 185.199.108.0/22
+                port 22
+            }
+            log disable
+            protocol tcp
         }
     }
     name BOOTSTRAP_OUT {
@@ -389,7 +418,7 @@ firewall {
                 address <%= vars["local_cidr"] %>
             }
         }
-        rule 35 {
+        rule 40 {
             action accept
             description "Allow VPN access to bootstrap environment"
             destination {
@@ -420,6 +449,22 @@ firewall {
             }
         }
         rule 20 {
+            action accept
+            description "Allow invalid packets over HTTPS"
+            destination {
+                address <%= esxi_addr %>
+                port 443
+            }
+            log disable
+            protocol tcp
+            state {
+                established disable
+                invalid enable
+                new disable
+                related disable
+            }
+        }
+        rule 30 {
             action drop
             description "Drop invalid state"
             log disable
@@ -431,7 +476,7 @@ firewall {
                 related disable
             }
         }
-        rule 30 {
+        rule 40 {
             action accept
             description "Allow PCF internal calls"
             destination {
@@ -447,7 +492,7 @@ firewall {
                 }
             }
         }
-        rule 40 {
+        rule 50 {
             action accept
             description "Allow PCF internal pings"
             destination {
@@ -463,32 +508,44 @@ firewall {
                 }
             }
         }
-        rule 50 {
+        rule 60 {
             action accept
-            description "Allow outbound web traffiC"
+            description "Allow LBs access to PCF Routers"
+            destination {
+                group {
+                    address-group pcf-routers
+                }
+                port 80,443,8080
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["balancer_cidr"] %>
+            }
+        }
+        rule 70 {
+            action accept
+            description "Allow outbound web traffic from PCF applications"
             destination {
                 port 80,443
             }
             log disable
             protocol tcp
+            source {
+                address <%= vars["deployment_cidr"] %>
+            }
         }
-        rule 60 {
+        rule 80 {
             action accept
             description "Allow outbound DNS traffic"
             destination {
+                group {
+                    address-group dns-servers
+                }
                 port 53
             }
             log disable
             protocol tcp_udp
-        }
-        rule 70 {
-            action accept
-            description "Allow outbound NTP traffic"
-            destination {
-                port 123
-            }
-            log disable
-            protocol udp
         }
     }
     name PCF_OUT {
@@ -609,7 +666,7 @@ firewall {
                 address <%= vars["local_cidr"] %>
             }
         }
-        rule 90 {
+        rule 85 {
             action accept
             description "Allow VPN Access to configure the load balancer environment"
             destination {
@@ -621,6 +678,26 @@ firewall {
             source {
                 address <%= vars["vpn_cidr"] %>
             }
+        }
+        rule 90 {
+            action accept
+            description "Allow access to the load balancers"
+            destination {
+                address <%= vars["balancer_cidr"] %>
+                port 443
+            }
+            log disable
+            protocol tcp
+        }
+        rule 95 {
+            action accept
+            description "Allow access to Ops Manager and director"
+            destination {
+                address <%= vars["infrastructure_cidr"] %>
+                port 443
+            }
+            log disable
+            protocol tcp
         }
     }
     name WAN_IN {
@@ -746,6 +823,7 @@ interfaces {
         address <%= pcf_port_addr %>
         address <%= infrastructure_port_addr %>
         address <%= deployment_port_addr %>
+        address <%= balancer_port_addr %>
         address <%= services_port_addr %>
         address <%= dynamic_port_addr %>
         address <%= container_port_addr %>
@@ -799,7 +877,7 @@ service {
         }
         shared-network-name LAN2 {
             authoritative enable
-            subnet <%= vars["management_cidr"] {
+            subnet <%= vars["management_cidr"] %> {
                 default-router <%= management_router_addr %>
                 dns-server <%= management_router_addr %>
                 lease 86400
@@ -839,9 +917,9 @@ service {
 system {
     host-name ubnt
     login {
-        user ubnt {
+        user <%= vars["router_user"] %> {
             authentication {
-                encrypted-password $6$Py7QMd9.9Osw$mmmSaJ1owmC1J757HELrIHspzI8.FrLDIHdhEOYFOGJ2T23lYHXj6442xbhWMfdc2vs6.w/1cx5C7Ve.XGI.F/
+                plaintext-password <%= creds["router_password"] %>
                 public-keys <%= vars["router_user"] %>@<%= vars["router_host"] %> {
                     <%= vars["ssh_public_key"] %>
                 }
@@ -883,8 +961,8 @@ vpn {
         remote-access {
             authentication {
                 local-users {
-                    username crdant {
-                        password wireworm-checker-voodoo-unpack
+                    username <%= vars["vpn_user"] %> {
+                        password <%= creds["vpn_password"] %>
                     }
                 }
                 mode local

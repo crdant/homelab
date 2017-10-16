@@ -42,6 +42,10 @@ router_host="savasana.${domain}"
 esxi_host="tadasana.${domain}"
 vcenter_host="garundasana.${domain}"
 
+# router configuration
+router_user=ubnt
+vpn_user="${USER}"
+
 # vcenter configuration
 bucc_service_account=crdant.net\\bucc
 vcenter_data_center=home-lab
