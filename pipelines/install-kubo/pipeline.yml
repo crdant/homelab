@@ -7,71 +7,72 @@ jobs:
     params:
       GOVC_INSECURE: 1
       GOVC_PASSWORD: ((vcenter_pwd))
-      GOVC_RESOURCE_POOL: ((kubo_resource_pool))
+      GOVC_RESOURCE_POOL: ((kubo-resource-pool))
       GOVC_URL: ((vcenter_host))
-      GOVC_USERNAME: ((vcenter_usr))
+      GOVC_USERNAME: ((vcenter-username))
   - task: create-infrastructure
     file: homelab/pipelines/install-kubo/tasks/create-infrastructure/task.yml
     params:
-      GOVC_DATACENTER: ((vcenter_data_center))
-      GOVC_DATASTORE: ((kubo_data_store))
-      GOVC_HOST: ((kubo_vm_host))
-      GOVC_INSECURE: 1
-      GOVC_NETWORK: ((kubo_vm_network))
-      GOVC_PASSWORD: ((vcenter_pwd))
-      GOVC_RESOURCE_POOL: ((kubo_resource_pool))
-      GOVC_URL: ((vcenter_host))
-      GOVC_USERNAME: ((vcenter_usr))
+
 - name: configure-director
   - get: kubo-deployment
   - task: generate-template
     file: homelab/pipelines/install-kubo/tasks/generate-template/task.yml
     params:
-      GOVC_INSECURE:
-      GOVC_URL:
-      GOVC_USERNAME:
-      GOVC_PASSWORD:
-      GOVC_DATACENTER:
-      GOVC_DATASTORE:
-      GOVC_NETWORK:
-      GOVC_RESOURCE_POOL:
-      GOVC_HOST:
-      KUBO_VC_USER:
-      KUBO_VC_PASSWORD:
+      GOVC_DATACENTER: ((vcenter-datacenter))
+      GOVC_DATASTORE: ((kubo-datastore))
+      GOVC_HOST: ((kubo-vm-host))
+      GOVC_INSECURE: 1
+      GOVC_NETWORK: ((vsphere-network))
+      GOVC_PASSWORD: ((vcenter-password))
+      GOVC_RESOURCE_POOL: ((kubo-resource-pool))
+      GOVC_URL: ((vcenter_host))
+      GOVC_USERNAME: ((vcenter-username))
+      KUBO_VC_USER: ((kubo-vcenter-user.username))
+      KUBO_VC_PASSWORD: ((kubo-vcenter-user.password))
   - task: customize-template
     file: homelab/pipelines/install-kubo/tasks/customize-director/task.yml
     params:
-      IAAS:
-      VCENTER_IP:
-      VCENTER_USER:
-      VCENTER_PASSWORD:
-      VCENTER_DATACENTER:
-      VCENTER_VMS:
-      VCENTER_TEMPLATES:
-      VCENTER_DISKS:
-      VCENTER_DATESTORE:
-      VCENTER_CLUSTER:
-      VCENTER_RESOURCE_POOL:
+      VCENTER_HOST: ((vcenter-host))
+      VCENTER_USER: ((kubo-vc-user.username))
+      VCENTER_PASSWORD: ((kubo-vc-user.password))
+      VCENTER_DATACENTER: ((vcenter-datacenter))
+      VCENTER_VMS: ((kubo-vm-folder))
+      VCENTER_TEMPLATES: ((kubo-template-folder))
+      VCENTER_DISKS: ((vcenter-disk-folder))
+      VCENTER_DATASTORE: ((kubo-datastore)
+      VCENTER_CLUSTER: ((vcenter-cluster))
+      VCENTER_RESOURCE_POOL: ((kubo-resource-pool))
+  - task: configure-pcf-domain
+    file: homelab/pipelines/install-kubo/tasks/config-pcf/task.yml
+    params:
+      PCF_API_URL: ((pcf-api-url))
+      PCF_CLIENT_ID: ((pcf-client-id))
+      PCF_UAA_URL: ((pcf-uaa-url))
+      PCF_APPS_DOMAIN: ((pcf-apps-domain))
   - task: configure-router
     file: homelab/pipelines/install-kubo/tasks/config-router/task.yml
     params:
-      ROUTING_MODE:
-      KUBERNETES_MASTER_HOST:
-      KUBERNETES_MASTER_PORT:
-      MASTER_TARGET_POOL:
-      NETWORK_NAME:
-      RESERVED_IPS:
-      CF_API_URL:
-      CF_CLIENT_IP:
-      CF_UAA_URL:
-      CF_APPS_DOMAIN_NAME:
-      CF_NATS_INTERNAL_IPS:
-      CF_NATS_USERNAME:
-      CF_NATS_PORT:
+      ROUTING_MODE: ((routing-mode))
+      KUBERNETES_MASTER_HOST: ((k8s-master-host))
+      KUBERNETES_MASTER_PORT: ((k8s-master-port))
+      MASTER_TARGET_POOL: ((master-target-pool))
+      NETWORK_NAME: ((network-name))
+      RESERVED_IPS: ((excluded-range))
+      NETWORK_CIDR: ((network-cidr))
+      GATEWAY: ((network-gateway))
+      DNS: ((dns-servers))
+      PCF_API_URL: ((pcf-api-url))
+      PCF_CLIENT_ID: ((pcf-client-id))
+      PCF_UAA_URL: ((pcf-uaa-url))
+      PCF_APPS_DOMAIN: ((pcf-apps-domain))
+      PCF_NATS_INTERNAL_IPS: ((pcf-nats-internal-ips))
+      PCF_NATS_USERNAME: ((pcf-nats.username))
+      PCF_NATS_PORT: ((pcf-nats-port))
 - name: deploy-kubo
   plan:
     - get: homelab
-    - task:
+    - task: config-k8s
       file: homelab/pipelines/install-kubo/tasks/config-kubo/task.yml
     - name: deploy-kubo
       file: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.yml

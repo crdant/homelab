@@ -61,6 +61,7 @@ infrastructure_network=infra-port-group
 deployment_network=deployment-port-group
 services_network=services-port-group
 dynamic_network=dynamic-port-group
+container_network=container-port-group
 dns_servers="8.8.8.8,8.8.4.4"
 dns_servers_array="[ 172.20.0.0, 8.8.4.4 ]"
 

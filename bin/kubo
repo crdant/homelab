@@ -55,16 +55,56 @@ secrets () {
   echo "Configuring secrets at ${secret_root}..."
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
-  generate_credential kubo_vsphere ${kubo_vsphere_user}
-  generate_credential kubo_storage ${kubo_storage_user}
+  generate_credential kubo-vcenter-user ${kubo_vsphere_user}
+  generate_credential kubo-storage-user ${kubo_storage_user}
 }
 
 params () {
-  echo
+  container_base=$(echo ${container_cidr} | awk -F. '{print $1 "." $2 "." $3}')
+  container_gateway="${container_base}.1"
+  infrastructure_ex_limit="${container_base}.9"
+
+  router_static_ips=${deployment_base}.240,${deployment_base}.241,${deployment_base}.242
+  tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment_base}.245
+  brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
+
+  om_ip="${ip_base}.10"
+
+  bosh int \
+    --var env-id=${env_id} \
+    --var subdomain=${subdomain} \
+    --var system-domain=${system_domain} \
+    --var kubo-datastore=${vcenter_fast_datastore} \
+    --var vcenter-data-center=${vcenter_data_center} \
+    --var vcenter-cluster=${vcenter_cluster} \
+    --var container-network=${container_network} \
+    --var container-cidr=${container_cidr} \
+    --var container-gateway=${container_gateway} \
+    --var container-excluded=${container_gateway}-${container_ex_limit} \
+    --var dns-servers=${dns_servers_array} \
+    --var k8s-master-host=${k8s_master_host} \
+    --var k8s-master-port=${k8s_master_port} \
+    --var master-target-pool=${master_target_pool} \
+    --var kubo-network-name=${kubo_network_name} \
+    --var reserved-ips=${reserved_ips} \
+    --var pcf-nats-internal-ips=${nats_internal_ips} \
+    --var pcf-nats-port=${nats_port} \
+    ${parameter_source} > ${parameter_file}
+
+    sed -i -e 's/null/""/g' "${parameter_file}"
+}
+
+concourse_login() {
+  local pcf_concourse_username="$(get_bootstrap_credential_username concourse ${concourse_team})"
+  local pcf_concourse_password="$(get_bootstrap_credential_password concourse ${concourse_team})"
+  fly --target ${concourse_target} login -k --team-name ${concourse_team} --concourse-url=${concourse_url} --username=${pcf_concourse_username} --password=${pcf_concourse_password}
 }
 
 pipeline () {
-  echo
+  concourse_login
+  fly --target ${concourse_target} set-pipeline --pipeline ${pcf_install_pipeline} \
+    --config ${pipeline_file} --load-vars-from ${parameter_file}
+  fly --target ${concourse_target} unpause-pipeline --pipeline ${pcf_install_pipeline}
 }
 
 install () {
