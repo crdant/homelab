@@ -4,6 +4,9 @@
 vcenter-host:             ((vcenter-host))          # vCenter host or IP
 vcenter-datacenter:       ((vcenter-datacenter))    # vCenter datacenter
 
+# Kubo basics
+kubo-environment:         ((env-id))                # environment identifier for this Kubo installation
+
 # vCenter Cluster or Resource Pool to use to deploy Kubo.
 # Possible formats:
 #   cluster:       /<Data Center Name>/host/<Cluster Name>

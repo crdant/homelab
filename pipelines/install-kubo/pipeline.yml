@@ -7,9 +7,10 @@ jobs:
     params:
       GOVC_INSECURE: 1
       GOVC_PASSWORD: ((vcenter_pwd))
-      GOVC_RESOURCE_POOL: ((kubo-resource-pool))
       GOVC_URL: ((vcenter_host))
       GOVC_USERNAME: ((vcenter-username))
+      KUBO_VC_USER: ((kubo-vcenter-user.username))
+      KUBO_VC_PASSWORD: ((kubo-vcenter-user.password))
   - task: create-infrastructure
     file: homelab/pipelines/install-kubo/tasks/create-infrastructure/task.yml
     params:
@@ -19,19 +20,9 @@ jobs:
   - task: generate-template
     file: homelab/pipelines/install-kubo/tasks/generate-template/task.yml
     params:
-      GOVC_DATACENTER: ((vcenter-datacenter))
-      GOVC_DATASTORE: ((kubo-datastore))
-      GOVC_HOST: ((kubo-vm-host))
-      GOVC_INSECURE: 1
-      GOVC_NETWORK: ((vsphere-network))
-      GOVC_PASSWORD: ((vcenter-password))
-      GOVC_RESOURCE_POOL: ((kubo-resource-pool))
-      GOVC_URL: ((vcenter_host))
-      GOVC_USERNAME: ((vcenter-username))
-      KUBO_VC_USER: ((kubo-vcenter-user.username))
-      KUBO_VC_PASSWORD: ((kubo-vcenter-user.password))
-  - task: customize-template
-    file: homelab/pipelines/install-kubo/tasks/customize-director/task.yml
+      KUBO_ENV: ((kubo-environment))
+  - task: config-director
+    file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
       VCENTER_HOST: ((vcenter-host))
       VCENTER_USER: ((kubo-vc-user.username))
@@ -43,14 +34,14 @@ jobs:
       VCENTER_DATASTORE: ((kubo-datastore)
       VCENTER_CLUSTER: ((vcenter-cluster))
       VCENTER_RESOURCE_POOL: ((kubo-resource-pool))
-  - task: configure-pcf-domain
+  - task: config-pcf
     file: homelab/pipelines/install-kubo/tasks/config-pcf/task.yml
     params:
       PCF_API_URL: ((pcf-api-url))
       PCF_CLIENT_ID: ((pcf-client-id))
       PCF_UAA_URL: ((pcf-uaa-url))
       PCF_APPS_DOMAIN: ((pcf-apps-domain))
-  - task: configure-router
+  - task: config-router
     file: homelab/pipelines/install-kubo/tasks/config-router/task.yml
     params:
       ROUTING_MODE: ((routing-mode))
@@ -69,6 +60,10 @@ jobs:
       PCF_NATS_INTERNAL_IPS: ((pcf-nats-internal-ips))
       PCF_NATS_USERNAME: ((pcf-nats.username))
       PCF_NATS_PORT: ((pcf-nats-port))
+  - task: deploy-director
+    file: homelab/pipelines/install-kubo/tasks/deploy-director/task.yml
+
+
 - name: deploy-kubo
   plan:
     - get: homelab
