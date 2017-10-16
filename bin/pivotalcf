@@ -16,7 +16,7 @@ pcf_pipelines_local=${work_dir}/pcf-pipelines
 pcf_pipelines_version="v0.18.0"
 pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
 parameter_file="${work_dir}/${env_id}-${pcf_install_pipeline}-params.yml"
-parameter_source="pcf-pipelines/install-pcf/params.yml"
+parameter_source="${pipeline_dir}/install-pcf/params.yml"
 
 secret_root="concourse/${concourse_team}/${pcf_install_pipeline}"
 

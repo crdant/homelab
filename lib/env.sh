@@ -6,7 +6,8 @@ email=cdantonio@pivotal.io
 key_dir="${BASEDIR}/keys"
 work_dir="${BASEDIR}/work"
 etc_dir="${BASEDIR}/etc"
-ops_dir="${BASEDIR}/ops"
+pipeline_dir="${BASEDIR}/pipelines"
+ops_dir="${pipeline_dir}/ops"
 manifest_dir="${BASEDIR}/manifests"
 state_file=${work_dir}/state.sh
 
