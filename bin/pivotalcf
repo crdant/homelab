@@ -270,12 +270,6 @@ if [ $# -gt 0 ]; then
         pipeline
         install
         ;;
-      firewall)
-        firewall
-        ;;
-      modernize_pipeline | modernize)
-        modernize_pipeline
-        ;;
       configure_director | director)
         configure_director
         ;;
