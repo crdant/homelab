@@ -21,7 +21,7 @@ inputs:
   - name: homelab
 
 outputs:
-  - name: kubo-env
+  - name: kubo-environment
 
 run:
   path: homelab/pipelines/install-kubo/tasks/generate-template/task.sh
