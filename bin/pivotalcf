@@ -141,6 +141,7 @@ params() {
     --var dns-servers=${dns_servers} \
     --var om-netmask=${infrastructure_netmask} \
     --var om-ip-address=${om_ip_address} \
+    --var vcenter-host=${vcenter_host} \
     --var vcenter-data-center=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
     --var vcenter-resource-pool-1=${vcenter_resource_pool_1} \

@@ -3,7 +3,7 @@ opsman_major_minor_version: ^1\.12\..*$ # PCF Ops Manager minor version to track
 ert_major_minor_version: ^1\.12\..*-srt.*$ # PCF Elastic Runtime minor version to track
 
 # vCenter configuration
-vcenter_host:             garundasana.crdant.net    # vCenter host or IP
+vcenter_host:             ((vcenter-host))   # vCenter host or IP
 vcenter_usr:              ((ops-man-vsphere.username))    # vCenter username. If user is tied to a domain, then escape the \, example `domain\\user`
 vcenter_pwd:              ((ops-man-vsphere.password))        # vCenter password
 vcenter_data_center:      home-lab                  # vCenter datacenter
