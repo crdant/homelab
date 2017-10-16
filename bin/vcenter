@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+set -e
+
+prepare () {
+  local ssh_key_file="${key_dir}/id_vcenter"
+
+  router_password="$(generate_passphrase 4)"
+  if [ ! -f "${ssh_key_file}" ]; then
+    ssh-keygen -P "" -t rsa -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
+  fi
+  ssh_public_key="$(cat ${ssh_key_file}.pub)"
+}
+
+configure () {
+  # replace appliancesh with BASH
+  vsphere_exec "shell chsh -s /bin/bash"
+
+  # enable password-less SSH
+  vsphere_exec "$(cat <<COMMANDS
+    mkdir /root/.ssh
+    chmod 700 /root/.ssh
+    touch /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/authorized_keys
+    echo ${ssh_public_key} >> /root/.ssh/authorized_keys
+COMMANDS
+  )"
+  # TODO: create bucc user with dir-cli
+  # TODO: create opsman user with dir-cli
+}
+
+vsphere_exec () {
+  ssh -l root ${vcenter_host} "${1}"
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      prepare )
+        prepare
+        ;;
+      configure )
+        configure
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+prepare
+configure
