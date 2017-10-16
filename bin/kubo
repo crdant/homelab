@@ -3,3 +3,157 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
+
+kubo_install_pipeline="deploy-pcf"
+kubo_pipelines_remote="https://github.com/pivotal-cf/pcf-pipelines.git"
+kubo_pipelines_local=${work_dir}/pcf-pipelines
+kubo_pipelines_version="v0.18.0"
+pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
+parameter_file="${work_dir}/${env_id}-${kubo_install_pipeline}-params.yml"
+parameter_source="${pipeline_dir}/install-pcf/params.yml"
+
+secret_root="concourse/${concourse_team}/${kubo_install_pipeline}"
+
+prepare () {
+  echo
+}
+
+pave () {
+  echo
+}
+
+download () {
+  echo
+}
+
+set_value () {
+  local name=${1}
+  local value=${2}
+  credhub set --type value --name "${secret_root}/${name}" --value "${value}"
+}
+
+set_key () {
+  local name=${1}
+  local value=${2}
+  credhub set --type ssh --name "${secret_root}/${name}" --private "${value}"
+}
+
+generate_credential () {
+  local name=${1}
+  local user=${2}
+  credhub set --type user --name ${secret_root}/${name} --username ${user} --password "$(generate_passphrase 4)"
+}
+
+generate_value () {
+  local name=${1}
+  credhub set --type value --name ${secret_root}/${name} --value "$(generate_passphrase 4)"
+}
+
+get_secret () {
+  local name=${1}
+  credhub get --name ${secret_root}/${name} --output-json | jq --raw-output .value
+}
+
+secrets () {
+  echo
+}
+
+params () {
+  echo
+}
+
+pipeline () {
+  echo
+}
+
+install () {
+  echo
+}
+
+teardown () {
+  echo
+}
+
+cleanup () {
+  echo
+}
+
+trigger() {
+  job="${1}"
+  echo "Triggering job ${1}"
+  fly --target ${concourse_target} trigger-job -j ${kubo_install_pipeline}/${job}
+  fly --target ${concourse_target} watch -j ${kubo_install_pipeline}/${job}
+}
+
+hijack() {
+  job="${1}"
+  echo "Hijacking job ${1}"
+  fly --target ${concourse_target} hijack -j ${kubo_install_pipeline}/${job}
+}
+
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      prepare )
+        prepare
+        ;;
+      pave )
+        pave
+        ;;
+      login )
+        login
+        ;;
+      down )
+        down
+        ;;
+      download)
+        download
+        ;;
+      secrets )
+        secrets
+        ;;
+      params )
+        params
+        ;;
+      pipeline | pipelines )
+        pipeline
+        ;;
+      install )
+        install
+        ;;
+      cleanup )
+        cleanup
+        ;;
+      trigger)
+        trigger "${2}"
+        shift
+        ;;
+      hijack)
+        hijack "${2}"
+        shift
+        ;;
+      teardown)
+        teardown
+        ;;
+      get_secret)
+        get_secret "${2}"
+        shift
+        ;;
+      set_secret)
+        set_value "${2}" "${3}"
+        shift 2
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+prepare
+up
+login
