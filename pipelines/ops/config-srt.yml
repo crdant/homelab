@@ -9,7 +9,7 @@
 
 - type: replace
   path: /jobs/name=deploy-ert/plan/task=configure/file
-  value: homelab/pipelines/tasks/config-srt/task.yml
+  value: homelab/pipelines/install-pcf/tasks/config-srt/task.yml
 
 - type: replace
   path: /jobs/name=deploy-ert/plan/0/aggregate/-

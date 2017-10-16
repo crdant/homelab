@@ -123,4 +123,4 @@ inputs:
   - name: homelab
 
 run:
-  path: homelab/tasks/config-srt/task.sh
+  path: homelab/pipelines/install-pcf/tasks/config-srt/task.sh
