@@ -76,6 +76,9 @@ router_static_ips=${deployment_base}.240,${deployment_base}.241,${deployment_bas
 tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment_base}.245
 brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
 
+# Kubo configuration
+kubo_vsphere_user=kubo
+kubo_storage_user=kubo_storage
 if [ -f ${state_file} ] ; then
   . ${state_file}
 fi

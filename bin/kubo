@@ -4,10 +4,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-kubo_install_pipeline="deploy-pcf"
-kubo_pipelines_remote="https://github.com/pivotal-cf/pcf-pipelines.git"
-kubo_pipelines_local=${work_dir}/pcf-pipelines
-kubo_pipelines_version="v0.18.0"
+kubo_install_pipeline="deploy-kubo"
 pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
 parameter_file="${work_dir}/${env_id}-${kubo_install_pipeline}-params.yml"
 parameter_source="${pipeline_dir}/install-pcf/params.yml"
@@ -55,7 +52,11 @@ get_secret () {
 }
 
 secrets () {
-  echo
+  echo "Configuring secrets at ${secret_root}..."
+  set_key git "$(cat ${HOME}/.ssh/concourse_github)"
+  set_value pivnet_token ${PIVNET_TOKEN}
+  generate_credential kubo_vsphere ${kubo_vsphere_user}
+  generate_credential kubo_storage ${kubo_storage_user}
 }
 
 params () {

@@ -1,0 +1,28 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: czero/cflinuxfs2}
+
+params:
+  ROUTING_MODE:
+  KUBERNETES_MASTER_HOST:
+  KUBERNETES_MASTER_PORT:
+  MASTER_TARGET_POOL:
+  NETWORK_NAME:
+  RESERVED_IPS:
+  CF_API_URL:
+  CF_CLIENT_IP:
+  CF_UAA_URL:
+  CF_APPS_DOMAIN_NAME:
+  CF_NATS_INTERNAL_IPS:
+  CF_NATS_USERNAME:
+  CF_NATS_PORT:
+
+inputs:
+  - name: homelab
+
+run:
+  path: homelab/pipelines/install-kubo/tasks/config-router/task.sh
