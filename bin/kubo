@@ -74,7 +74,8 @@ params () {
     --var env-id=${env_id} \
     --var subdomain=${subdomain} \
     --var system-domain=${system_domain} \
-    --var kubo-datastore=${vcenter_fast_datastore} \
+    --var fast-storage=${vcenter_fast_datastore} \
+    --var slow-storage=${vcenter_slow_datastore} \
     --var vcenter-data-center=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
     --var vcenter-resource-pool=${vcenter-resource-pool-1} \

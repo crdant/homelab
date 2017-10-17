@@ -18,7 +18,8 @@ kubo-director-name:       ((env-id))-kubo-director
 kubo-resource-pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool))
 
 # Datastore to use for K8s machines and persistenet volumes
-kubo-datastore:   ((kubo_datastore))
+kubo-ephemeral-store:   ((fast-storage))
+kubo-persistent-store:  ((slow-storage))
 
 # folders/paths for vCenter
 kubo-vm-folder: kubo-vms

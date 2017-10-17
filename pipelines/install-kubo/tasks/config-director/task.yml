@@ -7,18 +7,19 @@ image_resource:
   source: {repository: czero/cflinuxfs2}
 
 params:
+  KUBO_ENV:
   IAAS:
   VCENTER_HOST:
   VCENTER_USER:
   VCENTER_PASSWORD:
   VCENTER_DATACENTER:
-  VCENTER_DATASTORE:
   VCENTER_CLUSTER:
   VCENTER_RESOURCE_POOL:
   KUBO_DIR_HOSTNAME:
   KUBO_VM_FOLDER:
   KUBO_TEMPLATES:
   KUBO_DISK_PATH:
+  KUBO_EPHEMERAL_STORE:
   NETWORK_NAME:
   EXCLUDED_RANGE:
   GATEWAY:
@@ -26,6 +27,9 @@ params:
 
 inputs:
   - name: homelab
+
+outputs:
+  - name: kubo-environment
 
 run:
   path: homelab/pipelines/install-kubo/tasks/config-director/task.sh
