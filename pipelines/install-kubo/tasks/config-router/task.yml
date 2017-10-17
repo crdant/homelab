@@ -21,6 +21,7 @@ params:
 
 inputs:
   - name: homelab
+  - name: kubo-environment
 
 run:
   path: homelab/pipelines/install-kubo/tasks/config-router/task.sh
