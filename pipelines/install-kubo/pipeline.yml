@@ -16,6 +16,7 @@ jobs:
     params:
 
 - name: configure-director
+  plan:
   - get: homelab
   - get: kubo-odb-deployment
   - task: config-director
@@ -57,7 +58,7 @@ jobs:
       PCF_APPS_DOMAIN: ((pcf-apps-domain))
       PCF_NATS_INTERNAL_IPS: ((pcf-nats-internal-ips))
       PCF_NATS_USERNAME: ((pcf-nats.username))
-      PCF_NATS_USERNAME: ((pcf-nats.password))
+      PCF_NATS_PASSWORD: ((pcf-nats.password))
       PCF_NATS_PORT: ((pcf-nats-port))
   - task: deploy-director
     file: homelab/pipelines/install-kubo/tasks/deploy-director/task.yml
@@ -66,11 +67,11 @@ jobs:
 
 - name: deploy-kubo
   plan:
-    - get: homelab
-    - task: config-k8s
-      file: homelab/pipelines/install-kubo/tasks/config-kubo/task.yml
-    - name: deploy-kubo
-      file: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.yml
+  - get: homelab
+  - task: config-k8s
+    file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
+  - task: deploy-kubo
+    file: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.yml
 
 resources:
   - name: homelab
