@@ -16,28 +16,8 @@ jobs:
     params:
 
 - name: configure-director
-  - aggregate:
-    - do:
-      - get: kubo-deployment-tarball
-      - task: unpack-tarball
-        config:
-          image_resource:
-            source:
-              repository: czero/cflinuxfs2
-            type: docker-image
-          inputs:
-          - name: kubo-deployment-tarball
-            path: ""
-          outputs:
-          - name: kubo-deployment
-            path: ""
-          platform: linux
-          run:
-            args:
-            - -c
-            - tar -xvf kubo-deployment-tarball/*.tgz
-            dir: ""
-            path: bash
+  - get: homelab
+  - get: kubo-odb-deployment
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
@@ -97,12 +77,11 @@ resources:
     source:
       uri: https://github.com/crdant/homelab.git
       branch: master
-  - name: kubo-deployment-tarball
-    type: gcs
+  - name: kubo-odb-deployment
+    type: git
     source:
-      bucket: kubo-public
       uri: https://github.com/cloudfoundry-incubator/kubo-deployment.git
-      regexp: kubo-deployment-latest.tgz
+      private_key: ((git.private_key))
 
 resource_types:
   - name: gcs

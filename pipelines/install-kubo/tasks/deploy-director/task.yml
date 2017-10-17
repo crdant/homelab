@@ -19,7 +19,7 @@ params:
 
 inputs:
   - name: homelab
-  - name: kubo-deployment
+  - name: kubo-odb-deployment
   - name: kubo-environment
 
 outputs:
