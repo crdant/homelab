@@ -19,6 +19,11 @@ params:
 
 inputs:
   - name: homelab
+  - name: kubo-deployment
+  - name: kubo-environment
+
+outputs:
+  - name: kubo-environment
 
 run:
   path: homelab/pipelines/install-kubo/tasks/deploy-director/task.sh
