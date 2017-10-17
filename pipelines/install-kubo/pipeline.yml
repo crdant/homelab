@@ -38,13 +38,10 @@ jobs:
             - tar -xvf kubo-deployment-tarball/*.tgz
             dir: ""
             path: bash
-  - task: generate-template
-    file: homelab/pipelines/install-kubo/tasks/generate-template/task.yml
-    params:
-      KUBO_ENV: ((kubo-environment))
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
+      KUBO_ENV: ((kubo-environment))
       IAAS: ((iaas))
       VCENTER_HOST: ((vcenter-host))
       VCENTER_USER: ((kubo-vc-user.username))
