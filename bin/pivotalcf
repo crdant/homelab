@@ -135,6 +135,8 @@ params() {
   bosh int \
     --var env-id=${env_id} \
     --var subdomain=${subdomain} \
+    --var system-prefix=${pcf_system_prefix} \
+    --var apps-prefix=${pcf_apps_prefix} \
     --var om-data-store=${vcenter_fast_datastore} \
     --var om-host-name=${om_host_name} \
     --var ntp-servers=${ntp_servers} \

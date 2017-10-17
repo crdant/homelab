@@ -164,8 +164,8 @@ first_name_attribute:
 last_name_attribute:
 
 ## Deployment domain names
-system_domain: system.cloud.crdant.net
-apps_domain:   apps.cloud.crdant.net
+system_domain: ((system-prefix)).((subdomain))
+apps_domain:   ((apps-prefix)).((subdomain))
 
 skip_cert_verify: true       # If true, disable SSL certificate verification for this environment.
 

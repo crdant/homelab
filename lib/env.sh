@@ -70,6 +70,9 @@ om_host_name=manager
 om_ip_address=$(dig +short ${om_host_name}.${subdomain})
 director_host_name=director
 om_admin_user=arceus
+## Deployment domain names
+pcf_system_prefix=system
+pcf_apps_prefix=apps
 
 # PCF static IPs
 deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')
