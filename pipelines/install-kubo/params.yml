@@ -6,9 +6,11 @@ vcenter-host:             ((vcenter-host))          # vCenter host or IP
 vcenter-datacenter:       ((vcenter-datacenter))    # vCenter datacenter
 vcenter-cluster:          ((vcenter-cluster))
 
+# state management in github
+state-repository:         ((git-server):((git-user))/((state-repo))
 
 # Kubo basics
-kubo-environment:         ((env-id))                # environment identifier for this Kubo installation
+environment-state:         ((env-id))                # environment identifier for this Kubo installation
 kubo-director-name:       ((env-id))-kubo-director
 
 # vCenter Cluster or Resource Pool to use to deploy Kubo.

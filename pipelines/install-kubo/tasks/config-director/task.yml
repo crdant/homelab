@@ -29,7 +29,7 @@ inputs:
   - name: homelab
 
 outputs:
-  - name: kubo-environment
+  - name: environment-state
 
 run:
   path: homelab/pipelines/install-kubo/tasks/config-director/task.sh

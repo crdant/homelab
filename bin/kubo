@@ -72,6 +72,8 @@ params () {
 
   bosh int \
     --var env-id=${env_id} \
+    --var git-user=${git_user} \
+    --var state-repo=${kubo_state_repo} \
     --var subdomain=${subdomain} \
     --var system-domain=${system_domain} \
     --var fast-storage=${vcenter_fast_datastore} \

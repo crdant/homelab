@@ -2,8 +2,8 @@
 
 set -eu
 
-director_var=kubo-environment/director.yml
-director_secrets=kubo-environment/director-secrets.yml
+director_var=environment-state/director.yml
+director_secrets=environment-state/director-secrets.yml
 
 cat <<VARIABLES > ${director_var}
 vcenter_ip: ${VCENTER_HOST}

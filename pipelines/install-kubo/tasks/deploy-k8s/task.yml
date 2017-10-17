@@ -12,7 +12,7 @@ params:
 inputs:
   - name: homelab
   - name: kubo-deployment
-  - name: kubo-environment
+  - name: environment-state
 
 run:
   path: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.sh

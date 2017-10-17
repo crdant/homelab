@@ -80,6 +80,12 @@ brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base
 # Kubo configuration
 kubo_vsphere_user=kubo
 kubo_storage_user=kubo_storage
+
+# git repository for state
+git_server=git:github.com
+git_user=crdant
+kubo_state_repo=kubo-state
+
 if [ -f ${state_file} ] ; then
   . ${state_file}
 fi

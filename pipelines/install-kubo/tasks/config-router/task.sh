@@ -3,8 +3,8 @@
 set -eu
 
 # This is probably not the best way to do this, but it feels a bit better than hard coding and/or abusing ops files
-director_var=kubo-environment/director.yml
-director_secrets=kubo-environment/director-secrets.yml
+director_var=environment-state/director.yml
+director_secrets=environment-state/director-secrets.yml
 
 # add routing configuration
 cat <<ROUTING >> ${director_yml}

@@ -3,4 +3,4 @@
 set -eu
 
 cd kubo-odb-deployment/kubo-deployment
-./bin/deploy_bosh kubo-environment
+./bin/deploy_bosh environment-state
