@@ -4,9 +4,9 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-prepare () {
-  local ssh_key_file="${key_dir}/id_vcenter"
+ssh_key_file="${key_dir}/id_vcenter"
 
+prepare () {
   router_password="$(generate_passphrase 4)"
   if [ ! -f "${ssh_key_file}" ]; then
     ssh-keygen -P "" -t rsa -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
@@ -31,8 +31,25 @@ COMMANDS
   # TODO: create opsman user with dir-cli
 }
 
+create_user () {
+  local username=${1}
+  local password=${2}
+  local extra_args=""
+  if [ ! -z ${3} ] ; then
+    extra_args=" --first ${3}"
+  fi
+  if [ ! -z ${4} ] ; then
+    extra_args=" --last ${4}"
+  fi
+  dir_cli user create --account ${username} --user-password ${password} ${extra_args}
+}
+
+dir_cli () {
+  vsphere_exec "/usr/lib/vmware-vmafd/bin/dir-cli ${*}"
+}
+
 vsphere_exec () {
-  ssh -l root ${vcenter_host} "${1}"
+  ssh -l root ${vcenter_host} -i ${ssh_key_file} "${*}"
 }
 
 if [ $# -gt 0 ]; then
@@ -43,6 +60,22 @@ if [ $# -gt 0 ]; then
         ;;
       configure )
         configure
+        ;;
+      user)
+        while [ $# -gt 0 ]; do
+          case $2 in
+            create )
+              username=${3}
+              password=${4}
+              shift 4
+              create_user ${username} ${password}
+              ;;
+            * )
+              echo "Unrecognized option: $1" 1>&2
+              exit 1
+              ;;
+          esac
+        done
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
