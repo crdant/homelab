@@ -15,12 +15,14 @@ jobs:
       VCENTER_DATACENTER: ((vcenter-datacenter))
       VCENTER_CLUSTER: ((vcenter-cluster))
       VCENTER_RESOURCE_POOL: ((kubo-resource-pool))
+      DIRECTOR_IP: ((director-ip))
       KUBO_DIRECTOR_NAME: ((kubo-director-name))
       KUBO_VM_FOLDER: ((kubo-vm-folder))
       KUBO_TEMPLATES: ((kubo-template-folder))
       KUBO_DISK_PATH: ((kubo-disk-path))
       KUBO_EPHEMERAL_STORE: ((kubo-ephemeral-store))
       NETWORK_NAME: ((network-name))
+      NETWORK_CIDR: ((network-cidr))
       EXCLUDED_RANGE: ((excluded-range))
       GATEWAY: ((network-gateway))
       DNS: ((network-dns))
@@ -48,6 +50,8 @@ jobs:
   - task: deploy-director
     file: homelab/pipelines/install-kubo/tasks/deploy-director/task.yml
   - put: environment-state
+    params:
+      repository: director-state
 
 
 - name: deploy-kubo
@@ -73,7 +77,7 @@ resources:
   - name: kubo-odb-deployment
     type: git
     source:
-      uri: https://github.com/cloudfoundry-incubator/kubo-deployment.git
+      uri: git@github.com:pivotal-cf-experimental/kubo-odb-deployment.git
       private_key: ((git.private_key))
   - name: environment-state
     type: git
