@@ -12,7 +12,6 @@ pipeline_file="${pipeline_dir}/install-kubo/pipeline.yml"
 parameter_file="${work_dir}/${env_id}-${kubo_install_pipeline}-params.yml"
 parameter_source="${pipeline_dir}/install-kubo/params.yml"
 
-vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
 secret_root="concourse/${concourse_team}/${kubo_install_pipeline}"
 
 prepare () {
@@ -36,6 +35,9 @@ prepare () {
 }
 
 roles () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
   (
     GOVC_INSECURE=1
     GOVC_URL=${vcenter_host}
@@ -57,6 +59,9 @@ groups () {
 }
 
 pave () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
   (
     GOVC_INSECURE=1
     GOVC_URL=${vcenter_host}
@@ -115,7 +120,7 @@ params () {
   # TO DO: look up
   nats_internal_ips="${deployment_network}"
 
-  om_ip="${ip_base}.10"
+  director_ip="${container_base}.10"
 
   bosh int \
     --var env-id=${env_id} \
@@ -131,6 +136,7 @@ params () {
     --var vcenter-datacenter=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
     --var vcenter-resource-pool=${vcenter-resource-pool-1} \
+    --var director-ip=${director_ip} \
     --var container-network=${container_network} \
     --var container-cidr=${container_cidr} \
     --var container-gateway=${container_gateway} \
