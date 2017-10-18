@@ -20,9 +20,10 @@ params:
 inputs:
   - name: homelab
   - name: kubo-odb-deployment
+  - name: director-config
 
 outputs:
-  - name: environment-state
+  - name: director-state
 
 run:
   path: homelab/pipelines/install-kubo/tasks/deploy-director/task.sh

@@ -23,3 +23,6 @@ ROUTING
 cat <<SECRETS > ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
 SECRETS
+
+cp ${director_vars} director-config
+cp ${director_secrets} director-config

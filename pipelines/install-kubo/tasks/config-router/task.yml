@@ -23,5 +23,8 @@ inputs:
   - name: homelab
   - name: environment-state
 
+outputs:
+  - name: director-config
+
 run:
   path: homelab/pipelines/install-kubo/tasks/config-router/task.sh
