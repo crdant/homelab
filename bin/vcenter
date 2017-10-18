@@ -9,8 +9,6 @@ if [ -z "$OP_SESSION_my" ]; then
   eval "$(op signin my)"
 fi
 
-vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
-
 prepare () {
   router_password="$(generate_passphrase 4)"
   if [ ! -f "${ssh_key_file}" ]; then
@@ -37,6 +35,9 @@ COMMANDS
 }
 
 roles () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
   (
     GOVC_INSECURE=1
     GOVC_URL=${vcenter_host}
@@ -236,6 +237,10 @@ assign_role () {
     local principal="${2}"
   fi
 
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
+  
   (
     GOVC_INSECURE=1
     GOVC_URL=${vcenter_host}
