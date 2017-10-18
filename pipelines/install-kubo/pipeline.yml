@@ -1,19 +1,4 @@
 jobs:
-- name: prepare-vsphere
-  plan:
-  - get: homelab
-  - task: create-users
-    file: homelab/pipelines/install-kubo/tasks/create-users/task.yml
-    params:
-      GOVC_INSECURE: 1
-      GOVC_PASSWORD: ((vcenter_pwd))
-      GOVC_URL: ((vcenter_host))
-      GOVC_USERNAME: ((vcenter-username))
-      KUBO_VC_USER: ((kubo-vcenter-user.username))
-      KUBO_VC_PASSWORD: ((kubo-vcenter-user.password))
-  - task: create-infrastructure
-    file: homelab/pipelines/install-kubo/tasks/create-infrastructure/task.yml
-    params:
 
 - name: configure-director
   plan:
@@ -25,8 +10,8 @@ jobs:
       KUBO_ENV: ((environment-state))
       IAAS: ((iaas))
       VCENTER_HOST: ((vcenter-host))
-      VCENTER_USER: ((kubo-vc-user.username))
-      VCENTER_PASSWORD: ((kubo-vc-user.password))
+      VCENTER_USER: ((kubo-vcenter-account.username))
+      VCENTER_PASSWORD: ((kubo-vcenter-account.password))
       VCENTER_DATACENTER: ((vcenter-datacenter))
       VCENTER_CLUSTER: ((vcenter-cluster))
       VCENTER_RESOURCE_POOL: ((kubo-resource-pool))
@@ -68,6 +53,12 @@ jobs:
 - name: deploy-kubo
   plan:
   - get: homelab
+    passed:
+    - configure-director
+  - get: environment-state
+    passed:
+    - configure-director
+    trigger: true
   - task: config-k8s
     file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
   - task: deploy-kubo

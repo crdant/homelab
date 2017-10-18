@@ -48,7 +48,11 @@ router_user=ubnt
 vpn_user="${USER}"
 
 # vcenter configuration
-bucc_service_account=crdant.net\\bucc
+vcenter_admin=administrator@${domain}
+bucc_service_account=${domain}\\bucc
+bosh_director_role="BOSH Director"
+bosh_director_group="BoshDirectorServiceAccounts"
+
 vcenter_data_center=home-lab
 vcenter_cluster=primary-cluster
 vcenter_resource_pool_1=zone-1
@@ -56,7 +60,9 @@ vcenter_resource_pool_2=zone-2
 vcenter_resource_pool_3=zone-3
 vcenter_fast_datastore=ssd
 vcenter_slow_datastore=spinning
+boostrap_switch=bootstrap-switch
 bootstrap_network=bootstrap-port-group
+pcf_switch=pcf-switch
 infrastructure_network=infra-port-group
 deployment_network=deployment-port-group
 services_network=services-port-group
@@ -81,8 +87,10 @@ tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment
 brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
 
 # Kubo configuration
-kubo_vsphere_user=kubo
+kubo_director_user=kubo
 kubo_storage_user=kubo_storage
+kubo_storage_role="Kubernetes Storage"
+kubo_storage_group="K8sStorageServiceAccounts"
 
 # git repository for state
 git_server=git:github.com

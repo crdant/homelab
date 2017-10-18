@@ -12,18 +12,59 @@ pipeline_file="${pipeline_dir}/install-kubo/pipeline.yml"
 parameter_file="${work_dir}/${env_id}-${kubo_install_pipeline}-params.yml"
 parameter_source="${pipeline_dir}/install-kubo/params.yml"
 
+vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
 secret_root="concourse/${concourse_team}/${kubo_install_pipeline}"
 
 prepare () {
-  echo
+  # create users
+  # TO DO: debug password setting and return to script
+  # generate_credential kubo-vsphere-account ${kubo_director_user}
+  # generate_credential kubo-storage-account ${kubo_storage_user}
+  # local kubo_vsphere_password=$(get_password kubo-vsphere-account)
+  # ${BASEDIR}/bin/vcenter user create ${kubo_director_user} ${kubo_vsphere_password} Kubo Director
+  #
+  # local kubo_storage_password=$(get_password kubo-storage-account)
+  # ${BASEDIR}/bin/vcenter user create ${kubo_storage_user} ${kubo_storage_password} Kubo Storage
+
+  # create storage role and assign to group
+  roles
+  groups
+
+  # assign roles by adding services accounts to groups
+  ${BASEDIR}/bin/vcenter group add "${bosh_director_group}" "${kubo_director_user}"
+  ${BASEDIR}/bin/vcenter group add "${kubo_storage_group}" "${kubo_storage_user}"
+}
+
+roles () {
+  (
+    GOVC_INSECURE=1
+    GOVC_URL=${vcenter_host}
+    GOVC_USERNAME=${vcenter_admin}
+    GOVC_PASSWORD=${vcenter_admin_password}
+
+    govc role.create ${kubo_storage_role} \
+      Datastore.AllocateSpace \
+      Datastore.FileManagement \
+      VirtualMachine.Config.AddExistingDisk \
+      VirtualMachine.Config.AddRemoveDevice \
+      VirtualMachine.Config.RemoveDisk
+  )
+}
+
+groups () {
+  ${BASEDIR}/bin/vcenter group create "${kubo_storage_group}"
+  ${BASEDIR}/bin/vcenter group assign "${kubo_storage_role}" "${kubo_storage_group}"
 }
 
 pave () {
-  echo
-}
+  (
+    GOVC_INSECURE=1
+    GOVC_URL=${vcenter_host}
+    GOVC_USERNAME=${vcenter_admin}
+    GOVC_PASSWORD="${vcenter_admin_password}"
 
-download () {
-  echo
+    govc dvs.portgroup.add -dvs ${pcf_switch} -type earlyBinding -nports 1024 ${container_network}
+  )
 }
 
 set_value () {
@@ -41,7 +82,13 @@ set_key () {
 generate_credential () {
   local name=${1}
   local user=${2}
-  credhub set --type user --name ${secret_root}/${name} --username ${user} --password "$(generate_passphrase 4)"
+  credhub generate -S -l 25 --type user --name ${secret_root}/${name} --username ${user}
+}
+
+get_password () {
+  local name=${1}
+  local user=${2}
+  credhub get --name ${secret_root}/${name} --output-json | jq -r .value.password
 }
 
 generate_value () {
@@ -58,8 +105,6 @@ secrets () {
   echo "Configuring secrets at ${secret_root}..."
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
-  generate_credential kubo-vcenter-user ${kubo_vsphere_user}
-  generate_credential kubo-storage-user ${kubo_storage_user}
 }
 
 params () {
@@ -113,7 +158,7 @@ pipeline () {
 }
 
 install () {
-  echo
+  trigger "configure-director"
 }
 
 teardown () {
@@ -149,12 +194,6 @@ if [ $# -gt 0 ]; then
         ;;
       login )
         login
-        ;;
-      down )
-        down
-        ;;
-      download)
-        download
         ;;
       secrets )
         secrets
@@ -196,10 +235,10 @@ if [ $# -gt 0 ]; then
         ;;
     esac
     shift
-    exit
   done
+  exit
 fi
 
 prepare
-up
-login
+pave
+install
