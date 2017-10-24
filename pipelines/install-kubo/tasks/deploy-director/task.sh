@@ -3,7 +3,7 @@
 set -eu
 
 # workaround braindead naming in script
-cp /usr/local/bin/bosh2 /usr/local/bin/bosh-cli
+cp /usr/bin/bosh2 /usr/local/bin/bosh-cli
 
 director_vars=director-config/director.yml
 director_secrets=director-config/director-secrets.yml
