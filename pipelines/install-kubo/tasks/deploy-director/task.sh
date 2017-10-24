@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -eu
+alias bosh-cli=bosh
 
 director_vars=director-config/director.yml
 director_secrets=director-config/director-secrets.yml
