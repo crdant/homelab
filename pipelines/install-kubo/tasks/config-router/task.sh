@@ -20,7 +20,7 @@ routing-cf-nats-username: ${PCF_NATS_USERNAME}
 routing-cf-nats-port: ${PCF_NATS_PORT}
 ROUTING
 
-cat <<SECRETS > ${director_secrets}
+cat <<SECRETS >> ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
 SECRETS
 
