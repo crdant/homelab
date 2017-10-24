@@ -1,7 +1,9 @@
 #!/bin/bash
 
 set -eu
-alias bosh-cli=bosh
+
+# workaround braindead naming in script
+cp /usr/local/bin/bosh /usr/local/bin/bosh-cli
 
 director_vars=director-config/director.yml
 director_secrets=director-config/director-secrets.yml
