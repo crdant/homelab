@@ -8,12 +8,12 @@ cp /usr/bin/bosh2 /usr/local/bin/bosh-cli
 # clone the config to the state so we can preserve the changes
 git clone environment-state director-state
 
-director_vars=director-config/director.yml
-director_secrets=director-config/director-secrets.yml
-bosh_creds=director-config/creds.yml
-bosh_state=director-config/state.json
+director_vars=completed-config/director.yml
+director_secrets=completed-config/director-secrets.yml
+bosh_creds=completed-config/creds.yml
+bosh_state=completed-config/state.json
 
-pushd director-config
+pushd completed-config
 config="$(pwd)"
 popd
 
