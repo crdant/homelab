@@ -12,7 +12,7 @@ git-user:                 ((git-user))
 git-email:                ((git-email))
 
 # Kubo basics
-environment-state:         ((env-id))                # environment identifier for this Kubo installation
+environment-id:           ((env-id))                # environment identifier for this Kubo installation
 kubo-director-name:       ((env-id))-kubo-director
 
 # vCenter Cluster or Resource Pool to use to deploy Kubo.

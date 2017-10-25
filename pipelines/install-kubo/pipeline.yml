@@ -8,7 +8,7 @@ jobs:
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
-      KUBO_ENV: ((environment-state))
+      KUBO_ENV: ((environment-id))
       IAAS: ((iaas))
       VCENTER_HOST: ((vcenter-host))
       VCENTER_USER: ((kubo-vcenter-account.username))
@@ -27,13 +27,6 @@ jobs:
       EXCLUDED_RANGE: ((excluded-range))
       GATEWAY: ((network-gateway))
       DNS: ((network-dns))
-  - task: config-pcf
-    file: homelab/pipelines/install-kubo/tasks/config-pcf/task.yml
-    params:
-      PCF_API_URL: ((pcf-api-url))
-      PCF_CLIENT_ID: ((pcf-client-id))
-      PCF_UAA_URL: ((pcf-uaa-url))
-      PCF_APPS_DOMAIN: ((pcf-apps-domain))
   - task: config-router
     file: homelab/pipelines/install-kubo/tasks/config-router/task.yml
     params:
@@ -76,6 +69,9 @@ jobs:
     file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
   - task: deploy-kubo
     file: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.yml
+    params:
+      KUBO_ENV: ((environment-id))
+
 
 resources:
   - name: homelab
