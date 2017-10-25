@@ -17,14 +17,14 @@ vcenter_cluster: ${VCENTER_CLUSTER}
 vcenter_rp: ${VCENTER_RESOURCE_POOL}
 
 internal_ip: ${DIRECTOR_IP}
-deployments_network: ${NETWORK_NAME}
+deployments_network: ${VSPHERE_NETWORK}
 internal_cidr: ${NETWORK_CIDR}
 internal_gw: ${GATEWAY}
 director_name: ${KUBO_DIRECTOR_NAME}
 dns_recursor_ip: ${DNS}
 kubo_release_url: https://storage.googleapis.com/kubo-public/kubo-release-latest.tgz
 
-network_name: ${NETWORK_NAME}
+network_name: ${BOSH_NETWORK_NAME}
 reserved_ips: ${EXCLUDED_RANGE}
 
 iaas: vsphere
