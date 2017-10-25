@@ -24,5 +24,5 @@ cat <<SECRETS >> ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
 SECRETS
 
-cp ${director_vars} environment-state
-cp ${director_secrets} environment-state
+cp ${director_vars} completed-config
+cp ${director_secrets} completed-config
