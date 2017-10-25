@@ -8,15 +8,8 @@ image_resource:
     - repository: starkandwayne/concourse
 
 params:
-  GOVC_INSECURE:
-  GOVC_URL:
-  GOVC_USERNAME:
-  GOVC_PASSWORD:
-  GOVC_DATACENTER:
-  GOVC_DATASTORE:
-  GOVC_NETWORK:
-  GOVC_RESOURCE_POOL:
-  GOVC_HOST:
+  GIT_USER: 
+  GIT_EMAIL:
 
 inputs:
   - name: homelab

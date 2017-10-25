@@ -25,6 +25,8 @@ params:
   EXCLUDED_RANGE:
   GATEWAY:
   DNS:
+  GIT_USER:
+  GIT_EMAIL:
 
 inputs:
   - name: homelab

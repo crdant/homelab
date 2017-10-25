@@ -47,8 +47,14 @@ jobs:
       PCF_NATS_USERNAME: ((pcf-nats.username))
       PCF_NATS_PASSWORD: ((pcf-nats.password))
       PCF_NATS_PORT: ((pcf-nats-port))
+      GIT_USER: ((git-user))
+      GIT_EMAIL: ((git-email))
   - task: deploy-director
     file: homelab/pipelines/install-kubo/tasks/deploy-director/task.yml
+    params:
+      GIT_USER: ((git-user))
+      GIT_EMAIL: ((git-email))
+
   - put: environment-state
     params:
       repository: director-state
@@ -83,6 +89,7 @@ resources:
     type: git
     source:
       uri: ((state-repository))
+      branch: master
       private_key: ((git.private_key))
 
 resource_types:

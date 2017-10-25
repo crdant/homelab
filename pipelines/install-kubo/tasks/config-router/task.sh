@@ -6,6 +6,9 @@ set -eu
 director_vars=environment-state/director.yml
 director_secrets=environment-state/director-secrets.yml
 
+# clone the config to the state so we can preserve the changes
+git clone environment-state director-config
+
 # add routing configuration
 cat <<ROUTING >> ${director_vars}
 routing_mode: ${ROUTING_MODE}
@@ -26,3 +29,12 @@ SECRETS
 
 cp ${director_vars} director-config
 cp ${director_secrets} director-config
+
+pushd director-state
+git config --global user.email $GIT_EMAIL
+git config --global user.name $GIT_USER
+
+git add -A
+git commit -m "Added current state after deploying director"
+
+popd

@@ -8,6 +8,7 @@ vcenter-cluster:          ((vcenter-cluster))
 
 # state management in github
 state-repository:         ((git-server)):((git-user))/((state-repo))
+git-email:                ((git-email))
 
 # Kubo basics
 environment-state:         ((env-id))                # environment identifier for this Kubo installation
