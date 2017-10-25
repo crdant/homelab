@@ -69,6 +69,9 @@ jobs:
     passed:
     - configure-director
     trigger: true
+  - get: kubo-odb-deployment
+    passed:
+    - configure-director
   - task: config-k8s
     file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
   - task: deploy-kubo

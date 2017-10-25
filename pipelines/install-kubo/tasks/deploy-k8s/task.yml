@@ -11,7 +11,7 @@ params:
 
 inputs:
   - name: homelab
-  - name: kubo-deployment
+  - name: kubo-odb-deployment
   - name: environment-state
 
 run:
