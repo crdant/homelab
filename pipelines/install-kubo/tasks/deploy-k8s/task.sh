@@ -2,7 +2,7 @@
 
 set -eu
 
-pushd director-state
+pushd environment-state
 config="$(pwd)"
 popd
 
