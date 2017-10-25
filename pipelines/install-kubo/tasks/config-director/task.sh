@@ -33,3 +33,6 @@ VARIABLES
 cat <<SECRETS > ${director_secrets}
 vcenter_password: ${VCENTER_PASSWORD}
 SECRETS
+
+cp ${director_vars} director-config
+cp ${director_secrets} director-config
