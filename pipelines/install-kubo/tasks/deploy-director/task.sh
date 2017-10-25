@@ -6,7 +6,7 @@ set -eu
 cp /usr/bin/bosh2 /usr/local/bin/bosh-cli
 
 # clone the config to the state so we can preserve the changes
-git clone director-config director-state
+git clone environment-state director-state
 
 director_vars=director-config/director.yml
 director_secrets=director-config/director-secrets.yml
