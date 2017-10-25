@@ -21,6 +21,7 @@ git config --global user.email $GIT_EMAIL
 git config --global user.name $GIT_USER
 
 git add -A
-git commit -m "Updated current state after deploying director"
-
+# if the director is already deployed, commit will return an error with nothing to commit, so
+# let's make sure we have differences before trying to commit
+git diff-index --quiet HEAD || git commit -m "Updated current state after deploying director"
 popd
