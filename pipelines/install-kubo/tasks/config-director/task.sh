@@ -2,10 +2,10 @@
 
 set -eu
 
-director_vars=environment-state/director.yml
-director_secrets=environment-state/director-secrets.yml
-bosh_creds=environment-state/creds.yml
-bosh_state=environment-state/state.json
+git clone environment-state director-config
+
+director_vars=director-config/director.yml
+director_secrets=director-config/director-secrets.yml
 
 cat <<VARIABLES > ${director_vars}
 vcenter_ip: ${VCENTER_HOST}
@@ -36,13 +36,10 @@ cat <<SECRETS > ${director_secrets}
 vcenter_password: ${VCENTER_PASSWORD}
 SECRETS
 
-cp ${director_vars} director-config
-cp ${director_secrets} director-config
+pushd director-config
+git config --global user.email $GIT_EMAIL
+git config --global user.name $GIT_USER
 
-if [ -f "${bosh_state}" ] ; then
-  cp ${bosh_state} director-config
-fi
-
-if [ -f "${bosh_creds}" ] ; then
-  cp ${bosh_creds} director-config
-fi
+git add -A
+git commit -m "Added initial director configuration for ${KUBO_DIRECTOR_NAME}"
+popd

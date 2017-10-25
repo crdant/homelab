@@ -27,6 +27,8 @@ jobs:
       EXCLUDED_RANGE: ((excluded-range))
       GATEWAY: ((network-gateway))
       DNS: ((network-dns))
+      GIT_USER: ((git-user))
+      GIT_EMAIL: ((git-email))
   - task: config-router
     file: homelab/pipelines/install-kubo/tasks/config-router/task.yml
     params:

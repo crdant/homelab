@@ -2,11 +2,11 @@
 
 set -eu
 
+git clone director-config completed-config
+
 # This is probably not the best way to do this, but it feels a bit better than hard coding and/or abusing ops files
-director_vars=director-config/director.yml
-director_secrets=director-config/director-secrets.yml
-bosh_creds=director-config/creds.yml
-bosh_state=director-config/state.json
+director_vars=completed-config/director.yml
+director_secrets=completed-config/director-secrets.yml
 
 # add routing configuration
 cat <<ROUTING >> ${director_vars}
@@ -26,13 +26,10 @@ cat <<SECRETS >> ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
 SECRETS
 
-cp ${director_vars} completed-config
-cp ${director_secrets} completed-config
+pushd completed-config
+git config --global user.email $GIT_EMAIL
+git config --global user.name $GIT_USER
 
-if [ -f "${bosh_state}" ] ; then
-  cp ${bosh_state} completed-config
-fi
-
-if [ -f "${bosh_creds}" ] ; then
-  cp ${bosh_creds} completed-config
-fi
+git add -A
+git commit -m "Added configuration for Cloud Foundry routing"
+popd
