@@ -3,11 +3,8 @@
 set -eu
 
 # This is probably not the best way to do this, but it feels a bit better than hard coding and/or abusing ops files
-director_vars=environment-state/director.yml
-director_secrets=environment-state/director-secrets.yml
-
-# clone the config to the state so we can preserve the changes
-git clone environment-state director-config
+director_vars=director-config/director.yml
+director_secrets=director-config/director-secrets.yml
 
 # add routing configuration
 cat <<ROUTING >> ${director_vars}
@@ -27,14 +24,5 @@ cat <<SECRETS >> ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
 SECRETS
 
-cp ${director_vars} director-config
-cp ${director_secrets} director-config
-
-pushd director-state
-git config --global user.email $GIT_EMAIL
-git config --global user.name $GIT_USER
-
-git add -A
-git commit -m "Added current state after deploying director"
-
-popd
+cp ${director_vars} environment-state
+cp ${director_secrets} environment-state

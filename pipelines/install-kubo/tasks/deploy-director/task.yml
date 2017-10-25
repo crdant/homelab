@@ -8,13 +8,13 @@ image_resource:
     - repository: starkandwayne/concourse
 
 params:
-  GIT_USER: 
+  GIT_USER:
   GIT_EMAIL:
 
 inputs:
   - name: homelab
   - name: kubo-odb-deployment
-  - name: director-config
+  - name: environment-state
 
 outputs:
   - name: director-state

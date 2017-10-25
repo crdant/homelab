@@ -21,10 +21,10 @@ params:
 
 inputs:
   - name: homelab
-  - name: environment-state
+  - name: director-config
 
 outputs:
-  - name: director-config
+  - name: environment-state
 
 run:
   path: homelab/pipelines/install-kubo/tasks/config-router/task.sh

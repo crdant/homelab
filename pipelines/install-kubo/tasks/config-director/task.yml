@@ -30,9 +30,10 @@ params:
 
 inputs:
   - name: homelab
+  - name: environment-state
 
 outputs:
-  - name: environment-state
+  - name: director-config
 
 run:
   path: homelab/pipelines/install-kubo/tasks/config-director/task.sh

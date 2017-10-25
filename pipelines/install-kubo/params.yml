@@ -8,6 +8,7 @@ vcenter-cluster:          ((vcenter-cluster))
 
 # state management in github
 state-repository:         ((git-server)):((git-user))/((state-repo))
+git-user:                 ((git-user))
 git-email:                ((git-email))
 
 # Kubo basics

@@ -4,6 +4,7 @@ jobs:
   plan:
   - get: homelab
   - get: kubo-odb-deployment
+  - get: environment-state
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
@@ -54,7 +55,6 @@ jobs:
     params:
       GIT_USER: ((git-user))
       GIT_EMAIL: ((git-email))
-
   - put: environment-state
     params:
       repository: director-state
