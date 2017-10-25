@@ -24,7 +24,7 @@ director_name: ${KUBO_DIRECTOR_NAME}
 dns_recursor_ip: ${DNS}
 kubo_release_url: https://storage.googleapis.com/kubo-public/kubo-release-latest.tgz
 
-network_name: ${BOSH_NETWORK_NAME}
+network_name: ${VSPHERE_NETWORK}
 reserved_ips: ${EXCLUDED_RANGE}
 
 iaas: vsphere
