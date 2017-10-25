@@ -17,19 +17,18 @@ kubo-director-name:       ((env-id))-kubo-director
 # Possible formats:
 #   cluster:       /<Data Center Name>/host/<Cluster Name>
 #   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
-kubo-resource-pool: /((vcenter-datacenter))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool))
+kubo-resource-pool: ((vcenter-resource-pool))
 
 # Datastore to use for K8s machines and persistenet volumes
 kubo-ephemeral-store:   ((fast-storage))
 kubo-persistent-store:  ((slow-storage))
 
 # folders/paths for vCenter
-kubo-vm-folder: kubo-vms
-kubo-template-folder: kubo-templates
-kubo-disk-path: kubo-disks
+kubo-vm-folder: ((env-id))-kubo-vms
+kubo-template-folder: ((env-id))-kubo-templates
+kubo-disk-path: ((env-id))-kubo-disks
 
 # network configuration
-network-name: "CONTAINERS"
 director-ip:            ((director-ip))              # IP address for the BOSH director
 vsphere-network:        ((container-network))        # vCenter Infrastructure network name
 network-cidr:           ((container-cidr))           # Infrastructure network CIDR, ex: 10.0.0.0/22

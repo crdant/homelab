@@ -21,7 +21,7 @@ jobs:
       KUBO_TEMPLATES: ((kubo-template-folder))
       KUBO_DISK_PATH: ((kubo-disk-path))
       KUBO_EPHEMERAL_STORE: ((kubo-ephemeral-store))
-      NETWORK_NAME: ((network-name))
+      VSPHERE_NETWORK: ((vsphere-network))
       NETWORK_CIDR: ((network-cidr))
       EXCLUDED_RANGE: ((excluded-range))
       GATEWAY: ((network-gateway))
