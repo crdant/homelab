@@ -2,6 +2,9 @@
 
 set -eu
 
+# workaround braindead naming in script
+cp /usr/bin/bosh2 /usr/local/bin/bosh-cli
+
 pushd environment-state
 config="$(pwd)"
 popd
