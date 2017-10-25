@@ -2,7 +2,7 @@
 
 set -eu
 
-director_var=environment-state/director.yml
+director_vars=environment-state/director.yml
 director_secrets=environment-state/director-secrets.yml
 
 cat <<VARIABLES > ${director_var}
