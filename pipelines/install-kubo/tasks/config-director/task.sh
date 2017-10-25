@@ -5,7 +5,7 @@ set -eu
 director_vars=environment-state/director.yml
 director_secrets=environment-state/director-secrets.yml
 
-cat <<VARIABLES > ${director_var}
+cat <<VARIABLES > ${director_vars}
 vcenter_ip: ${VCENTER_HOST}
 vcenter_user: ${VCENTER_USER}
 vcenter_dc: ${VCENTER_DATACENTER}
