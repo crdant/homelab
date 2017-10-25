@@ -14,8 +14,9 @@ pushd director-config
 config="$(pwd)"
 popd
 
-cd kubo-odb-deployment/kubo-deployment
+pushd kubo-odb-deployment/kubo-deployment
 ./bin/deploy_bosh ${config}
+popd
 
 cp ${director_vars} director-state
 cp ${director_secrets} director-state
