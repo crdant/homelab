@@ -280,6 +280,31 @@ firewall {
                 address <%= vars["infrastructure_cidr"] %>
             }
         }
+        rule 80 {
+          action accept
+          description "Allow bootstrap tools to provision Kubo"
+          destination {
+              address <%= vars["container_cidr"] %>
+              port 22,443,6868,8443,8844,25555
+          }
+          source {
+            address <%= vars["bootstrap_cidr"] %>
+          }
+          log disable
+          protocol tcp
+        }
+        rule 90 {
+          action accept
+          description "Allow Kubernetes access to vCenter"
+          destination {
+            address <%= vars["vsphere_cidr"] %>
+          }
+          source {
+            address <%= vars["container_cidr"] %>
+          }
+          log disable
+          protocol tcp
+        }
     }
     name BOOTSTRAP_IN {
         default-action drop
@@ -546,6 +571,18 @@ firewall {
             log disable
             protocol tcp_udp
         }
+        rule 90 {
+          action accept
+          description "Allow Kubernetes access to vCenter"
+          destination {
+            address <%= vars["vsphere_cidr"] %>
+          }
+          source {
+            address <%= vars["container_cidr"] %>
+          }
+          log disable
+          protocol tcp
+        }
     }
     name PCF_OUT {
         default-action drop
@@ -697,6 +734,19 @@ firewall {
             }
             log disable
             protocol tcp
+        }
+        rule 100 {
+          action accept
+          description "Allow bootstrap access to director for Kubo"
+          destination {
+              address <%= vars["container_cidr"] %>
+              port 22,443,6868,8443,8844,25555
+          }
+          source {
+            address <%= vars["bootstrap_cidr"] %>
+          }
+          log disable
+          protocol tcp
         }
     }
     name WAN_IN {
