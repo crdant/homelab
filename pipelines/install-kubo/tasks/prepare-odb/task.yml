@@ -17,4 +17,4 @@ outputs:
   - name: odb-releases
 
 run:
-  path: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.sh
+  path: homelab/pipelines/install-kubo/tasks/prepare-odb/task.sh
