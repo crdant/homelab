@@ -7,7 +7,6 @@ image_resource:
   source: {repository: starkandwayne/concourse}
 
 params:
-  KUBO_ENV:
 
 inputs:
   - name: homelab
