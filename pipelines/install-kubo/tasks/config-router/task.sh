@@ -16,7 +16,7 @@ kubernetes_master_port: ${KUBERNETES_MASTER_PORT}
 routing-cf-api-url: ${PCF_API_URL}
 routing-cf-client-id: ${PCF_CLIENT_ID}
 routing-cf-uaa-url: ${PCF_UAA_URL}
-routing-cf-app-domain-name: ${PCF_APPS_DOMAIN_NAME}
+routing-cf-app-domain-name: ${PCF_APPS_DOMAIN}
 routing-cf-nats-internal-ips: ${PCF_NATS_INTERNAL_IPS}
 routing-cf-nats-username: ${PCF_NATS_USERNAME}
 routing-cf-nats-port: ${PCF_NATS_PORT}
