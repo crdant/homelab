@@ -24,6 +24,7 @@ ROUTING
 
 cat <<SECRETS >> ${director_secrets}
 routing-cf-nats-password: ${PCF_NATS_PASSWORD}
+routing-cf-client-secret: ${PCF_CLIENT_SECRET}
 SECRETS
 
 pushd completed-config
