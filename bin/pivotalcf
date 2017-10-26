@@ -68,7 +68,12 @@ get_credential () {
   if [ -z "${field}" ] ; then
     field="password"
   fi
-  credential=$(om -k --target https://opsman.${pcf_subdomain} --username `safe get ${secret_root}/pcf_opsman_admin_username:value` --password `safe get ${secret_root}/pcf_opsman_admin:value` --skip-ssl-validation credentials --product-name ${product} --credential-reference ${credential} --credential-field ${field})
+
+  local om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
+  local om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
+  local om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+
+  credential=$(om -k --target https://manager.${subdomain} --username ${om_username} --password ${om_password} --skip-ssl-validation credentials --product-name ${product} --credential-reference ${credential} --credential-field ${field})
   echo $credential
 }
 
