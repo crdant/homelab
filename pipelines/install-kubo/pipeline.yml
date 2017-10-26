@@ -74,37 +74,18 @@ jobs:
       repository: director-state
 
 
-- name: deploy-kubo
-  plan:
-  - get: homelab
-    passed:
-    - deploy-director
-  - get: environment-state
-    passed:
-    - deploy-director
-    trigger: true
-  - get: kubo-odb-deployment
-    passed:
-    - deploy-director
-  - task: config-k8s
-    file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
-  - task: deploy-kubo
-    file: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.yml
-    params:
-      KUBO_ENV: ((environment-id))
-
 - name: deploy-broker
   plan:
   - get: homelab
     passed:
-    - deploy-kubo
+    - deploy-director
   - get: environment-state
     passed:
-    - deploy-kubo
+    - deploy-director
     # trigger: true
   - get: kubo-odb-deployment
     passed:
-    - deploy-kubo
+    - deploy-director
   - get: odb-sdk
   - get: kubo-service-adapter
   - get: kubo-release
@@ -137,17 +118,16 @@ resources:
     source:
       api_token: ((pivnet_token))
       product_slug: on-demand-services-sdk
-      product_version: v0.16.1
+      product_version: 0.16.1
   - name: kubo-service-adapter
-    type: gcs
+    type: curl
     source:
-      bucket: kubo-private
-      versioned_file: kubo-service-adapter-release-latest.tgz
+      url: https://storage.cloud.google.com/kubo-private/kubo-service-adapter-release-latest.tgz
   - name: kubo-release
-    type: gcs
+    type: curl
     source:
-      bucket: kubo-public
-      versioned_file: https://storage.googleapis.com/kubo-public/kubo-release-latest.tgz
+      url: https://storage.cloud.google.com/kubo-public/kubo-release-latest.tgz
+
 
 resource_types:
   - name: pivnet
@@ -155,7 +135,9 @@ resource_types:
     source:
       repository: pivotalcf/pivnet-resource
       tag: latest-final
-  - name: gcs
+
+  - name: curl
     type: docker-image
     source:
-      repository: frodenas/gcs-resource
+      repository: pivotalservices/concourse-curl-resource
+      tag: latest
