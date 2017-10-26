@@ -1,0 +1,18 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: starkandwayne/concourse}
+
+params:
+
+
+inputs:
+  - name: homelab
+  - name: kubo-odb-deployment
+  - name: environment-state
+
+run:
+  path: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.sh
