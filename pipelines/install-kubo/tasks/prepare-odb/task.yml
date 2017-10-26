@@ -10,8 +10,10 @@ params:
 
 inputs:
   - name: homelab
-  - name: kubo-odb-deployment
   - name: environment-state
+  - name: odb-sdk
+  - name: kubo-service-adapter
+  - name: kubo-release
 
 outputs:
   - name: odb-releases
