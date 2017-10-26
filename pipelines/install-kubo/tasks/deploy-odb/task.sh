@@ -9,7 +9,10 @@ bosh-cli alias-env environment-state -e $(bosh-cli int environment-state/directo
 pushd environment-state
 config="$(pwd)"
 popd
-set -x
+
+pushd odb-releases
+releases="$(pwd)"
+popd
+
 cd kubo-odb-deployment
-./bin/deploy_k8s_odb ${config} ${KUBO_ENV} public
-set +x
+./bin/deploy_k8s_odb ${config} ${KUBO_ENV} public ${releases}

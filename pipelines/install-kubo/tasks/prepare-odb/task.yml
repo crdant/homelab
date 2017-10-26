@@ -13,7 +13,9 @@ inputs:
   - name: homelab
   - name: kubo-odb-deployment
   - name: environment-state
-  - name: odb-releases
 
+output:
+  - name: odb-releases
+  
 run:
   path: homelab/pipelines/install-kubo/tasks/deploy-k8s/task.sh
