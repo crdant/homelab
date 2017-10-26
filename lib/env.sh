@@ -93,7 +93,7 @@ kubo_storage_role="Kubernetes Storage"
 kubo_storage_group="K8sStorageServiceAccounts"
 
 # git repository for state
-git_server=git:github.com
+git_server=git@github.com
 git_user=crdant
 kubo_state_repo=kubo-state
 
