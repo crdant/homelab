@@ -44,6 +44,153 @@ roles () {
     GOVC_USERNAME=${vcenter_admin}
     GOVC_PASSWORD=${vcenter_admin_password}
 
+    govc role.create ${kubo_director_role} \
+      Datastore.AllocateSpace \
+      Datastore.Browse \
+      Datastore.DeleteFile \
+      Datastore.FileManagement \
+      Datastore.UpdateVirtualMachineFiles \
+      Datastore.UpdateVirtualMachineMetadata \
+      Folder.Create \
+      Folder.Delete \
+      Folder.Move \
+      Folder.Rename \
+      Global.ManageCustomFields \
+      Global.SetCustomField \
+      Host.Inventory.EditCluster \
+      Host.Local.CreateVM \
+      Host.Local.DeleteVM \
+      Host.Local.InstallAgent \
+      Host.Local.ManageUserGroups \
+      Host.Local.ReconfigVM \
+      InventoryService.Tagging.AttachTag \
+      InventoryService.Tagging.CreateCategory \
+      InventoryService.Tagging.CreateTag \
+      InventoryService.Tagging.DeleteCategory \
+      InventoryService.Tagging.DeleteTag \
+      InventoryService.Tagging.EditCategory \
+      InventoryService.Tagging.EditTag \
+      InventoryService.Tagging.ModifyUsedByForCategory \
+      InventoryService.Tagging.ModifyUsedByForTag \
+      Network.Assign \
+      Network.Config \
+      Network.Delete \
+      Network.Move \
+      Resource.AssignVMToPool \
+      Resource.ColdMigrate \
+      Resource.HotMigrate \
+      System.Anonymous \
+      System.Read \
+      System.View \
+      VApp.ApplicationConfig \
+      VApp.AssignResourcePool \
+      VApp.AssignVApp \
+      VApp.AssignVM \
+      VApp.Clone \
+      VApp.Create \
+      VApp.Delete \
+      VApp.Export \
+      VApp.ExtractOvfEnvironment \
+      VApp.Import \
+      VApp.InstanceConfig \
+      VApp.ManagedByConfig \
+      VApp.Move \
+      VApp.PowerOff \
+      VApp.PowerOn \
+      VApp.Rename \
+      VApp.ResourceConfig \
+      VApp.Suspend \
+      VApp.Unregister \
+      VirtualMachine.Config.AddExistingDisk \
+      VirtualMachine.Config.AddNewDisk \
+      VirtualMachine.Config.AddRemoveDevice \
+      VirtualMachine.Config.AdvancedConfig \
+      VirtualMachine.Config.Annotation \
+      VirtualMachine.Config.CPUCount \
+      VirtualMachine.Config.ChangeTracking \
+      VirtualMachine.Config.DiskExtend \
+      VirtualMachine.Config.DiskLease \
+      VirtualMachine.Config.EditDevice \
+      VirtualMachine.Config.HostUSBDevice \
+      VirtualMachine.Config.ManagedBy \
+      VirtualMachine.Config.Memory \
+      VirtualMachine.Config.MksControl \
+      VirtualMachine.Config.QueryFTCompatibility \
+      VirtualMachine.Config.QueryUnownedFiles \
+      VirtualMachine.Config.RawDevice \
+      VirtualMachine.Config.ReloadFromPath \
+      VirtualMachine.Config.RemoveDisk \
+      VirtualMachine.Config.Rename \
+      VirtualMachine.Config.ResetGuestInfo \
+      VirtualMachine.Config.Resource \
+      VirtualMachine.Config.Settings \
+      VirtualMachine.Config.SwapPlacement \
+      VirtualMachine.Config.ToggleForkParent \
+      VirtualMachine.Config.Unlock \
+      VirtualMachine.Config.UpgradeVirtualHardware \
+      VirtualMachine.GuestOperations.Execute \
+      VirtualMachine.GuestOperations.Modify \
+      VirtualMachine.GuestOperations.ModifyAliases \
+      VirtualMachine.GuestOperations.Query \
+      VirtualMachine.GuestOperations.QueryAliases \
+      VirtualMachine.Interact.AnswerQuestion \
+      VirtualMachine.Interact.Backup \
+      VirtualMachine.Interact.ConsoleInteract \
+      VirtualMachine.Interact.CreateScreenshot \
+      VirtualMachine.Interact.CreateSecondary \
+      VirtualMachine.Interact.DefragmentAllDisks \
+      VirtualMachine.Interact.DeviceConnection \
+      VirtualMachine.Interact.DisableSecondary \
+      VirtualMachine.Interact.DnD \
+      VirtualMachine.Interact.EnableSecondary \
+      VirtualMachine.Interact.GuestControl \
+      VirtualMachine.Interact.MakePrimary \
+      VirtualMachine.Interact.Pause \
+      VirtualMachine.Interact.PowerOff \
+      VirtualMachine.Interact.PowerOn \
+      VirtualMachine.Interact.PutUsbScanCodes \
+      VirtualMachine.Interact.Record \
+      VirtualMachine.Interact.Replay \
+      VirtualMachine.Interact.Reset \
+      VirtualMachine.Interact.SESparseMaintenance \
+      VirtualMachine.Interact.SetCDMedia \
+      VirtualMachine.Interact.SetFloppyMedia \
+      VirtualMachine.Interact.Suspend \
+      VirtualMachine.Interact.TerminateFaultTolerantVM \
+      VirtualMachine.Interact.ToolsInstall \
+      VirtualMachine.Interact.TurnOffFaultTolerance \
+      VirtualMachine.Inventory.Create \
+      VirtualMachine.Inventory.CreateFromExisting \
+      VirtualMachine.Inventory.Delete \
+      VirtualMachine.Inventory.Move \
+      VirtualMachine.Inventory.Register \
+      VirtualMachine.Inventory.Unregister \
+      VirtualMachine.Namespace.Event \
+      VirtualMachine.Namespace.EventNotify \
+      VirtualMachine.Namespace.Management \
+      VirtualMachine.Namespace.ModifyContent \
+      VirtualMachine.Namespace.Query \
+      VirtualMachine.Namespace.ReadContent \
+      VirtualMachine.Provisioning.Clone \
+      VirtualMachine.Provisioning.CloneTemplate \
+      VirtualMachine.Provisioning.CreateTemplateFromVM \
+      VirtualMachine.Provisioning.Customize \
+      VirtualMachine.Provisioning.DeployTemplate \
+      VirtualMachine.Provisioning.DiskRandomAccess \
+      VirtualMachine.Provisioning.DiskRandomRead \
+      VirtualMachine.Provisioning.FileRandomAccess \
+      VirtualMachine.Provisioning.GetVmFiles \
+      VirtualMachine.Provisioning.MarkAsTemplate \
+      VirtualMachine.Provisioning.MarkAsVM \
+      VirtualMachine.Provisioning.ModifyCustSpecs \
+      VirtualMachine.Provisioning.PromoteDisks \
+      VirtualMachine.Provisioning.PutVmFiles \
+      VirtualMachine.Provisioning.ReadCustSpecs \
+      VirtualMachine.State.CreateSnapshot \
+      VirtualMachine.State.RemoveSnapshot \
+      VirtualMachine.State.RenameSnapshot \
+      VirtualMachine.State.RevertToSnapshot
+
     govc role.create ${kubo_storage_role} \
       Datastore.AllocateSpace \
       Datastore.FileManagement \
@@ -54,6 +201,9 @@ roles () {
 }
 
 groups () {
+  ${BASEDIR}/bin/vcenter group create "${kubo_director_group}"
+  ${BASEDIR}/bin/vcenter group assign "${kubo_director_role}" "${kubo_director_group}"
+
   ${BASEDIR}/bin/vcenter group create "${kubo_storage_group}"
   ${BASEDIR}/bin/vcenter group assign "${kubo_storage_role}" "${kubo_storage_group}"
 }
@@ -103,13 +253,29 @@ generate_value () {
 
 get_secret () {
   local name=${1}
-  credhub get --name ${secret_root}/${name} --output-json | jq --raw-output .value
+  credhub get --name ${secret_root}/${name} --output-json | jq --raw-output .value.password
 }
 
 secrets () {
   echo "Configuring secrets at ${secret_root}..."
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
+  generate_credential pcf-routing-client ${env_id}_routing_api_client
+}
+
+uaa () {
+  local routing_client_secret="$(get_secret pcf-routing-client ${routing_client_id})"
+  local uaa_secret=$(${BASEDIR}/bin/pivotalcf credential cf .uaa.admin_client_credentials password)
+
+  local product=${1}
+  local credential=${2}
+  local field=${3}
+
+
+  uaac target uaa.${pcf_system_prefix}.${subdomain} --skip-ssl-validation
+  uaac token client get admin --secret "${uaa_secret}"
+  uaac client add "${env_id}_routing_api_client" --secret "${routing_client_secret}" \
+    --authorities "routing.router_groups.read,routing.routes.write,cloud_controller.admin" --authorized_grant_types "client_credentials"
 }
 
 params () {
@@ -118,14 +284,22 @@ params () {
   container_ex_limit="${container_base}.9"
 
   # TO DO: look up
-  nats_internal_ips="${deployment_network}"
+  deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')
+  nats_internal_ips="${deployment_base}.10,${deployment_base}.11,${deployment_base}.12"
 
-  director_ip="${container_base}.10"
+  OIFS=${IFS}
+  IFS=','
+  dns_array=(${dns_servers})
+  nats_array=(${nats_internal_ips})
+  IFS=${OIFS}
+
+  director_ip="${container_base}.6"
 
   bosh int \
     --var env-id=${env_id} \
     --var git-user=${git_user} \
     --var git-server=${git_server} \
+    --var git-email=${email} \
     --var state-repo=${kubo_state_repo} \
     --var subdomain=${subdomain} \
     --var system-prefix=${pcf_system_prefix} \
@@ -135,13 +309,16 @@ params () {
     --var vcenter-host=${vcenter_host} \
     --var vcenter-datacenter=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
-    --var vcenter-resource-pool=${vcenter-resource-pool-1} \
+    --var vcenter-resource-pool=${vcenter_resource_pool_1} \
     --var director-ip=${director_ip} \
     --var container-network=${container_network} \
     --var container-cidr=${container_cidr} \
     --var container-gateway=${container_gateway} \
     --var container-excluded=${container_gateway}-${container_ex_limit} \
-    --var dns-servers=${dns_servers} \
+    --var dns-server-1=${dns_array[0]} \
+    --var pcf-nats-internal-ip-1=${nats_array[0]} \
+    --var pcf-nats-internal-ip-2=${nats_array[1]} \
+    --var pcf-nats-internal-ip-3=${nats_array[2]} \
     --var kubo-network-name=${container_network} \
     --var reserved-ips=${container_gateway}-${container_ex_limit} \
     --var pcf-nats-internal-ips=${nats_internal_ips} \
@@ -199,10 +376,13 @@ if [ $# -gt 0 ]; then
         pave
         ;;
       login )
-        login
+        concourse_login
         ;;
       secrets )
         secrets
+        ;;
+      uaa )
+        uaa
         ;;
       params )
         params

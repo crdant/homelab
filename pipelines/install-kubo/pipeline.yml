@@ -4,6 +4,7 @@ jobs:
   plan:
   - get: homelab
   - get: kubo-odb-deployment
+    trigger: true
   - get: environment-state
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
@@ -36,7 +37,8 @@ jobs:
       KUBERNETES_MASTER_HOST: ((k8s-master-host))
       KUBERNETES_MASTER_PORT: ((k8s-master-port))
       PCF_API_URL: ((pcf-api-url))
-      PCF_CLIENT_ID: ((pcf-client-id))
+      PCF_CLIENT_ID: ((pcf-routing-client.username))
+      PCF_CLIENT_SECRET: ((pcf-routing-client.password))
       PCF_UAA_URL: ((pcf-uaa-url))
       PCF_APPS_DOMAIN: ((pcf-apps-domain))
       PCF_NATS_INTERNAL_IPS: ((pcf-nats-internal-ips))
@@ -45,6 +47,23 @@ jobs:
       PCF_NATS_PORT: ((pcf-nats-port))
       GIT_USER: ((git-user))
       GIT_EMAIL: ((git-email))
+  - put: environment-state
+    params:
+      repository: completed-config
+
+
+- name: deploy-director
+  plan:
+  - get: homelab
+    passed:
+    - configure-director
+  - get: kubo-odb-deployment
+    passed:
+    - configure-director
+  - get: environment-state
+    passed:
+    - configure-director
+    trigger: true
   - task: deploy-director
     file: homelab/pipelines/install-kubo/tasks/deploy-director/task.yml
     params:
@@ -59,14 +78,14 @@ jobs:
   plan:
   - get: homelab
     passed:
-    - configure-director
+    - deploy-director
   - get: environment-state
     passed:
-    - configure-director
+    - deploy-director
     trigger: true
   - get: kubo-odb-deployment
     passed:
-    - configure-director
+    - deploy-director
   - task: config-k8s
     file: homelab/pipelines/install-kubo/tasks/config-k8s/task.yml
   - task: deploy-kubo
@@ -74,6 +93,27 @@ jobs:
     params:
       KUBO_ENV: ((environment-id))
 
+- name: deploy-broker
+  plan:
+  - get: homelab
+    passed:
+    - deploy-kubo
+  - get: environment-state
+    passed:
+    - deploy-kubo
+    # trigger: true
+  - get: kubo-odb-deployment
+    passed:
+    - deploy-kubo
+  - get: odb-sdk
+  - get: kubo-service-adapter
+  - get: kubo-release
+  - task: prepare-odb
+    file: homelab/pipelines/install-kubo/tasks/prepare-odb/task.yml
+  - task: deploy-odb
+    file: homelab/pipelines/install-kubo/tasks/deploy-odb/task.yml
+    params:
+      KUBO_ENV: ((environment-id))
 
 resources:
   - name: homelab
@@ -92,8 +132,29 @@ resources:
       uri: ((state-repository))
       branch: master
       private_key: ((git.private_key))
+  - name: odb-sdk
+    type: pivnet
+    source:
+      api_token: ((pivnet_token))
+      product_slug: on-demand-services-sdk
+      product_version: v0.16.1
+  - name: kubo-service-adapter
+    type: gcs
+    source:
+      bucket: kubo-private
+      versioned_file: kubo-service-adapter-release-latest.tgz
+  - name: kubo-release
+    type: gcs
+    source:
+      bucket: kubo-public
+      versioned_file: https://storage.googleapis.com/kubo-public/kubo-release-latest.tgz
 
 resource_types:
+  - name: pivnet
+    type: docker-image
+    source:
+      repository: pivotalcf/pivnet-resource
+      tag: latest-final
   - name: gcs
     type: docker-image
     source:
