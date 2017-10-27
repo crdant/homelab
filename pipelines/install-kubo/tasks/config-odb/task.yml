@@ -1,0 +1,22 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: starkandwayne/concourse}
+
+params:
+  DEPLOYMENT_NAME:
+  PCF_SYSTEM_DOMAIN:
+  PCF_USERNAME:
+  PCF_PASSWORD:
+
+inputs:
+  - name: environment-state
+
+outputs:
+  - name: odb-releases
+
+run:
+  path: homelab/pipelines/install-kubo/tasks/prepare-odb/task.sh
