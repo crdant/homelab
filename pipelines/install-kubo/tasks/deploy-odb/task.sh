@@ -15,4 +15,4 @@ releases="$(pwd)"
 popd
 
 cd kubo-odb-deployment
-./bin/deploy_k8s_odb ${config} ${KUBO_ENV} public ${releases}
+./bin/deploy_k8s_odb ${config} ${KUBO_ENV} local ${releases}
