@@ -3,6 +3,6 @@
 set -eu
 
 # workaround braindead naming in script
-cp odb-sdk/* odb-releases
-cp kubo-service-adapter/* odb-releases
-cp kubo-release/* odb-releases
+cp odb-sdk/*.tgz odb-releases/on-demand-service-broker.tgz
+cp kubo-service-adapter/*.tgz odb-releases/kubo-service-adapter-release.tgz
+cp kubo-release/*.tgz odb-releases/kubo-release.tgz
