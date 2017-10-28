@@ -2,9 +2,9 @@
 
 set -eu
 
-director_name=$(bosh2 interpolate "${kubo_config_path}/director.yml" --path="/director_name")
-secret_root="${director_name}/${DEPLOYMENT_NAME}"
 director_state_path="environment-state"
+director_name=$(bosh2 interpolate "${director_state_path}/director.yml" --path="/director_name")
+secret_root="${director_name}/${DEPLOYMENT_NAME}"
 
 uaa_ca=$(bosh2 int "${director_state_path}/creds.yml" --path="/uaa_ssl/ca")
 credhub_ca=$(bosh2 int "${director_state_path}/creds.yml" --path="/credhub_tls/ca")
