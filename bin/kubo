@@ -266,7 +266,7 @@ secrets () {
 uaa () {
   local routing_client_secret="$(get_secret pcf-routing-client ${routing_client_id})"
   local uaa_secret=$(${BASEDIR}/bin/pivotalcf credential cf .uaa.admin_client_credentials password)
-  #
+
   # create routing client
   uaac target uaa.${pcf_system_prefix}.${subdomain} --skip-ssl-validation
   uaac token client get admin --secret "${uaa_secret}"
@@ -364,6 +364,7 @@ trigger() {
 hijack() {
   job="${1}"
   echo "Hijacking job ${1}"
+  concourse_login
   fly --target ${concourse_target} hijack -j ${kubo_install_pipeline}/${job}
 }
 
