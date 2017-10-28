@@ -242,7 +242,6 @@ generate_credential () {
 
 get_password () {
   local name=${1}
-  local user=${2}
   credhub get --name ${secret_root}/${name} --output-json | jq -r .value.password
 }
 
@@ -261,21 +260,24 @@ secrets () {
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
   generate_credential pcf-routing-client ${env_id}_routing_api_client
+  generate_credential kubo-pcf-account ${env_id}-kubo
 }
 
 uaa () {
   local routing_client_secret="$(get_secret pcf-routing-client ${routing_client_id})"
   local uaa_secret=$(${BASEDIR}/bin/pivotalcf credential cf .uaa.admin_client_credentials password)
-
-  local product=${1}
-  local credential=${2}
-  local field=${3}
-
-
+  #
+  # create routing client
   uaac target uaa.${pcf_system_prefix}.${subdomain} --skip-ssl-validation
   uaac token client get admin --secret "${uaa_secret}"
   uaac client add "${env_id}_routing_api_client" --secret "${routing_client_secret}" \
     --authorities "routing.router_groups.read,routing.routes.write,cloud_controller.admin" --authorized_grant_types "client_credentials"
+
+  local kubo_pcf_account_password="$(get_password kubo-pcf-account)"
+  # create user for deploying the broker
+  uaac user add ${env-id}-kubo -p ${kubo_pcf_account_password} --emails newadmin@example.com
+  uaac member add cloud_controller.admin ${env-id}-kubo
+  uaac member add scim.read ${env-id}-kubo
 }
 
 params () {
