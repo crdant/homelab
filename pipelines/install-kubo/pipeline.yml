@@ -9,7 +9,7 @@ jobs:
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
-      KUBO_ENV: ((environment-id))
+      KUBO_ENV: ((environment-id))-kubo-odb
       IAAS: ((iaas))
       VCENTER_HOST: ((vcenter-host))
       VCENTER_USER: ((kubo-vcenter-account.username))
@@ -82,19 +82,27 @@ jobs:
   - get: environment-state
     passed:
     - deploy-director
-    # trigger: true
+    trigger: true
   - get: kubo-odb-deployment
     passed:
     - deploy-director
   - get: odb-sdk
   - get: kubo-service-adapter
   - get: kubo-release
+  - get: stemcell
+  - task: config-odb
+    file: homelab/pipelines/install-kubo/tasks/config-odb/task.yml
+    params:
+      DEPLOYMENT_NAME: ((environment-id))
+      PCF_SYSTEM_DOMAIN: ((pcf-system-domain))
+      PCF_USERNAME: ((kubo-pcf-account.username))
+      PCF_PASSWORD: ((kubo-pcf-account.password))
   - task: prepare-odb
     file: homelab/pipelines/install-kubo/tasks/prepare-odb/task.yml
   - task: deploy-odb
     file: homelab/pipelines/install-kubo/tasks/deploy-odb/task.yml
     params:
-      KUBO_ENV: ((environment-id))
+      KUBO_ENV: ((environment-id))-kubo-odb
 
 resources:
   - name: homelab
@@ -119,15 +127,27 @@ resources:
       api_token: ((pivnet_token))
       product_slug: on-demand-services-sdk
       product_version: 0.16.1
-  - name: kubo-service-adapter
-    type: curl
-    source:
-      url: https://storage.cloud.google.com/kubo-private/kubo-service-adapter-release-latest.tgz
   - name: kubo-release
+    type: s3
+    source:
+      endpoint: https://storage.googleapis.com
+      bucket: kubo-releases
+      regexp: "kubo-release-(.*).tgz"
+      access_key_id: ((gcs-access-key-id))
+      secret_access_key: ((gcs-secret-access-key))
+  - name: kubo-service-adapter
+    type: s3
+    source:
+      endpoint: https://storage.googleapis.com
+      bucket: kubo-releases
+      regexp: "kubo-service-adapter-release-(.*).tgz"
+      access_key_id: ((gcs-access-key-id))
+      secret_access_key: ((gcs-secret-access-key))
+  - name: stemcell
     type: curl
     source:
-      url: https://storage.cloud.google.com/kubo-public/kubo-release-latest.tgz
-
+      url: https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3445.7-vsphere-esxi-ubuntu-trusty-go_agent.tgz
+      filename: bosh-stemcell-3445.7-vsphere-esxi-ubuntu-trusty-go_agent.tgz
 
 resource_types:
   - name: pivnet

@@ -22,7 +22,7 @@ kubo-director-name:       ((env-id))-kubo-director
 kubo-resource-pool: ((vcenter-resource-pool))
 
 # Datastore to use for K8s machines and persistenet volumes
-kubo-ephemeral-store:   ((fast-storage))
+kubo-ephemeral-store:   ((slow-storage))
 kubo-persistent-store:  ((slow-storage))
 
 # folders/paths for vCenter
@@ -45,6 +45,8 @@ k8s-master-port: 1120
 pcf-api-url:     https://api.((system-prefix)).((subdomain))     # TCP routing API URL. In PCF: https://api.<system domain>
 pcf-uaa-url:     https://uaa.((system-prefix)).((subdomain))     # Routing UAA URL In PCF: https://uaa.<system domain>
 pcf-apps-domain:   ((apps-prefix)).((subdomain))             # Cloud Foundry apps domain
+pcf-system-domain:   ((system-prefix)).((subdomain))             # Cloud Foundry system domain
+
 pcf-nats-internal-ips:
 - ((pcf-nats-internal-ip-1))
 - ((pcf-nats-internal-ip-2))
