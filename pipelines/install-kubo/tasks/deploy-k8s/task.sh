@@ -11,5 +11,5 @@ config="$(pwd)"
 popd
 set -x
 cd kubo-odb-deployment/kubo-deployment
-./bin/deploy_k8s ${config} ${KUBO_ENV} public
+./bin/deploy_k8s ${config} ${KUBO_SERVICE_NAME} public
 set +x

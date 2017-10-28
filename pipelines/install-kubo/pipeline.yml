@@ -9,7 +9,7 @@ jobs:
   - task: config-director
     file: homelab/pipelines/install-kubo/tasks/config-director/task.yml
     params:
-      KUBO_ENV: ((environment-id))-kubo-odb
+      KUBO_SERVICE_NAME: k8s-container-runtime
       IAAS: ((iaas))
       VCENTER_HOST: ((vcenter-host))
       VCENTER_USER: ((kubo-vcenter-account.username))
@@ -102,7 +102,7 @@ jobs:
   - task: deploy-odb
     file: homelab/pipelines/install-kubo/tasks/deploy-odb/task.yml
     params:
-      KUBO_ENV: ((environment-id))-kubo-odb
+      KUBO_SERVICE_NAME: k8s-container-runtime
 
 resources:
   - name: homelab
