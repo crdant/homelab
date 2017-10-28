@@ -13,6 +13,6 @@ credhub login -u credhub-cli -p ${credhub_password} -s "https://${director_ip}:8
 
 director_name=$(bosh-cli interpolate "${kubo_config_path}/director.yml" --path="/director_name")
 
-credhub set --name="${director_name}/${DEPLOYMENT_NAME}/cf_sys_domain" --type="value" --value="${PCF_SYSTEM_DOMAIN}"
-credhub set --name="${director_name}/${DEPLOYMENT_NAME}/cf_username" --type="value" --value="${PCF_USERNAME}"
-credhub set --name="${director_name}/${DEPLOYMENT_NAME}/cf_password" --type="value" --value="${PCF_PASSWORD}"
+credhub set --name="${secret_root}/cf_sys_domain" --type="value" --value="${PCF_SYSTEM_DOMAIN}"
+credhub set --name="${secret_root}/cf_username" --type="value" --value="${PCF_USERNAME}"
+credhub set --name="${secret_root}/cf_password" --type="value" --value="${PCF_PASSWORD}"
