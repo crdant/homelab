@@ -13,6 +13,7 @@ params:
   PCF_PASSWORD:
 
 inputs:
+  - name: homelab
   - name: environment-state
 
 outputs:
