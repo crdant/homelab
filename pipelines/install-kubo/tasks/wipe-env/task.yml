@@ -1,0 +1,18 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: starkandwayne/concourse}
+
+params:
+  KUBO_SERVICE_NAME:
+
+
+inputs:
+  - name: homelab
+  - name: environment-state
+
+run:
+  path: homelab/pipelines/install-kubo/tasks/wipe-env/task.sh

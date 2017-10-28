@@ -51,7 +51,6 @@ jobs:
     params:
       repository: completed-config
 
-
 - name: deploy-director
   plan:
   - get: homelab
@@ -72,7 +71,6 @@ jobs:
   - put: environment-state
     params:
       repository: director-state
-
 
 - name: deploy-broker
   plan:
@@ -101,6 +99,20 @@ jobs:
     file: homelab/pipelines/install-kubo/tasks/prepare-odb/task.yml
   - task: deploy-odb
     file: homelab/pipelines/install-kubo/tasks/deploy-odb/task.yml
+    params:
+      KUBO_SERVICE_NAME: k8s-container-runtime
+
+- name: wipe-env
+  plan:
+  - get: homelab
+    passed:
+    - deploy-director
+  - get: environment-state
+    passed:
+    - deploy-director
+    trigger: true
+  - task: wipe-env
+    file: homelab/pipelines/install-kubo/tasks/wipe-env/task.yml
     params:
       KUBO_SERVICE_NAME: k8s-container-runtime
 
