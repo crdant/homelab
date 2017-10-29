@@ -1,0 +1,21 @@
+- type: replace
+  path: /jobs/-
+  value:
+    name: config-tcp-router
+    plan:
+    - get: homelab
+      passed:
+      - deploy-ert
+      trigger: true
+    - task: config-tcp
+      file: pcf-pipelines/install-pcf/vsphere/tasks/config-tcp/task.yml
+      params:
+        OPSMAN_DOMAIN_OR_IP_ADDRESS: ((opsman_domain_or_ip_address))
+        OPSMAN_PASSWORD: ((opsman_admin.password))
+        OPSMAN_USERNAME: ((opsman_admin.username))
+        OPSMAN_DOMAIN_OR_IP_ADDRESS: ((opsman_domain_or_ip_address))
+        OPSMAN_PASSWORD: ((opsman_admin.password))
+        OPSMAN_USERNAME: ((opsman_admin.username))
+        SYSTEM_DOMAIN: ((system_domain))
+        TCP_DOMAIN: ((tcp_domain))
+        TCP_ROUTE_QUOTA: ((tcp_route_quota))

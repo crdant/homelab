@@ -59,6 +59,8 @@ transform_pipeline() {
 
   cp ${pipeline_file} ${pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/config-srt.yml" "${pipeline_file}.bak" > ${pipeline_file}
+  cp ${pipeline_file} ${pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/config-tcp.yml" "${pipeline_file}.bak" > ${pipeline_file}
 }
 
 get_credential () {
@@ -142,6 +144,7 @@ params() {
     --var subdomain=${subdomain} \
     --var system-prefix=${pcf_system_prefix} \
     --var apps-prefix=${pcf_apps_prefix} \
+    --var tcp-prefix=${pcf_tcp_prefix} \
     --var om-data-store=${vcenter_fast_datastore} \
     --var om-host-name=${om_host_name} \
     --var ntp-servers=${ntp_servers} \

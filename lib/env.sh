@@ -79,6 +79,7 @@ om_admin_user=arceus
 ## Deployment domain names
 pcf_system_prefix=system
 pcf_apps_prefix=apps
+pcf_tcp_prefix=tcp
 
 # PCF static IPs
 deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')

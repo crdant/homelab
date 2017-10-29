@@ -1,0 +1,19 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: starkandwayne/concourse}
+
+params:
+
+inputs:
+  - name: homelab
+  - name: environment-state
+
+outputs:
+  - name: odb-releases
+
+run:
+  path: homelab/pipelines/install-kubo/tasks/config-tcp/task.sh

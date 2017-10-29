@@ -166,6 +166,7 @@ last_name_attribute:
 ## Deployment domain names
 system_domain: ((system-prefix)).((subdomain))
 apps_domain:   ((apps-prefix)).((subdomain))
+tcp_domain:    ((tcp-prefix)).((subdomain))
 
 skip_cert_verify: true       # If true, disable SSL certificate verification for this environment.
 
@@ -174,6 +175,7 @@ disable_insecure_cookies: false # If true, disable insecure cookies on the route
 default_quota_memory_limit_mb: 10240
 default_quota_max_number_services: 1000
 allow_app_ssh_access: false             # Whether to allow SSH access to application instances
+tcp_route_quota: 1000
 
 router_request_timeout_in_seconds: 900
 
