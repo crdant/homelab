@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+set -e
+
+appliance_name="${env_id}-bigip"
+ova_file="${work_dir}/BIGIP-13.0.0.0.0.1645.LTM-scsi.ova"
+spec_file="${work_dir}/BIGIP-13.0.0.0.0.1645.LTM-scsi.spec"
+inventory_folder="balancer_vms"
+
+prepare () {
+  govc import.spec ${ova_file} | jq "$(cat <<OPTIONS
+    {
+      "Deployment": "dualcpu",
+      "DiskProvisioning": "thin",
+      "IPAllocationPolicy": "dhcpPolicy",
+      "IPProtocol": "IPv4",
+      "NetworkMapping": [
+        {
+          "Name": "Management",
+          "Network": "${infrastructure_network}"
+        },
+        {
+          "Name": "Internal",
+          "Network": "${balancer_internal_network}"
+        },
+        {
+          "Name": "External",
+          "Network": "${balancer_external_network}"
+        },
+        {
+          "Name": "HA",
+          "Network": ""
+        }
+      ],
+      "Annotation": "BIG-IP Local Traffic Manager Virtual Edition\n    Copyright 2009-2016 F5 Networks (http://www.f5.com)\n    \n    For support please visit http://support.f5.com\n          ",
+      "PowerOn": false,
+      "InjectOvfEnv": false,
+      "WaitForIP": false,
+      "Name": "${appliance_name}"
+    }
+OPTIONS
+    )" > ${spec_file}
+}
+
+up () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
+
+  (
+    export GOVC_INSECURE=1
+    export GOVC_URL=${vcenter_host}
+    export GOVC_USERNAME=${vcenter_admin}
+    export GOVC_PASSWORD=${vcenter_admin_password}
+    export GOVC_DATASTORE="${vcenter_fast_datastore}"
+    export GOVC_RESOURCE_POOL=${vcenter_resource_pool_2}
+    export GOVC_DATACENTER=${vcenter_data_center}
+
+    govc import.ova --folder ${inventory_folder} --options ${spec_file} ${ova_file}
+    govc vm.power --on --vm.ipath /home-lab/vm/${inventory_folder}/${appliance_name}
+  )
+}
+
+down () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
+  (
+    export GOVC_INSECURE=1
+    export GOVC_URL=${vcenter_host}
+    export GOVC_USERNAME=${vcenter_admin}
+    export GOVC_PASSWORD=${vcenter_admin_password}
+
+    govc vm.power --off --vm.ipath /home-lab/vm/${inventory_folder}/${appliance_name}
+    govc vm.destroy --vm.ipath /home-lab/vm/${inventory_folder}/${appliance_name}
+  )
+}
+
+cleanup () {
+  rm ${spec_file}
+  rm ${ova_file}
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      prepare )
+        prepare
+        ;;
+      up )
+        up
+        ;;
+      down )
+        down
+        ;;
+      cleanup )
+        cleanup
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+prepare
+up
