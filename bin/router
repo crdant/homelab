@@ -10,7 +10,7 @@ prepare () {
   echo "---" >> ${key_dir}/router-creds.yml
   local ssh_key_file="${key_dir}/id_${router_user}"
   local ssh_key_type="rsa"
-  
+
   router_password="$(generate_passphrase 4)"
   if [ ! -f "${ssh_key_file}" ]; then
     ssh-keygen -P "" -t ${ssh_key_type} -f "${ssh_key_file}" -b 4096 -C ${router_user}@${router_host} > /dev/null
@@ -40,7 +40,8 @@ bootstrap_cidr: ${bootstrap_cidr}
 pcf_cidr: ${pcf_cidr}
 infrastructure_cidr: ${infrastructure_cidr}
 deployment_cidr: ${deployment_cidr}
-balancer_cidr: ${balancer_cidr}
+balancer_external_cidr: ${balancer_external_cidr}
+balancer_internal_cidr: ${balancer_internal_cidr}
 services_cidr: ${services_cidr}
 dynamic_cidr: ${dynamic_cidr}
 container_cidr: ${container_cidr}

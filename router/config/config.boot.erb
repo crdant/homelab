@@ -34,7 +34,8 @@
   pcf_port_addr = IPAddr.new(vars["pcf_cidr"]).succ.to_cidr
   infrastructure_port_addr = IPAddr.new(vars["infrastructure_cidr"]).succ.to_cidr
   deployment_port_addr = IPAddr.new(vars["deployment_cidr"]).succ.to_cidr
-  balancer_port_addr = IPAddr.new(vars["balancer_cidr"]).succ.to_cidr
+  balancer_external_port_addr = IPAddr.new(vars["balancer_external_cidr"]).succ.to_cidr
+  balancer_internal_port_addr = IPAddr.new(vars["balancer_internal_cidr"]).succ.to_cidr
   services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
   dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
   container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
@@ -87,6 +88,20 @@ firewall {
             network <%= vars['dynamic_cidr'] %>
             network <%= vars['container_cidr'] %>
         }
+      port-group bosh-ports {
+          description "BOSH Ports"
+          port 22
+          port 443
+          port 6868
+          port 8443
+          port 8844
+          port 25555
+      }
+      port-group tcp-router-ports {
+          description "PCF TCP Routing Ports"
+          port 1024-65535
+          port 80
+      }
     }
     ipv6-receive-redirects disable
     ipv6-src-route disable
@@ -544,7 +559,21 @@ firewall {
             log disable
             protocol tcp
             source {
-                address <%= vars["balancer_cidr"] %>
+                address <%= vars["balancer_internal_cidr"] %>
+            }
+        }
+        rule 65 {
+            action accept
+            description "Allow LBs access to PCF TCP Routers"
+            destination {
+                group {
+                    address-group pcf-tcp-routers
+                }
+            }
+            log disable
+            protocol tcp
+            source {
+                address <%= vars["balancer_internal_cidr"] %>
             }
         }
         rule 70 {
@@ -654,7 +683,7 @@ firewall {
                 port 80,443
             }
             source {
-              address <%= vars["balancer_cidr"] %>
+              address <%= vars["balancer_external_cidr"] %>
             }
             log disable
             protocol tcp
@@ -669,7 +698,7 @@ firewall {
                 port 1024-65535
             }
             source {
-              address <%= vars["balancer_cidr"] %>
+              address <%= vars["balancer_external_cidr"] %>
             }
             log disable
             protocol tcp
@@ -684,7 +713,7 @@ firewall {
                 port 22
             }
             source {
-              address <%= vars["balancer_cidr"] %>
+              address <%= vars["balancer_external_cidr"] %>
             }
             log disable
             protocol tcp
@@ -693,7 +722,7 @@ firewall {
             action accept
             description "Allow local access to configure the load balancer environment"
             destination {
-                address <%= vars["balancer_cidr"] %>
+                address <%= vars["balancer_external_cidr"] %>
                 port 4444
             }
             log disable
@@ -706,7 +735,7 @@ firewall {
             action accept
             description "Allow VPN Access to configure the load balancer environment"
             destination {
-                address <%= vars["balancer_cidr"] %>
+                address <%= vars["balancer_external_cidr"] %>
                 port 4444
             }
             log disable
@@ -719,7 +748,7 @@ firewall {
             action accept
             description "Allow access to the load balancers"
             destination {
-                address <%= vars["balancer_cidr"] %>
+                address <%= vars["balancer_external_cidr"] %>
                 port 443
             }
             log disable
@@ -872,7 +901,8 @@ interfaces {
         address <%= pcf_port_addr %>
         address <%= infrastructure_port_addr %>
         address <%= deployment_port_addr %>
-        address <%= balancer_port_addr %>
+        address <%= balancer_external_port_addr %>
+        address <%= balancer_internal_port_addr %>
         address <%= services_port_addr %>
         address <%= dynamic_port_addr %>
         address <%= container_port_addr %>
