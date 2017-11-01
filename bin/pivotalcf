@@ -108,6 +108,14 @@ get_secret () {
 }
 
 secrets () {
+  if credhub get --name /concourse/pcf/deploy-pcf/om-ssh-password > /dev/null ; then
+    read -p "This will overwrite all secrets and may break your install. Continue (y/n)? " choice
+    case "$choice" in
+      y|Y ) ;;
+      n|N ) return ;;
+      * ) return ;;
+    esac
+  fi
   echo "Configuring secrets at ${secret_root}..."
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
