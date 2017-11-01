@@ -10,7 +10,7 @@ config="$(pwd)"
 popd
 
 export BOSH_CLIENT=admin
-export BOSH_CLIENT_SECRET=$(bosh int environment-state/creds.yml --path /admin_password)
+export BOSH_CLIENT_SECRET=$(bosh2 int environment-state/creds.yml --path /admin_password)
 export BOSH_ENVIRONMENT=kubo
 export BOSH_DEPLOYMENT=${KUBO_SERVICE_NAME}
 
