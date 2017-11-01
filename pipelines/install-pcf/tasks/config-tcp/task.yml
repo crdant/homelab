@@ -10,7 +10,6 @@ params:
 
 inputs:
   - name: homelab
-  - name: environment-state
 
 outputs:
   - name: odb-releases

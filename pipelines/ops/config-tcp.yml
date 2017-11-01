@@ -7,9 +7,6 @@
       passed:
       - deploy-ert
       trigger: true
-    - get: environment-state
-      passed:
-      - deploy-ert
     - task: config-tcp
       file: homelab/pipelines/install-pcf/tasks/config-tcp/task.yml
       params:
