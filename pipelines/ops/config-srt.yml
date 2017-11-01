@@ -12,6 +12,24 @@
   value: homelab/pipelines/install-pcf/tasks/config-srt/task.yml
 
 - type: replace
+  path: /jobs/name=deploy-ert/plan/0/aggregate/get=pivnet-product/params
+  value:
+    globs:
+    - srt*.pivotal
+
+- type: replace
+  path: /jobs/name=stage-ert/plan/0/aggregate/get=pivnet-product/params
+  value:
+    globs:
+    - srt*.pivotal
+
+- type: replace
+  path: /jobs/name=upload-ert/plan/0/aggregate/get=pivnet-product/params
+  value:
+    globs:
+    - srt*.pivotal
+
+- type: replace
   path: /jobs/name=deploy-ert/plan/0/aggregate/-
   value:
     get: homelab
