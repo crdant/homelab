@@ -16,4 +16,4 @@ outputs:
   - name: odb-releases
 
 run:
-  path: homelab/pipelines/install-kubo/tasks/config-tcp/task.sh
+  path: homelab/pipelines/install-pcf/tasks/config-tcp/task.sh
