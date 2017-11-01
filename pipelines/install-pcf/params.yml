@@ -35,7 +35,7 @@ om_resource_pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((
 ephemeral_storage_names:  ((fast-storage)),((slow-storage))        # Ephemeral Storage names in vCenter for use by PCF
 persistent_storage_names: ((slow-storage)),((fast-storage))        # Persistent Storage names in vCenter for use by PCF
 
-bosh_vm_folder: ((env-id))-vms                     # vSphere datacenter folder (such as pcf_vms) where VMs will be placed
+bosh_vm_folder: ((env-id))-pcf-vms                     # vSphere datacenter folder (such as pcf_vms) where VMs will be placed
 bosh_template_folder: ((env-id))-pcf-templates     # vSphere datacenter folder (such as pcf_templates) where templates will be placed
 bosh_disk_path: ((env-id))-pcf-disk                # vSphere datastore folder (such as pcf_disk) where attached disk images will be created
 
