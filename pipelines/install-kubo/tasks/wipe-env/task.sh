@@ -14,5 +14,5 @@ export BOSH_CLIENT_SECRET=$(bosh int environment-state/creds.yml --path /admin_p
 export BOSH_ENVIRONMENT=kubo
 export BOSH_DEPLOYMENT=${KUBO_SERVICE_NAME}
 
-bosh2 delete-deployment
-bosh2 clean-up
+bosh2 -n delete-deployment
+bosh2 -n clean-up
