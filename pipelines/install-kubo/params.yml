@@ -15,6 +15,10 @@ git-email:                ((git-email))
 environment-id:           ((env-id))                # environment identifier for this Kubo installation
 kubo-director-name:       ((env-id))-kubo-director
 
+# versions
+stemcell-version:         "3445.11"
+odb-sdk-version:          "0.16.1"
+
 # vCenter Cluster or Resource Pool to use to deploy Kubo.
 # Possible formats:
 #   cluster:       /<Data Center Name>/host/<Cluster Name>

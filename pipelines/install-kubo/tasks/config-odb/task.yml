@@ -7,7 +7,7 @@ image_resource:
   source: {repository: starkandwayne/concourse}
 
 params:
-  DEPLOYMENT_NAME:
+  KUBO_SERVICE_NAME: 
   PCF_SYSTEM_DOMAIN:
   PCF_USERNAME:
   PCF_PASSWORD:

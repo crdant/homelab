@@ -91,7 +91,7 @@ jobs:
   - task: config-odb
     file: homelab/pipelines/install-kubo/tasks/config-odb/task.yml
     params:
-      DEPLOYMENT_NAME: ((environment-id))
+      KUBO_SERVICE_NAME: k8s-container-runtime
       PCF_SYSTEM_DOMAIN: ((pcf-system-domain))
       PCF_USERNAME: ((kubo-pcf-account.username))
       PCF_PASSWORD: ((kubo-pcf-account.password))
@@ -105,8 +105,6 @@ jobs:
 - name: wipe-env
   plan:
   - get: homelab
-    passed:
-    - deploy-director
   - get: environment-state
     passed:
     - deploy-director
@@ -138,7 +136,7 @@ resources:
     source:
       api_token: ((pivnet_token))
       product_slug: on-demand-services-sdk
-      product_version: 0.16.1
+      product_version: ((odb-sdk-version))
   - name: kubo-release
     type: s3
     source:
@@ -158,8 +156,8 @@ resources:
   - name: stemcell
     type: curl
     source:
-      url: https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3445.7-vsphere-esxi-ubuntu-trusty-go_agent.tgz
-      filename: bosh-stemcell-3445.7-vsphere-esxi-ubuntu-trusty-go_agent.tgz
+      url: https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-((stemcell-version))-vsphere-esxi-ubuntu-trusty-go_agent.tgz
+      filename: bosh-stemcell-((stemcell-version))-vsphere-esxi-ubuntu-trusty-go_agent.tgz
 
 resource_types:
   - name: pivnet
