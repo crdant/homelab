@@ -6,7 +6,7 @@ echo "Configuring TCP routing..."
 username=$(om -k -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field identity)
 password=$(om -k -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field password)
 
-cf login -a https://login.${SYSTEM_DOMAIN} -u ${username} -p ${password} --skip-ssl-validation
+cf login -a https://api.${SYSTEM_DOMAIN} -u ${username} -p ${password} --skip-ssl-validation
 
 echo "Creating domain for TCP routing..."
 cf create-shared-domain ${TCP_DOMAIN} --router-group default-tcp
