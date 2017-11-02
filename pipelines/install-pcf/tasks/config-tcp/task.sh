@@ -3,8 +3,8 @@
 set -eu
 
 echo "Configuring TCP routing..."
-username=$(om -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field identity)
-password=$(om -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field password)
+username=$(om -k -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field identity)
+password=$(om -k -t https://${OPSMAN_DOMAIN_OR_IP_ADDRESS} -u ${OPSMAN_USERNAME} -p ${OPSMAN_PASSWORD} credentials --product-name cf --credential-reference .uaa.admin_credentials --credential-field password)
 
 cf login -a https://login.${SYSTEM_DOMAIN} -u ${username} -p ${password}
 
