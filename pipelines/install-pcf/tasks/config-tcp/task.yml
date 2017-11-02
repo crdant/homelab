@@ -7,6 +7,12 @@ image_resource:
   source: {repository: starkandwayne/concourse}
 
 params:
+  OPSMAN_DOMAIN_OR_IP_ADDRESS:
+  OPSMAN_PASSWORD:
+  OPSMAN_USERNAME:
+  SYSTEM_DOMAIN:
+  TCP_DOMAIN:
+  TCP_ROUTE_QUOTA: 
 
 inputs:
   - name: homelab
