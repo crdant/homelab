@@ -109,6 +109,9 @@ jobs:
     passed:
     - deploy-director
     trigger: true
+  - get: kubo-odb-deployment
+    passed:
+    - deploy-director
   - task: undeploy-odb
     file: homelab/pipelines/install-kubo/tasks/undeploy-odb/task.yml
     params:
