@@ -109,10 +109,18 @@ jobs:
     passed:
     - deploy-director
     trigger: true
-  - task: wipe-env
-    file: homelab/pipelines/install-kubo/tasks/wipe-env/task.yml
+  - task: undeploy-odb
+    file: homelab/pipelines/install-kubo/tasks/undeploy-odb/task.yml
     params:
       KUBO_SERVICE_NAME: k8s-container-runtime
+  - task: undeploy-director
+    file: homelab/pipelines/install-kubo/tasks/undeploy-director/task.yml
+    params:
+      KUBO_SERVICE_NAME: k8s-container-runtime
+  - put: environment-state
+    params:
+      repository: cleared-state
+
 
 resources:
   - name: homelab

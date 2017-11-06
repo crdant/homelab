@@ -15,4 +15,4 @@ inputs:
   - name: environment-state
 
 run:
-  path: homelab/pipelines/install-kubo/tasks/wipe-env/task.sh
+  path: homelab/pipelines/install-kubo/tasks/undeploy-odb/task.sh

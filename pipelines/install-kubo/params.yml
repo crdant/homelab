@@ -53,6 +53,4 @@ pcf-system-domain:   ((system-prefix)).((subdomain))             # Cloud Foundry
 
 pcf-nats-internal-ips:
 - ((pcf-nats-internal-ip-1))
-- ((pcf-nats-internal-ip-2))
-- ((pcf-nats-internal-ip-3))
 pcf-nats-port: 4222
