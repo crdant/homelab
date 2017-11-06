@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/secrets.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+
+download () {
+  product_slug=${1}
+  release_version=${2}
+
+  mkdir -p ${work_dir}/${product_slug}/${release_version}
+  pivnet download-product-files --product-slug ${product_slug} --release-version ${release_version} \
+    --glob '*vsphere*.tgz' --download-dir=${work_dir}/${product_slug}/${release_version} --accept-eula
+}
+
+upload () {
+  product_slug=${1}
+  release_version=${2}
+
+  om -k --target manager.${subdomain} --username ${om_username} --password ${om_password} \
+    upload-stemcell --stemcell ${work_dir}/${product_slug}/${release_version}/*
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --windows | --w)
+        windows=1
+        ;;
+      --release | --release-version | -r)
+        release=${2}
+        shift
+        ;;
+      download)
+        download=1
+        ;;
+      upload )
+        upload=1
+        ;;
+      deploy )
+        download=1
+        upload=1
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+  done
+fi
+
+slug="stemcells"
+
+if [ -n "$windows" ] ; then
+  slug="stemcells-windows-server"
+fi
+
+if [ -z "$release" ] ; then
+  echo "Version not specified. Please provide the argument '-r, --release-version' with the version you want"
+  exit 1
+fi
+
+om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
+om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
+om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+
+if [ -n "$download" ] ; then
+  download ${slug} ${release}
+fi
+
+if [ -n "$upload" ] ; then
+  upload ${slug} ${release}
+fi

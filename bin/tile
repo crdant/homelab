@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/secrets.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+
+concourse_team=pcf
+concourse_target=${env_id}-${concourse_team}
+concourse_url="concourse.bootstrap.${domain}"
+parameter_file="${work_dir}/${slug}-upgrade-params.yml"
+pipeline_file=${work_dir}/pcf-pipelines/upgrade-tile/pipeline.yml
+
+om_creds=$(credhub get --name /concourse/pcf/deploy-pcf/opsman_admin --output-json)
+om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
+om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+
+download () {
+  product_slug=${1}
+  release_version=${2}
+
+  mkdir -p ${work_dir}/${product_slug}/${release_version}
+  pivnet download-product-files --product-slug ${product_slug} --release-version ${release_version} \
+    --glob '*.pivotal' --download-dir=${work_dir}/${product_slug}/${release_version} --accept-eula
+}
+
+upload () {
+  product_slug=${1}
+  release_version=${2}
+
+  om -k --target manager.${subdomain} --username ${om_username} --password ${om_password} \
+    upload-product --product ${work_dir}/${product_slug}/${release_version}/*
+}
+
+stage () {
+  product_slug=${1}
+  release_version=${2}
+
+  om -k --target manager.${subdomain} --username ${om_username} --password ${om_password} \
+    stage-product --product-name ${product_slug} --product-version ${release_version}
+}
+
+pipeline () {
+  local product_slug=${1}
+  local release_version=${2}
+  local tile_upgrade_pipeline="update-${product_slug}"
+
+  ${BASEDIR}/pcf.sh login
+
+  base_version=$(echo ${release_version} | awk -F. '{print $1 "\." $2 }')
+  product_name="$(unzip -p ${work_dir}/${product_slug}/${release_version}/* "metadata/*.yml" | egrep "^name: (.+)" | cut -d" " -f 2)"
+
+  cat <<PARAMS > ${parameter_file}
+  pivnet_token: ${PIVNET_TOKEN}
+  product_version_regex: ^${base_version}\..*$
+  opsman_admin_username: ${opsman_admin.username}
+  opsman_admin_password: ${opsman_admin.password}
+  opsman_domain_or_ip_address: manager.${subdomain}
+  iaas_type: vsphere
+  product_slug: ${product_slug}
+  product_name: ${product_name}
+PARAMS
+
+  fly --target ${concourse_target} set-pipeline --pipeline ${tile_upgrade_pipeline} \
+    --config ${pipeline_file} --load-vars-from ${parameter_file}
+}
+
+show_products () {
+  type=${1}
+  om -k --target manager.${subdomain} --username ${om_username} --password ${om_password} ${type}-products
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --slug | --product-slug | -p)
+        slug=${2}
+        shift
+        ;;
+      --release | --release-version | -r)
+        release=${2}
+        shift
+        ;;
+      concourse_login | login )
+        login=1
+        ;;
+      download)
+        download=1
+        ;;
+      pipeline | pipelines )
+        pipeline=1
+        ;;
+      upload )
+        upload=1
+        ;;
+      stage )
+        stage=1
+        ;;
+      deploy )
+        download=1
+        upload=1
+        stage=1
+        pipeline=1
+        ;;
+      staged )
+        show_products staged
+        exit
+        ;;
+      deployed | ls)
+        show_products deployed
+        exit
+        ;;
+      available | avail)
+        show_products available
+        exit
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+  done
+fi
+
+if [ -z "$slug" ] ; then
+  echo "Tile not specified. Please provide the argument '-p, --product-slug' with a valid Pivotal Network product slug"
+  exit 1
+fi
+
+if [ -z "$release" ] ; then
+  echo "Version not specified. Please provide the argument '-r, --release-version' with the version you want"
+  exit 1
+fi
+
+if [ -n "$download" ] ; then
+  download ${slug} ${release}
+fi
+
+if [ -n "$upload" ] ; then
+  upload ${slug} ${release}
+fi
+
+if [ -n "$stage" ] ; then
+  stage ${slug} ${release}
+fi
+
+if [ -n "$pipeline" ] ; then
+  pipeline ${slug} ${release}
+fi
