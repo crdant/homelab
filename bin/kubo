@@ -284,8 +284,8 @@ uaa () {
   local kubo_pcf_account_password="$(get_password kubo-pcf-account)"
   # create user for deploying the broker
   uaac user add ${env_id}-kubo -p ${kubo_pcf_account_password} --emails ${env_id}-kubo@${domain}
-  uaac member add cloud_controller.admin ${env-id}-kubo
-  uaac member add scim.read ${env-id}-kubo
+  uaac member add cloud_controller.admin ${env_id}-kubo
+  uaac member add scim.read ${env_id}-kubo
 }
 
 params () {
@@ -295,7 +295,7 @@ params () {
 
   # TO DO: look up
   deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')
-  nats_internal_ips="${deployment_base}.10,${deployment_base}.11,${deployment_base}.12"
+  nats_internal_ips="${deployment_base}.10"
 
   OIFS=${IFS}
   IFS=','
@@ -319,7 +319,7 @@ params () {
     --var vcenter-host=${vcenter_host} \
     --var vcenter-datacenter=${vcenter_data_center} \
     --var vcenter-cluster=${vcenter_cluster} \
-    --var vcenter-resource-pool=${vcenter_resource_pool_1} \
+    --var vcenter-resource-pool=${vcenter_resource_pool_2} \
     --var director-ip=${director_ip} \
     --var container-network=${container_network} \
     --var container-cidr=${container_cidr} \
@@ -327,8 +327,6 @@ params () {
     --var container-excluded=${container_gateway}-${container_ex_limit} \
     --var dns-server-1=${dns_array[0]} \
     --var pcf-nats-internal-ip-1=${nats_array[0]} \
-    --var pcf-nats-internal-ip-2=${nats_array[1]} \
-    --var pcf-nats-internal-ip-3=${nats_array[2]} \
     --var kubo-network-name=${container_network} \
     --var reserved-ips=${container_gateway}-${container_ex_limit} \
     --var pcf-nats-internal-ips=${nats_internal_ips} \
