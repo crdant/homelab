@@ -23,5 +23,5 @@ git config --global user.name $GIT_USER
 git rm creds.yml director-secrets.yml director.yml state.json
 # if the director is already undeployed, commit will return an error with nothing to commit, so
 # let's make sure we have differences before trying to commit
-git diff-index --quiet HEAD || git commit -m "Clear state after deleting director"
+git diff-index --quiet HEAD || git commit -m "Cleared state after deleting director"
 popd
