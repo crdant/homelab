@@ -18,7 +18,9 @@ pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
 parameter_file="${work_dir}/${env_id}-${pcf_install_pipeline}-params.yml"
 parameter_source="${pipeline_dir}/install-pcf/params.yml"
 
-secret_root="concourse/${concourse_team}/${pcf_install_pipeline}"
+team_secret_root="concourse/${concourse_team}"
+secret_root="${team_secret_root}/${pcf_install_pipeline}"
+update_secret_root="${team_secret_root}/${pcf_upgrade_pipeline}"
 
 prepare_concourse() {
   concourse_admin="admin"
