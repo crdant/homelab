@@ -80,7 +80,7 @@ om_ip_address=$(dig +short ${om_host_name}.${subdomain})
 director_host_name=director
 om_admin_user=arceus
 ## Deployment domain names
-pcf_system_prefix=system
+pcf_system_prefix=run
 pcf_apps_prefix=apps
 pcf_tcp_prefix=tcp
 
