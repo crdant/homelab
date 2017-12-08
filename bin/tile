@@ -7,7 +7,6 @@ BASEDIR=`dirname $0`/..
 concourse_team=pcf
 concourse_target=${env_id}-${concourse_team}
 concourse_url="concourse.bootstrap.${domain}"
-parameter_file="${work_dir}/${slug}-upgrade-params.yml"
 pipeline_file=${work_dir}/pcf-pipelines/upgrade-tile/pipeline.yml
 
 om_creds=$(credhub get --name /concourse/pcf/deploy-pcf/opsman_admin --output-json)
@@ -17,10 +16,15 @@ om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
 download () {
   product_slug=${1}
   release_version=${2}
+  glob=${3}
+
+  if [[ -z "${glob}" ]] ; then
+    glob='*.pivotal'
+  fi
 
   mkdir -p ${work_dir}/${product_slug}/${release_version}
   pivnet download-product-files --product-slug ${product_slug} --release-version ${release_version} \
-    --glob '*.pivotal' --download-dir=${work_dir}/${product_slug}/${release_version} --accept-eula
+    --glob ${glob}  --download-dir=${work_dir}/${product_slug}/${release_version} --accept-eula
 }
 
 upload () {
@@ -35,16 +39,20 @@ stage () {
   product_slug=${1}
   release_version=${2}
 
+  om_prod_slug="$(unzip -cqqa ${work_dir}/${product_slug}/${release_version}/* 'metadata/*.yml' | grep "^name:" | cut -d' ' -f 2)"
+  om_prod_version="$(unzip -cqqa ${work_dir}/${product_slug}/${release_version}/* 'metadata/*.yml' | grep "^product_version:" | cut -d' ' -f 2 | tr -d \" )"
+
   om -k --target manager.${subdomain} --username ${om_username} --password ${om_password} \
-    stage-product --product-name ${product_slug} --product-version ${release_version}
+    stage-product --product-name ${om_prod_slug} --product-version ${om_prod_version}
 }
 
 pipeline () {
   local product_slug=${1}
   local release_version=${2}
   local tile_upgrade_pipeline="update-${product_slug}"
+  local parameter_file="update-${product_slug}.yml"
 
-  ${BASEDIR}/pcf.sh login
+  pivotalcf login
 
   base_version=$(echo ${release_version} | awk -F. '{print $1 "\." $2 }')
   product_name="$(unzip -p ${work_dir}/${product_slug}/${release_version}/* "metadata/*.yml" | egrep "^name: (.+)" | cut -d" " -f 2)"
@@ -52,8 +60,8 @@ pipeline () {
   cat <<PARAMS > ${parameter_file}
   pivnet_token: ${PIVNET_TOKEN}
   product_version_regex: ^${base_version}\..*$
-  opsman_admin_username: ${opsman_admin.username}
-  opsman_admin_password: ${opsman_admin.password}
+  opsman_admin_username: ((opsman_admin.username))
+  opsman_admin_password: ((opsman_admin.password))
   opsman_domain_or_ip_address: manager.${subdomain}
   iaas_type: vsphere
   product_slug: ${product_slug}
@@ -78,6 +86,10 @@ if [ $# -gt 0 ]; then
         ;;
       --release | --release-version | -r)
         release=${2}
+        shift
+        ;;
+      --glob | -g)
+        glob=${2}
         shift
         ;;
       concourse_login | login )
@@ -133,7 +145,7 @@ if [ -z "$release" ] ; then
 fi
 
 if [ -n "$download" ] ; then
-  download ${slug} ${release}
+  download ${slug} ${release} ${glob}
 fi
 
 if [ -n "$upload" ] ; then
