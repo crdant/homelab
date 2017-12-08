@@ -61,7 +61,7 @@ if [ -z "$release" ] ; then
   exit 1
 fi
 
-om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
+om_creds=$(credhub get --name /concourse/pcf/deploy-pcf/opsman_admin --output-json)
 om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
 om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
 
