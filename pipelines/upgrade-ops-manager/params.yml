@@ -1,0 +1,37 @@
+# Copyright 2017-Present Pivotal Software, Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+opsman_timeout_seconds: 3600 # time to wait for new OM VM to come up
+opsman_major_minor_version: ^1\.12\..*$  # Ops Manager minor version to track
+opsman_domain_or_ip_address: ((om-host-name)).((subdomain))
+
+vcenter_url: https://((vcenter-host))
+vcenter_datacenter: home-lab
+vcenter_datastore: ((om-data-store))
+
+# vCenter Cluster or Resource Pool to use to deploy Ops Manager.
+# Possible formats:
+#   cluster:       /<Data Center Name>/host/<Cluster Name>
+#   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
+vcenter_cluster: ((vcenter-cluster))
+vcenter_resource_pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool-1))
+
+opsman_vm_folder: ((env-id))-pcf-vms
+opsman_ip: ((om-ip-address))
+netmask: ((om-netmask))
+gateway: ((infrastructure-gateway))
+dns: ((dns-servers))  #example: 8.8.8.8,8.8.4.4
+ntp: ((ntp-servers)) #example: 0.pool.ntp.org,1.pool.ntp.org
+opsman_network: ((infrastructure-network))
+opsman_disk_type: thin # use thick or thin disk provisioning

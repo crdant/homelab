@@ -10,16 +10,27 @@ concourse_target=${env_id}-${concourse_team}
 concourse_url=$(bootstrap url)
 pcf_concourse_user=pivotal
 
-pcf_install_pipeline="deploy-pcf"
 pcf_pipelines_remote="https://github.com/pivotal-cf/pcf-pipelines.git"
 pcf_pipelines_local=${work_dir}/pcf-pipelines
 pcf_pipelines_version="v0.19.1"
-pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
-parameter_file="${work_dir}/${env_id}-${pcf_install_pipeline}-params.yml"
-parameter_source="${pipeline_dir}/install-pcf/params.yml"
+
+pcf_install_pipeline="deploy-pcf"
+pcf_install_pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
+pcf_install_parameter_file="${work_dir}/${env_id}-${pcf_install_pipeline}-params.yml"
+pcf_install_parameter_source="${pipeline_dir}/install-pcf/params.yml"
+
+ert_upgrade_pipeline="upgrade-ert"
+ert_upgrade_pipeline_file="${work_dir}/pcf-pipelines/upgrade-ert/pipeline.yml"
+ert_upgrade_parameter_file="${work_dir}/${env_id}-${ert_upgrade_pipeline}-params.yml"
+ert_upgrade_parameter_source="${pipeline_dir}/upgrade-ert/params.yml"
+
+om_upgrade_pipeline="upgrade-opsman"
+om_upgrade_pipeline_file="${work_dir}/pcf-pipelines/upgrade-ops-manager/vsphere/pipeline.yml"
+om_upgrade_parameter_file="${work_dir}/${env_id}-${om_upgrade_pipeline}-params.yml"
+om_upgrade_parameter_source="${pipeline_dir}/upgrade-ops-manager/params.yml"
 
 team_secret_root="concourse/${concourse_team}"
-secret_root="${team_secret_root}/${pcf_install_pipeline}"
+secret_root="${team_secret_root}"
 update_secret_root="${team_secret_root}/${pcf_upgrade_pipeline}"
 
 prepare_concourse() {
@@ -43,26 +54,39 @@ download () {
   pivnet login --api-token ${PIVNET_TOKEN}
   pivnet download-product-files --product-slug pcf-automation --release-version ${pcf_pipelines_version} --download-dir ${work_dir} --glob "pcf-pipelines-${pcf_pipelines_version}.tgz" --accept-eula
   tar -xzf "${work_dir}/pcf-pipelines-${pcf_pipelines_version}.tgz" -C "${work_dir}"
-  transform_pipeline
+  transform_pipelines
 }
 
-transform_pipeline() {
-  sed -i -e 's/{{/((/g' "${pipeline_file}"
-  sed -i -e 's/}}/))/g' "${pipeline_file}"
-  sed -i -e 's/_private_key/.private_key/g' "${pipeline_file}"
-  sed -i -e 's/_username/.username/g' "${pipeline_file}"
-  sed -i -e 's/_password/.password/g' "${pipeline_file}"
-  # we aren't doing anything with NSX, but it gets caught up in the previous replace
-  sed -i -e 's/nsx.username/nsx_username/g' "${pipeline_file}"
-  sed -i -e 's/nsx.password/nsx_password/g' "${pipeline_file}"
-  # also gets caught up in previous replace
-  sed -i -e 's/saml_ssl.private_key/saml_ssl_private_key/g' "${pipeline_file}"
-  sed -i -e 's/ssl.private_key/ssl_private_key/g' "${pipeline_file}"
+transform_pipelines() {
+  local pipelines=( $pcf_install_pipeline_file $ert_upgrade_pipeline_file $om_upgrade_pipeline_file )
 
-  cp ${pipeline_file} ${pipeline_file}.bak
-  bosh int --ops-file "${ops_dir}/config-srt.yml" "${pipeline_file}.bak" > ${pipeline_file}
-  cp ${pipeline_file} ${pipeline_file}.bak
-  bosh int --ops-file "${ops_dir}/config-tcp.yml" "${pipeline_file}.bak" > ${pipeline_file}
+  for pipeline_file in "${pipelines[@]}"
+  do
+    echo "processing: ${pipeline_file}"
+    # new style replacement
+    sed -i -e 's/{{/((/g' "${pipeline_file}"
+    sed -i -e 's/}}/))/g' "${pipeline_file}"
+    # make consistent across pipelines
+    sed -i -e 's/opsman_ssh_password/om_ssh_pwd/g' "${pipeline_file}"
+    sed -i -e 's/opsman_passphrase/om_decryption_pwd/g' "${pipeline_file}"
+    sed -i -e s'/vcenter_username/ops-man-vsphere.username/g' "${pipeline_file}"
+    sed -i -e s'/vcenter_password/ops-man-vsphere.password/g' "${pipeline_file}"
+    # use complex credhub types
+    sed -i -e 's/_private_key/.private_key/g' "${pipeline_file}"
+    sed -i -e 's/_username/.username/g' "${pipeline_file}"
+    sed -i -e 's/_password/.password/g' "${pipeline_file}"
+    # we aren't doing anything with NSX, but it gets caught up in the previous replace
+    sed -i -e 's/nsx.username/nsx_username/g' "${pipeline_file}"
+    sed -i -e 's/nsx.password/nsx_password/g' "${pipeline_file}"
+    # also gets caught up in previous replace
+    sed -i -e 's/saml_ssl.private_key/saml_ssl_private_key/g' "${pipeline_file}"
+    sed -i -e 's/ssl.private_key/ssl_private_key/g' "${pipeline_file}"
+  done
+
+  cp ${pcf_install_pipeline_file} ${pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/config-srt.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
+  cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/config-tcp.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
 }
 
 get_credential () {
@@ -110,7 +134,7 @@ get_secret () {
 }
 
 secrets () {
-  if credhub get --name /concourse/pcf/deploy-pcf/om-ssh-password > /dev/null ; then
+  if credhub get --name ${secret_root}/om-ssh-password > /dev/null ; then
     read -p "This will overwrite all secrets and may break your install. Continue (y/n)? " choice
     case "$choice" in
       y|Y ) ;;
@@ -122,11 +146,20 @@ secrets () {
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
   generate_credential opsman_admin ${om_admin_user}
-  generate_value om-ssh-password
-  generate_value om-decrypt-password
+  generate_value om_ssh_pwd
+  generate_value om_decryption_pwd
 }
 
-params() {
+params () {
+  fill_params ${pcf_install_parameter_source} ${pcf_install_parameter_file}
+  fill_params ${ert_upgrade_parameter_source} ${ert_upgrade_parameter_file}
+  fill_params ${om_upgrade_parameter_source} ${om_upgrade_parameter_file}
+}
+
+fill_params() {
+  local parameter_source=${1}
+  local parameter_file=${2}
+
   infrastructure_base=$(echo ${infrastructure_cidr} | awk -F. '{print $1 "." $2 "." $3}')
   infrastructure_gateway="${infrastructure_base}.1"
   infrastructure_ex_limit="${infrastructure_base}.9"
@@ -149,6 +182,7 @@ params() {
 
   om_ip="${ip_base}.10"
 
+  # install pipeline
   bosh int \
     --var env-id=${env_id} \
     --var subdomain=${subdomain} \
@@ -198,8 +232,13 @@ params() {
 pipeline () {
   concourse_login
   fly --target ${concourse_target} set-pipeline --pipeline ${pcf_install_pipeline} \
-    --config ${pipeline_file} --load-vars-from ${parameter_file}
+    --config ${pcf_install_pipeline_file} --load-vars-from ${pcf_install_parameter_file}
   fly --target ${concourse_target} unpause-pipeline --pipeline ${pcf_install_pipeline}
+
+  fly --target ${concourse_target} set-pipeline --pipeline ${om_upgrade_pipeline} \
+    --config ${om_upgrade_pipeline_file} --load-vars-from ${om_upgrade_parameter_file}
+  fly --target ${concourse_target} set-pipeline --pipeline ${ert_upgrade_pipeline} \
+    --config ${ert_upgrade_pipeline_file} --load-vars-from ${ert_upgrade_parameter_file}
 }
 
 trigger() {
