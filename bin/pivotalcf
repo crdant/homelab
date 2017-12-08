@@ -12,7 +12,7 @@ pcf_concourse_user=pivotal
 
 pcf_pipelines_remote="https://github.com/pivotal-cf/pcf-pipelines.git"
 pcf_pipelines_local=${work_dir}/pcf-pipelines
-pcf_pipelines_version="v0.19.1"
+pcf_pipelines_version="v0.21.1"
 
 pcf_install_pipeline="deploy-pcf"
 pcf_install_pipeline_file="${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml"
