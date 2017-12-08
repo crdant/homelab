@@ -26,7 +26,7 @@ odb-sdk-version:          "0.16.1"
 kubo-resource-pool: ((vcenter-resource-pool))
 
 # Datastore to use for K8s machines and persistenet volumes
-kubo-ephemeral-store:   ((slow-storage))
+kubo-ephemeral-store:   ((fast-storage))
 kubo-persistent-store:  ((slow-storage))
 
 # folders/paths for vCenter
