@@ -87,6 +87,9 @@ transform_pipelines() {
   bosh int --ops-file "${ops_dir}/config-srt.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
   cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/config-tcp.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
+  cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/upload-ert.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
+
 }
 
 get_credential () {
