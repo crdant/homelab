@@ -18,6 +18,7 @@ params:
 inputs:
   - name: pivnet-product
   - name: pcf-pipelines
-
+  - name: homelab
+  
 run:
   path: homelab/pipelines/install-pcf/tasks/upload-product-and-stemcell/task.sh
