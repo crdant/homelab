@@ -1,3 +1,8 @@
 - type: replace
   path: /jobs/name=upload-ert/plan/task=upload-tile/file
   value: homelab/pipelines/install-pcf/tasks/upload-product-and-stemcell/task.yml
+
+- type: replace
+  path: /jobs/name=upload-ert/plan/0/aggregate/-
+  value:
+    get: homelab
