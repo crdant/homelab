@@ -6,7 +6,7 @@ if [[ -n "$NO_PROXY" ]]; then
   echo "$OM_IP $OPSMAN_DOMAIN_OR_IP_ADDRESS" >> /etc/hosts
 fi
 
-if ( cat ./pivnet-product/metadata.json | jq --raw-output ' [ .Dependencies[] | select(.Release.Product.Name | contains("Stemcells")) | .Release.Version ]' ) ; then
+if ( cat ./pivnet-product/metadata.json | jq --raw-output ' [ .Dependencies[] | select(.Release.Product.Name | contains("Stemcells")) | .Release.Version ]' 2> /dev/null ) ; then
   STEMCELL_VERSION=$(
     cat ./pivnet-product/metadata.json |
     jq --raw-output \
@@ -21,7 +21,7 @@ if ( cat ./pivnet-product/metadata.json | jq --raw-output ' [ .Dependencies[] | 
       | max // empty
       | map(tostring)
       | join(".")
-      '
+      ' 2> /dev/null
   )
 else
   STEMCELL_VERSION=$(
@@ -39,7 +39,7 @@ else
       | map(tostring)
       | join(".")
       '
-  )
+  )  2> /dev/null
 fi
 
 if [ -n "$STEMCELL_VERSION" ]; then
@@ -66,10 +66,16 @@ if [ -n "$STEMCELL_VERSION" ]; then
     product_slug=$(
       jq --raw-output \
         '
-        if any(.Dependencies[]; select(.Release.Product.Name | contains("Stemcells for PCF (Windows)"))) then
-          "stemcells-windows-server"
+        if ( .Dependencies ) then
+          if any(.Dependencies[]; select(.Release.Product.Name | contains("Stemcells for PCF (Windows)"))) then
+            "stemcells-windows-server"
+          else
+            "stemcells"
+          end
         else
-          "stemcells"
+          .DependencySpecifiers[]
+          | select(.ProductSlug | contains("stemcells"))
+          | .ProductSlug
         end
         ' < pivnet-product/metadata.json
     )
