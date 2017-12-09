@@ -13,7 +13,7 @@
 # limitations under the License.
 
 opsman_timeout_seconds: 3600 # time to wait for new OM VM to come up
-opsman_major_minor_version: ^1\.12\..*$  # Ops Manager minor version to track
+opsman_major_minor_version: ^2\.0\..*$ # PCF Ops Manager minor version to track
 opsman_domain_or_ip_address: ((om-host-name)).((subdomain))
 
 vcenter_url: https://((vcenter-host))
