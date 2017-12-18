@@ -160,7 +160,7 @@ resources:
     source:
       endpoint: https://storage.googleapis.com
       bucket: kubo-releases
-      regexp: "kubo-service-adapter-release-(0.4.0-dev.*).tgz"
+      regexp: "kubo-service-adapter-release-(0.5.2-dev.*).tgz"
       access_key_id: ((gcs-access-key-id))
       secret_access_key: ((gcs-secret-access-key))
   - name: stemcell
