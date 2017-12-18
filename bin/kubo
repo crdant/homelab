@@ -266,7 +266,7 @@ secrets () {
   echo "Configuring secrets at ${secret_root}..."
   set_key git "$(cat ${HOME}/.ssh/concourse_github)"
   set_value pivnet_token ${PIVNET_TOKEN}
-  set_credential pcf-nats $(pivotalcf credential cf .nats.credentials identity) $(pivotalcf credential cf .nats.credentials password)
+  # set_credential pcf-nats $(pivotalcf credential cf .nats.credentials identity) $(pivotalcf credential cf .nats.credentials password)
   generate_credential pcf-routing-client ${env_id}_routing_api_client
   generate_credential kubo-pcf-account ${env_id}-kubo
 }
