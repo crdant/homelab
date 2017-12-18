@@ -1,0 +1,21 @@
+- type: replace
+  path: /resources/-
+  value:
+    name: homelab
+    type: git
+    source:
+      uri: https://github.com/crdant/homelab.git
+      branch: master
+
+- type: replace
+  path: /jobs/name=upload-and-stage-tile/plan/task=upload-tile-and-stemcell/file
+  value: homelab/pipelines/tasks/upload-product-and-stemcell/task.yml
+
+- type: replace
+  path: /jobs/name=upload-and-stage-tile/plan/task=stage-tile/file
+  value: homelab/pipelines/tasks/stage-product/task.yml
+
+- type: replace
+  path: /jobs/name=upload-and-stage-tile/plan/0/aggregate/-
+  value:
+    get: homelab

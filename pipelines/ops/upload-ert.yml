@@ -1,4 +1,13 @@
 - type: replace
+  path: /resources/-
+  value:
+    name: homelab
+    type: git
+    source:
+      uri: https://github.com/crdant/homelab.git
+      branch: master
+      
+- type: replace
   path: /jobs/name=upload-ert/plan/task=upload-tile/file
   value: homelab/pipelines/install-pcf/tasks/upload-product-and-stemcell/task.yml
 
