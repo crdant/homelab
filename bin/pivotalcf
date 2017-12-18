@@ -19,8 +19,10 @@ pcf_install_pipeline_file="${pcf_pipelines_local}/install-pcf/vsphere/pipeline.y
 pcf_install_parameter_file="${work_dir}/${env_id}-${pcf_install_pipeline}-params.yml"
 pcf_install_parameter_source="${pipeline_dir}/install-pcf/params.yml"
 
+# N.B. ERT is just another tile for upgrading, so make that clear with the variable name for the
+#      pipeline file (also does the transform for use in the `tite` command)
+tile_upgrade_pipeline_file="${pcf_pipelines_local}/upgrade-tile/pipeline.yml"
 ert_upgrade_pipeline="upgrade-ert"
-ert_upgrade_pipeline_file="${pcf_pipelines_local}/upgrade-ert/pipeline.yml"
 ert_upgrade_parameter_file="${work_dir}/${env_id}-${ert_upgrade_pipeline}-params.yml"
 ert_upgrade_parameter_source="${pipeline_dir}/upgrade-ert/params.yml"
 
@@ -58,7 +60,7 @@ download () {
 }
 
 transform_pipelines() {
-  local pipelines=( $pcf_install_pipeline_file $ert_upgrade_pipeline_file $om_upgrade_pipeline_file )
+  local pipelines=( $pcf_install_pipeline_file $tile_upgrade_pipeline_file $om_upgrade_pipeline_file )
 
   for pipeline_file in "${pipelines[@]}"
   do
@@ -83,13 +85,17 @@ transform_pipelines() {
     sed -i '' -e 's/ssl.private_key/ssl_private_key/g' "${pipeline_file}"
   done
 
+  # convert to installing SRT
   cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/config-srt.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
+  # add TCP routing enablement
   cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/config-tcp.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
+  # address the new metadata format for both install and upgrade
   cp ${pcf_install_pipeline_file} ${pcf_install_pipeline_file}.bak
   bosh int --ops-file "${ops_dir}/upload-ert.yml" "${pcf_install_pipeline_file}.bak" > ${pcf_install_pipeline_file}
-
+  cp ${tile_upgrade_pipeline_file} ${tile_upgrade_pipeline_file}.bak
+  bosh int --ops-file "${ops_dir}/upgrade-tile.yml" "${tile_upgrade_pipeline_file}.bak" > ${tile_upgrade_pipeline_file}
 }
 
 get_credential () {
@@ -241,7 +247,7 @@ pipeline () {
   fly --target ${concourse_target} set-pipeline --pipeline ${om_upgrade_pipeline} \
     --config ${om_upgrade_pipeline_file} --load-vars-from ${om_upgrade_parameter_file}
   fly --target ${concourse_target} set-pipeline --pipeline ${ert_upgrade_pipeline} \
-    --config ${ert_upgrade_pipeline_file} --load-vars-from ${ert_upgrade_parameter_file}
+    --config ${tile_upgrade_pipeline_file} --load-vars-from ${ert_upgrade_parameter_file}
 }
 
 trigger() {
