@@ -22,6 +22,8 @@ image_resource:
 inputs:
   - name: pcf-pipelines
   - name: pivnet-product
+  - name: homelab
+
 
 params:
   OPSMAN_USERNAME:
