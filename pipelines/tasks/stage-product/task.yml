@@ -29,4 +29,4 @@ params:
   OPSMAN_DOMAIN_OR_IP_ADDRESS:
 
 run:
-  path: pcf-pipelines/tasks/stage-product/task.sh
+  path: homelab/pipelines/tasks/stage-product/task.sh
