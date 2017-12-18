@@ -4,12 +4,14 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/secrets.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
 
+secret_root="/concourse/pcf"
+
 concourse_team=pcf
 concourse_target=${env_id}-${concourse_team}
 concourse_url="concourse.bootstrap.${domain}"
 pipeline_file=${work_dir}/pcf-pipelines/upgrade-tile/pipeline.yml
 
-om_creds=$(credhub get --name /concourse/pcf/deploy-pcf/opsman_admin --output-json)
+om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
 om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
 om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
 
@@ -50,7 +52,7 @@ pipeline () {
   local product_slug=${1}
   local release_version=${2}
   local tile_upgrade_pipeline="update-${product_slug}"
-  local parameter_file="update-${product_slug}.yml"
+  local parameter_file="${work_dir}/update-${product_slug}.yml"
 
   pivotalcf login
 
@@ -66,6 +68,7 @@ pipeline () {
   iaas_type: vsphere
   product_slug: ${product_slug}
   product_name: ${product_name}
+  product_globs: *.pivotal
 PARAMS
 
   fly --target ${concourse_target} set-pipeline --pipeline ${tile_upgrade_pipeline} \
