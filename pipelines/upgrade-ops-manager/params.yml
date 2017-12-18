@@ -19,6 +19,8 @@ opsman_domain_or_ip_address: ((om-host-name)).((subdomain))
 vcenter_url: https://((vcenter-host))
 vcenter_datacenter: home-lab
 vcenter_datastore: ((om-data-store))
+vcenter_ca_cert:
+vcenter_insecure:         true
 
 # vCenter Cluster or Resource Pool to use to deploy Ops Manager.
 # Possible formats:
