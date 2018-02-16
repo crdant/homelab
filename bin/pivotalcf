@@ -310,6 +310,42 @@ teardown() {
   fly --target ${concourse_target} destroy-pipeline -p "${pcf_install_pipeline}"
 }
 
+tunnel() {
+  local port=$(netstat -aln | awk '
+$6 == "LISTEN" {
+  if ($4 ~ "[.:][0-9]+$") {
+    split($4, a, /[:.]/);
+    port = a[length(a)];
+    p[port] = 1
+  }
+}
+END {
+  srand()
+  while (i = (44000 + int(rand() * 15000))){
+    if ( !p[i]) {
+      print i;
+      exit 0;
+    };
+  };
+}')
+
+  credhub get --name ${secret_root}/om_ssh_pwd --output-json | jq --raw-output '.value' | pbcopy
+  scp ubuntu@${om_host_name}.${subdomain}:/var/tempest/workspaces/default/root_ca_certificate ${key_dir}/bosh-${envt_id}-ca.crt > /dev/null 2>&1
+  ssh ubuntu@${om_host_name}.${subdomain} -f -N -o StrictHostKeyChecking=no -o ServerAliveInterval=300 -D ${port} > /dev/null 2>&1
+
+  local om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
+  local om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
+  local om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+
+  local bosh_cred="$(om -k --target https://manager.${subdomain} --username ${om_username} --password ${om_password} --skip-ssl-validation curl --silent --path /api/v0/deployed/director/credentials/bosh_commandline_credentials | jq --raw-output .credential)"
+  local bosh_vars="${bosh_cred% *} BOSH_CA_CERT=${key_dir}/bosh-${short_id}-ca.crt BOSH_ALL_PROXY=socks5://localhost:${port}"
+
+  eval "export ${bosh_vars}"
+  bosh alias-env ${env_id}-pcf > /dev/null 2>&1
+  bosh log-in > /dev/null 2>&1
+  echo "export ${bosh_vars} BOSH_ENVIRONMENT=${env_id}-pcf"
+}
+
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
@@ -365,6 +401,9 @@ if [ $# -gt 0 ]; then
         ;;
       teardown)
         teardown
+        ;;
+      tunnel)
+        tunnel
         ;;
       get_secret)
         get_secret "${2}"
