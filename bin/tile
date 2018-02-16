@@ -15,6 +15,11 @@ om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
 om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
 om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
 
+download=
+upload=
+stage=
+pipeline=
+
 download () {
   product_slug=${1}
   release_version=${2}
@@ -68,7 +73,7 @@ pipeline () {
   iaas_type: vsphere
   product_slug: ${product_slug}
   product_name: ${product_name}
-  product_globs: *.pivotal
+  product_globs: "*.pivotal"
 PARAMS
 
   fly --target ${concourse_target} set-pipeline --pipeline ${tile_upgrade_pipeline} \
