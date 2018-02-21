@@ -311,6 +311,7 @@ teardown() {
 }
 
 tunnel() {
+  set -x
   local port=$(netstat -aln | awk '
 $6 == "LISTEN" {
   if ($4 ~ "[.:][0-9]+$") {
@@ -330,7 +331,7 @@ END {
 }')
 
   credhub get --name ${secret_root}/om_ssh_pwd --output-json | jq --raw-output '.value' | pbcopy
-  scp ubuntu@${om_host_name}.${subdomain}:/var/tempest/workspaces/default/root_ca_certificate ${key_dir}/bosh-${envt_id}-ca.crt > /dev/null 2>&1
+  scp ubuntu@${om_host_name}.${subdomain}:/var/tempest/workspaces/default/root_ca_certificate ${key_dir}/bosh-${env_id}-ca.crt > /dev/null 2>&1
   ssh ubuntu@${om_host_name}.${subdomain} -f -N -o StrictHostKeyChecking=no -o ServerAliveInterval=300 -D ${port} > /dev/null 2>&1
 
   local om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
@@ -344,6 +345,7 @@ END {
   bosh alias-env ${env_id}-pcf > /dev/null 2>&1
   bosh log-in > /dev/null 2>&1
   echo "export ${bosh_vars} BOSH_ENVIRONMENT=${env_id}-pcf"
+  set +x
 }
 
 if [ $# -gt 0 ]; then
