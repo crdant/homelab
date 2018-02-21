@@ -311,7 +311,6 @@ teardown() {
 }
 
 tunnel() {
-  set -x
   local port=$(netstat -aln | awk '
 $6 == "LISTEN" {
   if ($4 ~ "[.:][0-9]+$") {
@@ -345,7 +344,6 @@ END {
   bosh alias-env ${env_id}-pcf > /dev/null 2>&1
   bosh log-in > /dev/null 2>&1
   echo "export ${bosh_vars} BOSH_ENVIRONMENT=${env_id}-pcf"
-  set +x
 }
 
 if [ $# -gt 0 ]; then
