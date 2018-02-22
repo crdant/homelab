@@ -15,12 +15,9 @@ prepare () {
   eval "$(op signin my)"
   if [ ! -d "${bucc_dir}" ] ; then
     git clone ${bucc_repository} ${bucc_dir}
-    git checkout develop
     populate_vars_file
   else
     pushd ${bucc_dir}
-      git fetch
-      git checkout develop
       git pull
       populate_vars_file
     popd
@@ -28,7 +25,7 @@ prepare () {
 }
 
 populate_vars_file () {
-  vcenter_password="$(op get item xrfzecwzyfg7volpoq7yuhaxtm | jq -r '.details.password')"
+  vcenter_password="$(op get item "Bootstrap BOSH Service Account (Home Lab)" | jq -r '.details.password')"
 
   cat  <<VARS > ${bucc_dir}/vars.yml
 director_name: bucc-${env_id}
