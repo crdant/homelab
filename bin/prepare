@@ -13,7 +13,7 @@ if [ ! -d ${key_dir} ] ; then
 fi
 
 if [ ! -f ${state_file} ] ; then
-  env_id="homelab-$(generate_passphrase 2)"
+  env_id="homelab-$(generate_passphrase 1)"
   cat <<STATE > ${state_file}
 env_id=${env_id}
 STATE
