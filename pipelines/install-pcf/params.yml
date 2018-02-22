@@ -1,6 +1,6 @@
 # Pipeline resource configuration
-opsman_major_minor_version: ^2\.0\..*$ # PCF Ops Manager minor version to track
-ert_major_minor_version: ^2\.0\..*$ # PCF Elastic Runtime minor version to track
+opsman_major_minor_version: ^2\.1\..*$ # PCF Ops Manager minor version to track
+ert_major_minor_version: ^2\.1\..*$ # PCF Elastic Runtime minor version to track
 
 # vCenter configuration
 vcenter_host:             ((vcenter-host))   # vCenter host or IP
