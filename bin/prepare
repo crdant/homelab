@@ -12,9 +12,6 @@ if [ ! -d ${key_dir} ] ; then
   mkdir -p ${key_dir}
 fi
 
-if [ ! -f ${state_file} ] ; then
-  env_id="homelab-$(generate_passphrase 1)"
-  cat <<STATE > ${state_file}
-env_id=${env_id}
-STATE
+if [ ! -d ${state_dir} ] ; then
+  mkdir -p ${state_dir}
 fi
