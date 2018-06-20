@@ -12,6 +12,11 @@ ops_dir="${pipeline_dir}/ops"
 manifest_dir="${BASEDIR}/manifests"
 state_file=${work_dir}/state.sh
 
+# certificate configuration
+certbot_dir=/usr/local/etc/certbot
+ca_dir=${certbot_dir}/live
+ca_cert_file=${key_dir}/letsencrypt.pem
+
 # DNS
 domain=crdant.net
 subdomain=cloud.${domain}
