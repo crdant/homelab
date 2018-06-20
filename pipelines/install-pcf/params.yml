@@ -15,6 +15,8 @@ vcenter_insecure:         true
 om_vm_host:                                                     # Optional - vCenter host to deploy Ops Manager in
 om_data_store:                  ((om-data-store))               # vCenter datastore name to deploy Ops Manager in
 opsman_domain_or_ip_address:    ((om-host-name)).((subdomain))  # FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
+opsman_client_id:             # Client ID for Ops Manager admin account
+opsman_client_secret:         # Client Secret for Ops Manager admin account
 om_ntp_servers:                 ((ntp-servers))                 # Comma-separated list of NTP Servers
 om_dns_servers:                 ((dns-servers))                 # Comma-separated list of DNS Servers
 om_gateway:                     ((infrastructure-gateway))      # Gateway for Ops Manager network
@@ -30,6 +32,9 @@ om_vm_power_state:              true                            # Whether to pow
 #   cluster:       /<Data Center Name>/host/<Cluster Name>
 #   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
 om_resource_pool: /((vcenter-data-center))/host/((vcenter-cluster))/Resources/((vcenter-resource-pool-1))
+
+# Optional - vCenter folder to put Ops Manager in
+om_vm_folder:
 
 ephemeral_storage_names:  ((fast-storage)),((slow-storage))        # Ephemeral Storage names in vCenter for use by PCF
 persistent_storage_names: ((slow-storage)),((fast-storage))        # Persistent Storage names in vCenter for use by PCF
