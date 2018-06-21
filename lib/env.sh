@@ -10,6 +10,8 @@ state_dir="${BASEDIR}/state"
 pipeline_dir="${BASEDIR}/pipelines"
 ops_dir="${pipeline_dir}/ops"
 manifest_dir="${BASEDIR}/manifests"
+terraform_dir="${BASEDIR}/terraform"
+template_dir="${BASEDIR}/templates"
 state_file=${work_dir}/state.sh
 
 # certificate configuration
@@ -46,9 +48,9 @@ dynamic_cidr="172.28.0.0/22"
 container_cidr="172.29.0.0/22"
 
 # static hosts
-router_host="savasana.${domain}"
-esxi_host="tadasana.${domain}"
-vcenter_host="garundasana.${domain}"
+router_host="savasana"
+vsphere_host="tadasana"
+vcenter_host="garundasana"
 
 # router configuration
 router_user=ubnt

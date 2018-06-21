@@ -1,7 +1,7 @@
 provider "aws" {
   access_key = "${var.aws_access_key}"
   secret_key = "${var.aws_secret_key}"
-  region = "${var.region}"
+  region = "${var.aws_region}"
 }
 
 variable "dns_ttl" {
@@ -10,12 +10,13 @@ variable "dns_ttl" {
 
 locals {
   router_alias = "router.${var.domain}"
-  host_alias = "esxi.${var.domain}"
+  vsphere_alias = "esxi.${var.domain}"
   vcenter_alias = "vcenter.${var.domain}"
 }
 
 resource "aws_route53_zone" "homelab" {
   name = "${var.domain}"
+  comment = "PCF Home Lab"
 }
 
 resource "aws_route53_record" "router" {
@@ -30,7 +31,7 @@ resource "aws_route53_record" "router" {
 
 resource "aws_route53_record" "router_alias" {
   zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.host_alias}"
+  name    = "${local.router_alias}"
   type    = "CNAME"
   ttl     = "${var.dns_ttl}"
   records = [
@@ -38,23 +39,23 @@ resource "aws_route53_record" "router_alias" {
   ]
 }
 
-resource "aws_route53_record" "host" {
+resource "aws_route53_record" "vsphere" {
   zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.host_fqdn}"
+  name    = "${local.vsphere_fqdn}"
   type    = "A"
   ttl     = "${var.dns_ttl}"
   records = [
-    "${local.host_ip}"
+    "${local.vsphere_ip}"
   ]
 }
 
-resource "aws_route53_record" "host_alias" {
+resource "aws_route53_record" "vsphere_alias" {
   zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.host_alias}"
+  name    = "${local.vsphere_alias}"
   type    = "CNAME"
   ttl     = "${var.dns_ttl}"
   records = [
-    "${local.host_fqdn}"
+    "${local.vsphere_fqdn}"
   ]
 }
 

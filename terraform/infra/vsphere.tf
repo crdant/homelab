@@ -1,4 +1,4 @@
-variable "host" {
+variable "vsphere_host" {
   type = "string"
 }
 
@@ -7,8 +7,8 @@ variable "vcenter_host" {
 }
 
 locals {
-  host_fqdn = "${var.host}.${var.domain}"
-  host_ip = "${cidrhost(var.vmware_cidr, 1)}"
+  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
+  vsphere_ip = "${cidrhost(var.vmware_cidr, 10)}"
   vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
-  vcenter_ip = "${cidrhost(var.vmware_cidr,2)}"
+  vcenter_ip = "${cidrhost(var.vmware_cidr, 20)}"
 }
