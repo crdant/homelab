@@ -1,57 +1,3 @@
-<%
-  require 'yaml'
-  require 'ipaddr'
-
-  vars = YAML::load_file("#{ENV["work_dir"]}/router_vars.yml")
-  creds = YAML::load_file("#{ENV["key_dir"]}/router_creds.yml")
-
-  class IPAddr
-   def add(num)
-     return self.clone.set(@addr + num, @family)
-   end
-   def to_cidr
-    case @family
-     when Socket::AF_INET
-       n = IN4MASK ^ @mask_addr
-       prefix = 32
-     when Socket::AF_INET6
-       n = IN6MASK ^ @mask_addr
-       prefix = 128
-     else
-       raise AddressFamilyError, "unsupported address family"
-     end
-     while n > 0
-       n >>= 1
-       prefix -= 1
-     end
-     _to_string(@addr) + "/" + prefix.to_s
-    end
-  end
-
-  esxi_addr = `dig +short #{vars["esxi_host"]}`.rstrip
-  vsphere_port_addr = IPAddr.new(vars["vmware_cidr"]).succ.to_cidr
-  bootstrap_port_addr = IPAddr.new(vars["bootstrap_cidr"]).succ.to_cidr
-  pcf_port_addr = IPAddr.new(vars["pcf_cidr"]).succ.to_cidr
-  infrastructure_port_addr = IPAddr.new(vars["infrastructure_cidr"]).succ.to_cidr
-  deployment_port_addr = IPAddr.new(vars["deployment_cidr"]).succ.to_cidr
-  balancer_external_port_addr = IPAddr.new(vars["balancer_external_cidr"]).succ.to_cidr
-  balancer_internal_port_addr = IPAddr.new(vars["balancer_internal_cidr"]).succ.to_cidr
-  services_port_addr = IPAddr.new(vars["services_cidr"]).succ.to_cidr
-  dynamic_port_addr = IPAddr.new(vars["dynamic_cidr"]).succ.to_cidr
-  container_port_addr = IPAddr.new(vars["container_cidr"]).succ.to_cidr
-  management_port_addr =  IPAddr.new(vars["management_cidr"]).succ.to_cidr
-
-  vpn_start_addr = IPAddr.new(vars["vpn_cidr"]).add(38)
-  vpn_end_addr = IPAddr.new(vars["vpn_cidr"]).add(50)
-
-  local_router_addr = IPAddr.new(vars["local_cidr"]).to_s
-  local_dhcp_start_addr = IPAddr.new(vars["local_cidr"]).add(38)
-  local_dhcp_end_addr = IPAddr.new(vars["local_cidr"]).add(234)
-
-  management_router_addr = IPAddr.new(vars["local_cidr"]).to_s
-  management_dhcp_start_addr = IPAddr.new(vars["local_cidr"]).add(38)
-  management_dhcp_end_addr = IPAddr.new(vars["local_cidr"]).add(234)
-%>
 firewall {
     all-ping enable
     broadcast-ping disable
@@ -81,13 +27,13 @@ firewall {
           <%- end -%>
       }
       network-group pcf-subnets {
-            description "PCF Subnets"
-            network <%= vars['infrastructure_cidr'] %>
-            network <%= vars['deployment_cidr'] %>
-            network <%= vars['services_cidr'] %>
-            network <%= vars['dynamic_cidr'] %>
-            network <%= vars['container_cidr'] %>
-        }
+          description "PCF Subnets"
+          network "${infrastructure_cidr}"
+          network "${deployment_cidr}"
+          network "${services_cidr}"
+          network "${dynamic_cidr}"
+          network "${container_cidr}"
+      }
       port-group bosh-ports {
           description "BOSH Ports"
           port 22
