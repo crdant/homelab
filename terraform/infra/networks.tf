@@ -2,6 +2,11 @@ variable "domain" {
   type = "string"
 }
 
+variable "dns_servers" {
+  type = "list"
+  default = [ "1.1.1.1", "1.0.0.1" ]
+}
+
 variable "network_cidr" {
   type = "string"
   default = "172.16.0.0/12"
@@ -70,5 +75,5 @@ variable "dynamic_cidr" {
 
 variable "container_cidr" {
   type = "string"
-  default = "172.29.0.0/22"  
+  default = "172.29.0.0/22"
 }

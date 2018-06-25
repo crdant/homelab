@@ -4,27 +4,20 @@ firewall {
     group {
       address-group dns-servers {
           description "DNS Servers"
-          <%- vars['dns_servers'].each do |ip| -%>
-            address <%= ip %>
-          <%- end -%>
+          address ${primary_dns_server}
+          address ${secondary_dns_server}
       }
       address-group pcf-routers {
           description "PCF HTTP/S Routers"
-          <%- vars['router_static_ips'].each do |ip| -%>
-            address <%= ip %>
-          <%- end -%>
+          ${gorouter_address_group}
       }
       address-group pcf-tcp-routers {
           description "PCF TCP Routers"
-          <%- vars['tcp_router_static_ips'].each do |ip| -%>
-            address <%= ip %>
-          <%- end -%>
+          ${tcp_router_address_group}
       }
       address-group pcf-diego-brains {
           description "Diego Brains"
-          <%- vars['brain_static_ips'].each do |ip| -%>
-            address <%= ip %>
-          <%- end -%>
+          ${brain_address_group}
       }
       network-group pcf-subnets {
           description "PCF Subnets"
@@ -36,17 +29,11 @@ firewall {
       }
       port-group bosh-ports {
           description "BOSH Ports"
-          port 22
-          port 443
-          port 6868
-          port 8443
-          port 8844
-          port 25555
+          ${bosh_port_group}
       }
       port-group tcp-router-ports {
           description "PCF TCP Routing Ports"
-          port 1024-65535
-          port 80
+          ${tcp_router_port_group}
       }
     }
     ipv6-receive-redirects disable
@@ -85,7 +72,7 @@ firewall {
             action accept
             description "Allow LAN access"
             destination {
-                address <%= vars["local_cidr"] %>
+                address ${local_cidr}
             }
             log disable
             protocol all
@@ -167,7 +154,7 @@ firewall {
             action accept
             description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
             destination {
-                address <%= esxi_addr %>
+                address ${vsphere_ip}
                 port 443
             }
             log disable
@@ -195,61 +182,61 @@ firewall {
             action accept
             description "Allow Local Access to the vSphere environment"
             destination {
-                address <%= vars["vmware_cidr"] %>
+                address ${vmware_cidr}
                 port 22,80,443,5480
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["local_cidr"] %>
+                address ${local_cidr}
             }
         }
         rule 50 {
             action accept
             description "Allow VPN Access to the vSphere environment"
             destination {
-                address <%= vars["vmware_cidr"] %>
+                address ${vmware_cidr}
                 port 22,80,443,5480
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["vpn_cidr"] %>
+                address ${vpn_cidr}
             }
         }
         rule 60 {
             action accept
             description "Allow Bootstrap access to the vSphere environment"
             destination {
-                address <%= vars["vmware_cidr"] %>
+                address ${vmware_cidr}
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["bootstrap_cidr"] %>
+                address ${bootstrap_cidr}
             }
         }
         rule 70 {
             action accept
             description "Allow PCF infrastructure access to the vSphere environment"
             destination {
-                address <%= vars["vmware_cidr"] %>
+                address ${vmware_cidr}
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["infrastructure_cidr"] %>
+                address ${infrastructure_cidr}
             }
         }
         rule 80 {
           action accept
           description "Allow bootstrap tools to provision Kubo"
           destination {
-              address <%= vars["container_cidr"] %>
+              address ${container_cidr}
               port 22,443,6868,8443,8844,25555
           }
           source {
-            address <%= vars["bootstrap_cidr"] %>
+            address ${bootstrap_cidr}
           }
           log disable
           protocol tcp
@@ -258,10 +245,10 @@ firewall {
           action accept
           description "Allow Kubernetes access to vCenter"
           destination {
-            address <%= vars["vsphere_cidr"] %>
+            address ${vmware_cidr}
           }
           source {
-            address <%= vars["container_cidr"] %>
+            address ${container_cidr}
           }
           log disable
           protocol tcp
@@ -287,7 +274,7 @@ firewall {
             action accept
             description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
             destination {
-                address <%= esxi_addr %>
+                address ${vsphere_ip}
                 port 443
             }
             log disable
@@ -394,26 +381,26 @@ firewall {
             action accept
             description "Allow local access to bootstrap environment"
             destination {
-                address <%= vars["bootstrap_cidr"] %>
+                address ${bootstrap_cidr}
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["local_cidr"] %>
+                address ${local_cidr}
             }
         }
         rule 40 {
             action accept
             description "Allow VPN access to bootstrap environment"
             destination {
-                address <%= vars["bootstrap_cidr"] %>
+                address ${bootstrap_cidr}
                 port 22,443,6868,8443,8844,25555
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["vpn_cidr"] %>
+                address ${vpn_cidr}
             }
         }
     }
@@ -437,7 +424,7 @@ firewall {
             action accept
             description "Allow invalid packets over HTTPS"
             destination {
-                address <%= esxi_addr %>
+                address ${vsphere_ip}
                 port 443
             }
             log disable
@@ -505,7 +492,7 @@ firewall {
             log disable
             protocol tcp
             source {
-                address <%= vars["balancer_internal_cidr"] %>
+                address ${balancer_internal_cidr}
             }
         }
         rule 65 {
@@ -519,7 +506,7 @@ firewall {
             log disable
             protocol tcp
             source {
-                address <%= vars["balancer_internal_cidr"] %>
+                address ${balancer_internal_cidr}
             }
         }
         rule 70 {
@@ -531,7 +518,7 @@ firewall {
             log disable
             protocol tcp
             source {
-                address <%= vars["deployment_cidr"] %>
+                address ${deployment_cidr}
             }
         }
         rule 80 {
@@ -550,10 +537,10 @@ firewall {
           action accept
           description "Allow Kubernetes access to vCenter"
           destination {
-            address <%= vars["vsphere_cidr"] %>
+            address ${vmware_cidr}
           }
           source {
-            address <%= vars["container_cidr"] %>
+            address ${container_cidr}
           }
           log disable
           protocol tcp
@@ -629,7 +616,7 @@ firewall {
                 port 80,443
             }
             source {
-              address <%= vars["balancer_external_cidr"] %>
+              address ${balancer_external_cidr}
             }
             log disable
             protocol tcp
@@ -644,7 +631,7 @@ firewall {
                 port 1024-65535
             }
             source {
-              address <%= vars["balancer_external_cidr"] %>
+              address ${balancer_external_cidr}
             }
             log disable
             protocol tcp
@@ -659,7 +646,7 @@ firewall {
                 port 22
             }
             source {
-              address <%= vars["balancer_external_cidr"] %>
+              address ${balancer_external_cidr}
             }
             log disable
             protocol tcp
@@ -668,33 +655,33 @@ firewall {
             action accept
             description "Allow local access to configure the load balancer environment"
             destination {
-                address <%= vars["balancer_external_cidr"] %>
+                address ${balancer_external_cidr}
                 port 4444
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["local_cidr"] %>
+                address ${local_cidr}
             }
         }
         rule 85 {
             action accept
             description "Allow VPN Access to configure the load balancer environment"
             destination {
-                address <%= vars["balancer_external_cidr"] %>
+                address ${balancer_external_cidr}
                 port 4444
             }
             log disable
             protocol tcp
             source {
-                address <%= vars["vpn_cidr"] %>
+                address ${vpn_cidr}
             }
         }
         rule 90 {
             action accept
             description "Allow access to the load balancers"
             destination {
-                address <%= vars["balancer_external_cidr"] %>
+                address ${balancer_external_cidr}
                 port 443
             }
             log disable
@@ -704,7 +691,7 @@ firewall {
             action accept
             description "Allow access to Ops Manager and director"
             destination {
-                address <%= vars["infrastructure_cidr"] %>
+                address ${infrastructure_cidr}
                 port 443
             }
             log disable
@@ -714,11 +701,11 @@ firewall {
           action accept
           description "Allow bootstrap access to director for Kubo"
           destination {
-              address <%= vars["container_cidr"] %>
+              address ${container_cidr}
               port 22,443,6868,8443,8844,25555
           }
           source {
-            address <%= vars["bootstrap_cidr"] %>
+            address ${bootstrap_cidr}
           }
           log disable
           protocol tcp
@@ -816,7 +803,7 @@ interfaces {
         speed auto
     }
     ethernet eth1 {
-        address <%= vsphere_port_addr %>
+        address "${vmware_port_ip}"
         description "vSphere Management Network"
         duplex auto
         firewall {
@@ -830,7 +817,7 @@ interfaces {
         speed auto
     }
     ethernet eth2 {
-        address <%= bootstrap_port_addr %>
+        address ${bootstrap_port_ip}
         description "Bootstrap Network"
         duplex auto
         firewall {
@@ -844,14 +831,14 @@ interfaces {
         speed auto
     }
     ethernet eth3 {
-        address <%= pcf_port_addr %>
-        address <%= infrastructure_port_addr %>
-        address <%= deployment_port_addr %>
-        address <%= balancer_external_port_addr %>
-        address <%= balancer_internal_port_addr %>
-        address <%= services_port_addr %>
-        address <%= dynamic_port_addr %>
-        address <%= container_port_addr %>
+        address ${pcf_port_ip}
+        address ${infrastructure_port_ip}
+        address ${deployment_port_ip}
+        address ${balancer_external_port_ip}
+        address ${balancer_internal_port_ip}
+        address ${services_port_ip}
+        address ${dynamic_port_ip}
+        address ${container_port_ip}
         description "PCF Networks"
         duplex auto
         firewall {
@@ -872,7 +859,7 @@ interfaces {
     loopback lo {
     }
     switch switch0 {
-        address <%= management_port_addr %>
+        address ${management_port_ip}
         description Local
         firewall {
 
@@ -891,24 +878,24 @@ service {
         hostfile-update disable
         shared-network-name LAN1 {
             authoritative enable
-            subnet <%= vars["local_cidr"] %> {
-                default-router <%= local_router_addr %>
-                dns-server <%= local_router_addr %>
+            subnet ${local_cidr} {
+                default-router "${router_ip}"
+                dns-server "${router_ip}"
                 lease 86400
-                start <%= local_dhcp_start_addr %>  {
-                    stop <%= local_dhcp_end_addr %>
+                start ${local_dhcp_start_addr}  {
+                    stop ${local_dhcp_end_addr}
                 }
             }
         }
         shared-network-name LAN2 {
             authoritative enable
-            subnet <%= vars["management_cidr"] %> {
-                default-router <%= management_router_addr %>
-                dns-server <%= management_router_addr %>
+            subnet ${management_cidr} {
+                default-router ${management_port_ip}
+                dns-server ${management_port_ip}
                 lease 86400
-                start <%= management_dhcp_start_addr %> {
-                    stop <%= management_dhcp_end_addr %>
-                }
+                start ${management_dhcp_start_addr}
+                    stop ${management_dhcp_end_addr}
+              }
             }
         }
         use-dnsmasq disable
@@ -942,12 +929,12 @@ service {
 system {
     host-name ubnt
     login {
-        user <%= vars["router_user"] %> {
+        user ${admin_user} {
             authentication {
-                plaintext-password <%= creds["router_password"] %>
-                public-keys <%= vars["router_user"] %>@<%= vars["router_host"] %> {
-                    key <%= vars["ssh_public_key"] %>
-                    type <% vars["ssh_key_type"] %>
+                plaintext-password ${admin_password}
+                public-keys ${admin_user}@${router_fqdn} {
+                    key ${admin_key_type}
+                    type ${admin_public_key}
                 }
             }
             level admin
@@ -987,25 +974,23 @@ vpn {
         remote-access {
             authentication {
                 local-users {
-                    username <%= vars["vpn_user"] %> {
-                        password <%= creds["vpn_password"] %>
-                    }
+                  ${vpn_users}
                 }
                 mode local
             }
             client-ip-pool {
-                start <%= vpn_start_addr %>
-                stop <%= vpn_end_addr %>
+                start ${vpn_start_address}
+                stop ${vpn_end_address}
             }
             dhcp-interface eth0
             dns-servers {
-                server-1 <%= vars["dns_servers"][0] %>
-                server-2 <%= vars["dns_servers"][1] %>
+                server-1 ${primary_dns_server}
+                server-2 ${secondary_dns_server}
             }
             ipsec-settings {
                 authentication {
                     mode pre-shared-secret
-                    pre-shared-secret <%= creds["vpn_psk"] %>
+                    pre-shared-secret ${vpn_psk}
                 }
                 ike-lifetime 3600
             }

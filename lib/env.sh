@@ -1,5 +1,7 @@
 # identity
 email=cdantonio@pivotal.io
+admin_user=arceus
+vpn_user=crdant
 
 # important files and directories
 
