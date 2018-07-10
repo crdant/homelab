@@ -1,5 +1,5 @@
 provider "acme" {
-  server_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
+  server_url = "https://acme-v02.api.letsencrypt.org/directory"
 }
 
 resource "tls_private_key" "letsencrypt" {
@@ -53,6 +53,30 @@ resource "acme_certificate" "esxi" {
       AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
       AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
       AWS_DEFAULT_REGION    = "${var.aws_region}"
+    }
+  }
+
+  provisioner "file" {
+    content      = "${acme_certificate.esxi.certificate_pem}"
+    destination  = "/etc/vmware/ssl/rui.crt"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.vsphere_user}"
+      password = "${var.vsphere_password}"
+      host     = "${local.vsphere_fqdn}"
+    }
+  }
+
+  provisioner "file" {
+    content      = "${acme_certificate.esxi.private_key_pem}"
+    destination  = "/etc/vmware/ssl/rui.key"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.vsphere_user}"
+      password = "${var.vsphere_password}"
+      host     = "${local.vsphere_fqdn}"
     }
   }
 }
