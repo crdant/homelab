@@ -2,6 +2,10 @@ variable "router_host" {
   type = "string"
 }
 
+variable "outside_host" {
+  type = "string"
+}
+
 variable "admin_user" {
   type = "string"
 }
@@ -10,37 +14,14 @@ variable "vpn_users" {
   type = "list"
 }
 
-locals {
-  router_fqdn = "${var.router_host}.${var.domain}"
-  router_ip = "${cidrhost(var.local_cidr, 1)}"
-}
-
-locals {
-  vpn_start_address  = "${cidrhost(var.vpn_cidr, 10)}"
-  vpn_end_address  = "${cidrhost(var.vpn_cidr, 50)}"
-}
-
-locals {
-  gorouter_addresses = [
-      "${cidrhost(var.deployment_cidr, -15)}",
-      "${cidrhost(var.deployment_cidr, -14)}",
-      "${cidrhost(var.deployment_cidr, -13)}"
-    ]
-  brain_addresses = [
-      "${cidrhost(var.deployment_cidr, -10)}",
-      "${cidrhost(var.deployment_cidr, -9)}",
-      "${cidrhost(var.deployment_cidr, -8)}"
-    ]
-  tcp_router_addresses = [
-      "${cidrhost(var.deployment_cidr, -5)}",
-      "${cidrhost(var.deployment_cidr, -4)}",
-      "${cidrhost(var.deployment_cidr, -3)}"
-    ]
-}
-
 variable bosh_ports {
   type = "list"
   default = [ "22", "443", "6868", "8443", "8844", "25555" ]
+}
+
+variable gorouter_ports {
+  type = "list"
+  default = [ "80", "443", "8080" ]
 }
 
 variable tcp_router_ports {
@@ -88,6 +69,14 @@ data "template_file" "bosh_port_group" {
   }
 }
 
+data "template_file" "gorouter_port_group" {
+  template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
+  count    = "${length(var.bosh_ports)}"
+  vars {
+    address = "${var.bosh_ports[count.index]}"
+  }
+}
+
 data "template_file" "gorouter_address_group" {
   template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
   count    = "${length(local.gorouter_addresses)}"
@@ -120,6 +109,36 @@ data "template_file" "tcp_router_port_group" {
   }
 }
 
+locals {
+  router_fqdn = "${var.router_host}.${var.domain}"
+  router_ip = "${cidrhost(local.local_cidr, 1)}"
+  router_management_ip = "${cidrhost(local.management_cidr, 1)}"
+  outside_fqdn = "${var.outside_host}.${var.domain}"
+}
+
+locals {
+  vpn_start_address  = "${cidrhost(local.vpn_cidr, 10)}"
+  vpn_end_address  = "${cidrhost(local.vpn_cidr, 50)}"
+}
+
+locals {
+  gorouter_addresses = [
+      "${cidrhost(local.deployment_cidr, -15)}",
+      "${cidrhost(local.deployment_cidr, -14)}",
+      "${cidrhost(local.deployment_cidr, -13)}"
+    ]
+  brain_addresses = [
+      "${cidrhost(local.deployment_cidr, -10)}",
+      "${cidrhost(local.deployment_cidr, -9)}",
+      "${cidrhost(local.deployment_cidr, -8)}"
+    ]
+  tcp_router_addresses = [
+      "${cidrhost(local.deployment_cidr, -5)}",
+      "${cidrhost(local.deployment_cidr, -4)}",
+      "${cidrhost(local.deployment_cidr, -3)}"
+    ]
+}
+
 data "template_file" "router_config" {
   template        = "${file("${var.template_dir}/router/config.boot")}"
   vars {
@@ -132,46 +151,46 @@ data "template_file" "router_config" {
     /* router */
     router_ip = "${local.router_ip}"
     router_fqdn = "${local.router_fqdn}"
-    local_cidr = "${var.local_cidr}"
-    local_dhcp_start_addr = "${cidrhost(var.local_cidr, 10)}"
-    local_dhcp_end_addr = "${cidrhost(var.local_cidr, 50)}"
+    local_cidr = "${local.local_cidr}"
+    local_dhcp_start_addr = "${cidrhost(local.local_cidr, 10)}"
+    local_dhcp_end_addr = "${cidrhost(local.local_cidr, 50)}"
 
     /* dns - can't use a list in a template */
     primary_dns_server  = "${var.dns_servers[0]}"
     secondary_dns_server = "${var.dns_servers[1]}"
 
     /* infrastructure networks */
-    management_cidr = "${var.management_cidr}"
-    management_port_ip = "${cidrhost(var.management_cidr,1)}"
-    management_dhcp_start_addr = "${cidrhost(var.local_cidr, 10)}"
-    management_dhcp_end_addr = "${cidrhost(var.local_cidr, 50)}"
-    vmware_cidr = "${var.vmware_cidr}"
-    vmware_port_ip = "${cidrhost(var.vmware_cidr,1)}"
+    management_cidr = "${local.management_cidr}"
+    management_port_ip = "${cidrhost(local.management_cidr,1)}"
+    management_dhcp_start_addr = "${cidrhost(local.local_cidr, 10)}"
+    management_dhcp_end_addr = "${cidrhost(local.local_cidr, 50)}"
+    vmware_cidr = "${local.vmware_cidr}"
+    vmware_port_ip = "${cidrhost(local.vmware_cidr,1)}"
     vsphere_ip = "${local.vsphere_ip}"
-    bootstrap_cidr = "${var.bootstrap_cidr}"
-    bootstrap_port_ip = "${cidrhost(var.bootstrap_cidr,1)}"
+    bootstrap_cidr = "${local.bootstrap_cidr}"
+    bootstrap_port_ip = "${cidrhost(local.bootstrap_cidr,1)}"
 
     /* load balancer network */
-    balancer_external_cidr = "${var.balancer_external_cidr}"
-    balancer_external_port_ip = "${cidrhost(var.balancer_external_cidr,1)}"
-    balancer_internal_cidr = "${var.balancer_internal_cidr}"
-    balancer_internal_port_ip = "${cidrhost(var.balancer_internal_cidr,1)}"
+    balancer_external_cidr = "${local.balancer_external_cidr}"
+    balancer_external_port_ip = "${cidrhost(local.balancer_external_cidr,1)}"
+    balancer_internal_cidr = "${local.balancer_internal_cidr}"
+    balancer_internal_port_ip = "${cidrhost(local.balancer_internal_cidr,1)}"
 
     /* PCF network addresses */
-    pcf_port_ip = "${cidrhost(var.pcf_cidr,1)}"
-    infrastructure_cidr = "${var.infrastructure_cidr}"
-    infrastructure_port_ip = "${cidrhost(var.infrastructure_cidr,1)}"
-    deployment_cidr = "${var.deployment_cidr}"
-    deployment_port_ip = "${cidrhost(var.deployment_cidr,1)}"
-    services_cidr = "${var.services_cidr}"
-    services_port_ip = "${cidrhost(var.services_cidr,1)}"
-    dynamic_cidr = "${var.dynamic_cidr}"
-    dynamic_port_ip = "${cidrhost(var.dynamic_cidr,1)}"
-    container_cidr = "${var.container_cidr}"
-    container_port_ip = "${cidrhost(var.container_cidr,1)}"
+    pcf_port_ip = "${cidrhost(local.pcf_cidr,1)}"
+    infrastructure_cidr = "${local.infrastructure_cidr}"
+    infrastructure_port_ip = "${cidrhost(local.infrastructure_cidr,1)}"
+    deployment_cidr = "${local.deployment_cidr}"
+    deployment_port_ip = "${cidrhost(local.deployment_cidr,1)}"
+    services_cidr = "${local.services_cidr}"
+    services_port_ip = "${cidrhost(local.services_cidr,1)}"
+    dynamic_cidr = "${local.dynamic_cidr}"
+    dynamic_port_ip = "${cidrhost(local.dynamic_cidr,1)}"
+    container_cidr = "${local.container_cidr}"
+    container_port_ip = "${cidrhost(local.container_cidr,1)}"
 
     /* vpn */
-    vpn_cidr = "${var.vpn_cidr}"
+    vpn_cidr = "${local.vpn_cidr}"
     vpn_psk = "${random_pet.vpn_psk.id}"
     vpn_users = "${join("          ", data.template_file.vpn_users.*.rendered)}"
     vpn_password = "${random_pet.vpn_password.id}"
@@ -180,6 +199,7 @@ data "template_file" "router_config" {
 
     /* firewall */
     bosh_port_group = "${join("          ", data.template_file.bosh_port_group.*.rendered)}"
+    gorouter_port_group = "${join("          ", data.template_file.gorouter_port_group.*.rendered)}"
     gorouter_address_group = "${join("          ", data.template_file.gorouter_address_group.*.rendered)}"
     brain_address_group = "${join("          ", data.template_file.brain_address_group.*.rendered)}"
     tcp_router_address_group = "${join("          ", data.template_file.tcp_router_address_group.*.rendered)}"
@@ -191,4 +211,17 @@ data "template_file" "router_config" {
 resource "local_file" "router_config" {
   content  = "${data.template_file.router_config.rendered}"
   filename = "${var.work_dir}/router/config.boot"
+
+
+  provisioner "file" {
+    content      = "${data.template_file.router_config.rendered}"
+    destination  = "/tmp/config.boot"
+
+    connection {
+      type     = "ssh"
+      user     = "ubnt"
+      password = "uncontemporaneousness-insecure-nonclerical-menad"
+      host     = "${local.router_fqdn}"
+    }
+  }
 }
