@@ -17,7 +17,11 @@ init () {
     --var "vsphere_user=${vsphere_user}" \
     --var "vsphere_password=${vsphere_password}" \
     --var "vsphere_host=${vsphere_host}" \
+    --var "nested_esxi_prefix=${nested_esxi_prefix}" \
+    --var "vcenter_iso_path=${vcenter_iso_path}" \
+    --var "vcenter_license=${vcenter_license}" \
     --var "vcenter_host=${vcenter_host}" \
+    --var "vcenter_storage=${vcenter_fast_datastore}" \
     --var "router_host=${router_host}" \
     --var "router_password=$(generate_passphrase 4)" \
     --var "key_dir=${key_dir}" \
@@ -43,7 +47,11 @@ prepare () {
     --var "vsphere_user=${vsphere_user}" \
     --var "vsphere_password=${vsphere_password}" \
     --var "vsphere_host=${vsphere_host}" \
+    --var "nested_esxi_prefix=${nested_esxi_prefix}" \
     --var "vcenter_host=${vcenter_host}" \
+    --var "vcenter_storage=${vcenter_fast_datastore}" \
+    --var "vcenter_iso_path=${vcenter_iso_path}" \
+    --var "vcenter_license=${vcenter_license}" \
     --var "router_host=${router_host}" \
     --var "outside_host=${outside_host}" \
     --var "router_password=$(generate_passphrase 4)" \

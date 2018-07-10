@@ -15,7 +15,10 @@ ops_dir="${pipeline_dir}/ops"
 manifest_dir="${BASEDIR}/manifests"
 terraform_dir="${BASEDIR}/terraform"
 template_dir="${BASEDIR}/templates"
-state_file=${work_dir}/state.sh
+
+# software you download before
+vcenter_iso_path="${work_dir}/vsphere/VMware-VCSA-all-6.5.0-7119070.iso"
+vcenter_license=${VCENTER_LICENSE}
 
 # certificate configuration
 certbot_dir=/usr/local/etc/certbot
@@ -35,6 +38,7 @@ ntp_servers="0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org"
 router_host="savasana"
 outside_host="kapotasana"
 vsphere_host="tadasana"
+nested_esxi_prefix="virabhadrasana"
 vcenter_host="garundasana"
 
 # router configuration
@@ -76,24 +80,3 @@ om_admin_user=arceus
 pcf_system_prefix=run
 pcf_apps_prefix=apps
 pcf_tcp_prefix=tcp
-
-# PCF static IPs
-deployment_base=$(echo ${deployment_cidr} | awk -F. '{print $1 "." $2 "." $3}')
-router_static_ips=${deployment_base}.240,${deployment_base}.241,${deployment_base}.242
-tcp_router_static_ips=${deployment_base}.243,${deployment_base}.244,${deployment_base}.245
-brain_static_ips=${deployment_base}.250,${deployment_base}.251,${deployment_base}.252
-
-# Kubo configuration
-kubo_director_user=kubo
-kubo_storage_user=kubo_storage
-kubo_storage_role="Kubernetes Storage"
-kubo_storage_group="K8sStorageServiceAccounts"
-
-# git repository for state
-git_server=git@github.com
-git_user=crdant
-kubo_state_repo=kubo-state
-
-if [ -f ${state_file} ] ; then
-  . ${state_file}
-fi

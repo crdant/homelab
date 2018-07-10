@@ -1,5 +1,5 @@
 provider "acme" {
-  server_url = "https://acme-v02.api.letsencrypt.org/directory"
+  server_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
 }
 
 resource "tls_private_key" "letsencrypt" {
@@ -89,6 +89,25 @@ resource "local_file" "esxi_certificate" {
 resource "local_file" "esxi_private_key" {
   content  = "${acme_certificate.esxi.private_key_pem}"
   filename = "${var.key_dir}/${acme_certificate.esxi.certificate_domain}/privkey.pem"
+}
+
+resource "acme_certificate" "nested_esxi" {
+  count                     = "${length(local.nested_esxi_ips)}"
+  account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
+  common_name               = "${var.nested_esxi_prefix}-${count.index}.${var.domain}"
+  subject_alternative_names = [
+    "esxi-${count.index}.${var.domain}"
+  ]
+
+  dns_challenge {
+    provider = "route53"
+
+    config {
+      AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
+      AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
+      AWS_DEFAULT_REGION    = "${var.aws_region}"
+    }
+  }
 }
 
 resource "acme_certificate" "vcenter" {
