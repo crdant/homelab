@@ -7,73 +7,80 @@ variable "dns_servers" {
   default = [ "1.1.1.1", "1.0.0.1" ]
 }
 
-variable "network_cidr" {
+variable "lab_cidr" {
   type = "string"
   default = "172.16.0.0/12"
 }
 
-variable "local_cidr" {
-  type = "string"
-  default = "172.16.0.0/26"
+
+locals {
+  local_cidr        = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,0),10,0)}"
+  vpn_cidr          = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,1),10,0)}"
+  management_cidr   = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,2),10,0)}"
+  vmware_cidr       = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,3),10,0)}"
+  bootstrap_cidr    = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,4),10,0)}"
+
+  # subnets provided to PCF
+  pcf_cidr          = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),-3,1)}"
+  infrastructure_cidr  = "${cidrsubnet(cidrsubnet(local.pcf_cidr,4,0),9,0)}"
+  deployment_cidr      = "${cidrsubnet(cidrsubnet(local.pcf_cidr,4,1),3,1)}"
+  services_cidr        = "${cidrsubnet(cidrsubnet(local.pcf_cidr,4,1),3,2)}"
+  dynamic_cidr         = "${cidrsubnet(cidrsubnet(local.pcf_cidr,4,1),3,3)}"
+  container_cidr       = "${cidrsubnet(cidrsubnet(local.pcf_cidr,4,1),3,4)}"
+
+  # load balancer subnets
+  balancer_external_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,0)}"
+  balancer_internal_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,1)}"
 }
 
-variable "vpn_cidr" {
-  type = "string"
-  default = "172.17.0.0/26"
+output "local_cidr" {
+  value = "${local.local_cidr}"
 }
 
-variable "management_cidr" {
-  type = "string"
-  default = "172.18.0.0/26"
+output "vpn_cidr" {
+  value = "${local.vpn_cidr}"
 }
 
-variable "vmware_cidr" {
-  type = "string"
-  default = "172.19.0.0/26"
+output "management_cidr" {
+  value = "${local.management_cidr}"
 }
 
-variable "bootstrap_cidr" {
-  type = "string"
-  default = "172.20.0.0/26"
+output "vmware_cidr" {
+  value = "${local.vmware_cidr}"
 }
 
-variable "pcf_cidr" {
-  type = "string"
-  default = "172.24.0.0/13"
-
+output "bootstrap_cidr" {
+  value = "${local.bootstrap_cidr}"
 }
 
-variable "infrastructure_cidr" {
-  type = "string"
-  default = "172.24.0.0/26"
+output "pcf_cidr" {
+  value = "${local.pcf_cidr}"
 }
 
-variable "balancer_internal_cidr" {
-  type = "string"
-  default = "172.25.0.0/26"
+output "infrastructure_cidr" {
+  value = "${local.infrastructure_cidr}"
 }
 
-variable "balancer_external_cidr" {
-  type = "string"
-  default = "172.25.0.64/26"
+output "deployment_cidr" {
+  value = "${local.deployment_cidr}"
 }
 
-variable "deployment_cidr" {
-  type = "string"
-  default = "172.26.0.0/22"
+output "services_cidr" {
+  value = "${local.services_cidr}"
 }
 
-variable "services_cidr" {
-  type = "string"
-  default = "172.27.0.0/22"
+output "dynamic_cidr" {
+  value = "${local.dynamic_cidr}"
 }
 
-variable "dynamic_cidr" {
-  type = "string"
-  default = "172.28.0.0/22"
+output "container_cidr" {
+  value = "${local.dynamic_cidr}"
 }
 
-variable "container_cidr" {
-  type = "string"
-  default = "172.29.0.0/22"
+output "balancer_internal_cidr" {
+  value = "${local.balancer_internal_cidr}"
+}
+
+output "balancer_external_cidr" {
+  value = "${local.balancer_external_cidr}"
 }
