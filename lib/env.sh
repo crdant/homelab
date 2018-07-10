@@ -2,6 +2,7 @@
 email=cdantonio@pivotal.io
 admin_user=arceus
 vpn_user=crdant
+vsphere_user=root
 
 # important files and directories
 
@@ -30,27 +31,9 @@ dns_ttl=60
 # NTP
 ntp_servers="0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org"
 
-# private Network
-cidr="172.16.0.0/12"
-
-# networks
-local_cidr="172.16.0.0/26"
-vpn_cidr="172.17.0.0/26"
-management_cidr="172.18.0.0/26"
-vmware_cidr="172.19.0.0/26"
-bootstrap_cidr="172.20.0.0/26"
-pcf_cidr="172.24.0.0/13"
-infrastructure_cidr="172.24.0.0/26"
-infrastructure_netmask="255.255.255.192"
-deployment_cidr="172.25.0.0/22"
-balancer_external_cidr="172.26.0.0/26"
-balancer_internal_cidr="172.26.0.64/26"
-services_cidr="172.27.0.0/22"
-dynamic_cidr="172.28.0.0/22"
-container_cidr="172.29.0.0/22"
-
 # static hosts
 router_host="savasana"
+outside_host="kapotasana"
 vsphere_host="tadasana"
 vcenter_host="garundasana"
 
