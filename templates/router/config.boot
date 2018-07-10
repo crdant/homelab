@@ -27,9 +27,18 @@ firewall {
           network "${dynamic_cidr}"
           network "${container_cidr}"
       }
+      network-group pcf-director-subnets {
+          description "PCF BOSH Director Networks"
+          network ${bootstrap_cidr}
+          network ${infrastructure_cidr}
+      }
       port-group bosh-ports {
           description "BOSH Ports"
           ${bosh_port_group}
+      }
+      port-group gorouter-ports {
+          description "PCF Router Ports"
+          ${gorouter_port_group}
       }
       port-group tcp-router-ports {
           description "PCF TCP Routing Ports"
@@ -230,19 +239,6 @@ firewall {
         }
         rule 80 {
           action accept
-          description "Allow bootstrap tools to provision Kubo"
-          destination {
-              address ${container_cidr}
-              port 22,443,6868,8443,8844,25555
-          }
-          source {
-            address ${bootstrap_cidr}
-          }
-          log disable
-          protocol tcp
-        }
-        rule 90 {
-          action accept
           description "Allow Kubernetes access to vCenter"
           destination {
             address ${vmware_cidr}
@@ -252,6 +248,19 @@ firewall {
           }
           log disable
           protocol tcp
+        }
+        rule 90 {
+            action accept
+            description "Allow VPN access to remote console"
+            destination {
+                address ${vmware_cidr}
+                port 902,9443
+            }
+            log disable
+            protocol tcp
+            source {
+                address ${vpn_cidr}
+            }
         }
     }
     name BOOTSTRAP_IN {
@@ -328,7 +337,7 @@ firewall {
             log disable
             protocol udp
         }
-        rule 61 {
+        rule 70 {
             action accept
             description "Allow SSH traffic to GitHub"
             destination {
@@ -338,7 +347,7 @@ firewall {
             log disable
             protocol tcp
         }
-        rule 62 {
+        rule 80 {
             action accept
             description "All SSH traffic to GitHub"
             destination {
@@ -382,7 +391,10 @@ firewall {
             description "Allow local access to bootstrap environment"
             destination {
                 address ${bootstrap_cidr}
-                port 22,443,6868,8443,8844,25555
+                // use the port group we've defined
+                group {
+                  port-group bosh-ports
+                }
             }
             log disable
             protocol tcp
@@ -395,7 +407,9 @@ firewall {
             description "Allow VPN access to bootstrap environment"
             destination {
                 address ${bootstrap_cidr}
-                port 22,443,6868,8443,8844,25555
+                group {
+                  port-group bosh-ports
+                }
             }
             log disable
             protocol tcp
@@ -534,6 +548,31 @@ firewall {
             protocol tcp_udp
         }
         rule 90 {
+            action accept
+            description "Allow outbound NTP traffic"
+            destination {
+                port 123
+            }
+            log disable
+            protocol udp
+        }
+        rule 100 {
+            action accept
+            description "Allow pings to reduce spurious Ops Manager errors/warnings"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol icmp
+            source {
+                group {
+                    network-group pcf-director-subnets
+                }
+            }
+        }
+        rule 110 {
           action accept
           description "Allow Kubernetes access to vCenter"
           destination {
@@ -606,14 +645,30 @@ firewall {
                 }
             }
         }
+        rule 45 {
+            action accept
+            description "Allow pings for BOSH to instantiate VMs"
+            destination {
+                group {
+                    network-group pcf-subnets
+                }
+            }
+            log disable
+            protocol icmp
+            source {
+                group {
+                    network-group pcf-director-subnets
+                }
+            }
+        }
         rule 50 {
             action accept
             description "Allow access to PCF web APIs and routers"
             destination {
                 group {
                     address-group pcf-routers
+                    port-group gorouter-ports
                 }
-                port 80,443
             }
             source {
               address ${balancer_external_cidr}
@@ -627,8 +682,8 @@ firewall {
             destination {
                 group {
                     address-group pcf-tcp-routers
+                    port-group tcp-router-ports
                 }
-                port 1024-65535
             }
             source {
               address ${balancer_external_cidr}
@@ -698,18 +753,44 @@ firewall {
             protocol tcp
         }
         rule 100 {
-          action accept
-          description "Allow bootstrap access to director for Kubo"
-          destination {
-              address ${container_cidr}
-              port 22,443,6868,8443,8844,25555
-          }
-          source {
-            address ${bootstrap_cidr}
-          }
-          log disable
-          protocol tcp
+            action accept
+            description "Allow SSH access to applications"
+            destination {
+                port 2222
+                group {
+                  address-group pcf-diego-brains
+                }
+            }
+            log disable
+            protocol tcp
+            source {
+              address ${balancer_internal_cidr}
+            }
         }
+        rule 110 {
+            action accept
+            description "Enable SSH load balancing"
+            destination {
+                address 172.26.0.30
+                port 2222
+            }
+            log disable
+            protocol tcp
+        }
+        rule 120 {
+            action accept
+            description "Manage infrastructure over VPN via SSH"
+            destination {
+                address ${infrastructure_cidr}
+                port 22
+            }
+            log disable
+            protocol tcp
+            source {
+                address ${vpn_cidr}
+            }
+        }
+
     }
     name WAN_IN {
         default-action drop
@@ -831,7 +912,6 @@ interfaces {
         speed auto
     }
     ethernet eth3 {
-        address ${pcf_port_ip}
         address ${infrastructure_port_ip}
         address ${deployment_port_ip}
         address ${balancer_external_port_ip}
