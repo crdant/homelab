@@ -29,6 +29,16 @@ variable tcp_router_ports {
   default = [ "1024-65535", 80 ]
 }
 
+variable vsphere_management_ports {
+  type = "list"
+  default = [ 22, 80, 443, 902 ]
+}
+
+variable vcenter_management_ports {
+  type = "list"
+  default = [ 22, 80, 443, 636, 902, 903, 8080, 8443, 9443, 10080, 10443 ]
+}
+
 resource "random_pet" "admin_password" {
   length = 4
 }
@@ -62,18 +72,18 @@ data "template_file" "vpn_users" {
 }
 
 data "template_file" "bosh_port_group" {
-  template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
+  template = "${file("${var.template_dir}/router/components/port-group-entry.tpl")}"
   count    = "${length(var.bosh_ports)}"
   vars {
-    address = "${var.bosh_ports[count.index]}"
+    port = "${var.bosh_ports[count.index]}"
   }
 }
 
 data "template_file" "gorouter_port_group" {
-  template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
+  template = "${file("${var.template_dir}/router/components/port-group-entry.tpl")}"
   count    = "${length(var.bosh_ports)}"
   vars {
-    address = "${var.bosh_ports[count.index]}"
+    port = "${var.bosh_ports[count.index]}"
   }
 }
 
@@ -102,10 +112,26 @@ data "template_file" "tcp_router_address_group" {
 }
 
 data "template_file" "tcp_router_port_group" {
-  template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
+  template = "${file("${var.template_dir}/router/components/port-group-entry.tpl")}"
   count    = "${length(var.tcp_router_ports)}"
   vars {
-    address = "${var.tcp_router_ports[count.index]}"
+    port = "${var.tcp_router_ports[count.index]}"
+  }
+}
+
+data "template_file" "vsphere_management_port_group" {
+  template = "${file("${var.template_dir}/router/components/port-group-entry.tpl")}"
+  count    = "${length(var.vsphere_management_ports)}"
+  vars {
+    port = "${var.vsphere_management_ports[count.index]}"
+  }
+}
+
+data "template_file" "vcenter_management_port_group" {
+  template = "${file("${var.template_dir}/router/components/port-group-entry.tpl")}"
+  count    = "${length(var.vcenter_management_ports)}"
+  vars {
+    port = "${var.vcenter_management_ports[count.index]}"
   }
 }
 
@@ -162,22 +188,29 @@ data "template_file" "router_config" {
     /* infrastructure networks */
     management_cidr = "${local.management_cidr}"
     management_port_ip = "${cidrhost(local.management_cidr,1)}"
+    management_interface_addr = "${replace(local.management_cidr, cidrhost(local.management_cidr,0), cidrhost(local.management_cidr,1))}"
     management_dhcp_start_addr = "${cidrhost(local.local_cidr, 10)}"
     management_dhcp_end_addr = "${cidrhost(local.local_cidr, 50)}"
     vmware_cidr = "${local.vmware_cidr}"
     vmware_port_ip = "${cidrhost(local.vmware_cidr,1)}"
+    vmware_interface_addr = "${replace(local.vmware_cidr, cidrhost(local.vmware_cidr,0), cidrhost(local.vmware_cidr,1))}"
     vsphere_ip = "${local.vsphere_ip}"
     bootstrap_cidr = "${local.bootstrap_cidr}"
     bootstrap_port_ip = "${cidrhost(local.bootstrap_cidr,1)}"
+    bootstrap_interface_addr = "${replace(local.bootstrap_cidr, cidrhost(local.bootstrap_cidr,0), cidrhost(local.bootstrap_cidr,1))}"
 
     /* load balancer network */
     balancer_external_cidr = "${local.balancer_external_cidr}"
     balancer_external_port_ip = "${cidrhost(local.balancer_external_cidr,1)}"
+    balancer_external_interface_addr = "${replace(local.balancer_external_cidr, cidrhost(local.balancer_external_cidr,0), cidrhost(local.balancer_external_cidr,1))}"
     balancer_internal_cidr = "${local.balancer_internal_cidr}"
     balancer_internal_port_ip = "${cidrhost(local.balancer_internal_cidr,1)}"
+    balancer_internal_interface_addr = "${replace(local.balancer_internal_cidr, cidrhost(local.balancer_internal_cidr,0), cidrhost(local.balancer_internal_cidr,1))}"
+
 
     /* PCF network addresses */
     pcf_port_ip = "${cidrhost(local.pcf_cidr,1)}"
+    pcf_interface_addr = "${replace(local.pcf_cidr, cidrhost(local.pcf_cidr,0), cidrhost(local.pcf_cidr,1))}"
     infrastructure_cidr = "${local.infrastructure_cidr}"
     infrastructure_port_ip = "${cidrhost(local.infrastructure_cidr,1)}"
     deployment_cidr = "${local.deployment_cidr}"
@@ -204,6 +237,8 @@ data "template_file" "router_config" {
     brain_address_group = "${join("          ", data.template_file.brain_address_group.*.rendered)}"
     tcp_router_address_group = "${join("          ", data.template_file.tcp_router_address_group.*.rendered)}"
     tcp_router_port_group = "${join("          ", data.template_file.tcp_router_port_group.*.rendered)}"
+    vsphere_management_port_group = "${join("          ", data.template_file.vsphere_management_port_group.*.rendered)}"
+    vcenter_management_port_group = "${join("          ", data.template_file.vcenter_management_port_group.*.rendered)}"
   }
 
 }
