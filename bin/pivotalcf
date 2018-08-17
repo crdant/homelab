@@ -198,7 +198,7 @@ fill_params() {
     --var system-prefix=${pcf_system_prefix} \
     --var apps-prefix=${pcf_apps_prefix} \
     --var tcp-prefix=${pcf_tcp_prefix} \
-    --var om-data-store=${vcenter_fast_datastore} \
+    --var om-data-store=${om_datastore} \
     --var om-host-name=${om_host_name} \
     --var ntp-servers=${ntp_servers} \
     --var dns-servers=${dns_servers} \
@@ -210,8 +210,7 @@ fill_params() {
     --var vcenter-resource-pool-1=${vcenter_resource_pool_1} \
     --var vcenter-resource-pool-2=${vcenter_resource_pool_2} \
     --var vcenter-resource-pool-3=${vcenter_resource_pool_3} \
-    --var fast-storage=${vcenter_fast_datastore} \
-    --var slow-storage=${vcenter_slow_datastore} \
+    --var pcf-storage=${pcf_datastore} \
     --var director-host-name=${director_host_name} \
     --var infrastructure-network=${infrastructure_network} \
     --var infrastructure-cidr=${infrastructure_cidr} \
