@@ -1,3 +1,3 @@
 username ${user} {
-    password ${password}
-}
+                          password ${password}
+                    }

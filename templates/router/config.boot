@@ -44,6 +44,14 @@ firewall {
           description "PCF TCP Routing Ports"
           ${tcp_router_port_group}
       }
+      port-group vsphere-management-ports {
+          description "vSphere Management Ports"
+          ${vsphere_management_port_group}
+      }
+      port-group vcenter-management-ports {
+          description "vCenter Management Ports"
+          ${vsphere_management_port_group}
+      }
     }
     ipv6-receive-redirects disable
     ipv6-src-route disable
@@ -163,7 +171,7 @@ firewall {
             action accept
             description "Allow invalid HTTPS packets to the ESXi API to work around handshake timeouts"
             destination {
-                address ${vsphere_ip}
+                address ${vmware_cidr}
                 port 443
             }
             log disable
@@ -192,7 +200,24 @@ firewall {
             description "Allow Local Access to the vSphere environment"
             destination {
                 address ${vmware_cidr}
-                port 22,80,443,5480
+                group {
+                    port-group vsphere-management-ports
+                }
+            }
+            log disable
+            protocol tcp
+            source {
+                address ${local_cidr}
+            }
+        }
+        rule 45 {
+            action accept
+            description "Allow Local Access to the vCenter environment"
+            destination {
+                address ${vmware_cidr}
+                group {
+                    port-group vcenter-management-ports
+                }
             }
             log disable
             protocol tcp
@@ -205,7 +230,24 @@ firewall {
             description "Allow VPN Access to the vSphere environment"
             destination {
                 address ${vmware_cidr}
-                port 22,80,443,5480
+                group {
+                  port-group vsphere-management-ports
+                }
+            }
+            log disable
+            protocol tcp
+            source {
+                address ${vpn_cidr}
+            }
+        }
+        rule 55 {
+            action accept
+            description "Allow VPN Access to the vCenter environment"
+            destination {
+                address ${vmware_cidr}
+                group {
+                  port-group vcenter-management-ports
+                }
             }
             log disable
             protocol tcp
@@ -215,9 +257,12 @@ firewall {
         }
         rule 60 {
             action accept
-            description "Allow Bootstrap access to the vSphere environment"
+            description "Allow Bootstrap access to the vCenter environment"
             destination {
                 address ${vmware_cidr}
+                group {
+                  port-group vcenter-management-ports
+                }
             }
             log disable
             protocol tcp
@@ -227,9 +272,12 @@ firewall {
         }
         rule 70 {
             action accept
-            description "Allow PCF infrastructure access to the vSphere environment"
+            description "Allow PCF infrastructure access to the vcenter environment"
             destination {
                 address ${vmware_cidr}
+                group {
+                  port-group vcenter-management-ports
+                }
             }
             log disable
             protocol tcp
@@ -242,25 +290,15 @@ firewall {
           description "Allow Kubernetes access to vCenter"
           destination {
             address ${vmware_cidr}
+            group {
+              port-group vcenter-management-ports
+            }
           }
           source {
             address ${container_cidr}
           }
           log disable
           protocol tcp
-        }
-        rule 90 {
-            action accept
-            description "Allow VPN access to remote console"
-            destination {
-                address ${vmware_cidr}
-                port 902,9443
-            }
-            log disable
-            protocol tcp
-            source {
-                address ${vpn_cidr}
-            }
         }
     }
     name BOOTSTRAP_IN {
@@ -391,7 +429,6 @@ firewall {
             description "Allow local access to bootstrap environment"
             destination {
                 address ${bootstrap_cidr}
-                // use the port group we've defined
                 group {
                   port-group bosh-ports
                 }
@@ -884,7 +921,7 @@ interfaces {
         speed auto
     }
     ethernet eth1 {
-        address "${vmware_port_ip}"
+        address "${vmware_interface_addr}"
         description "vSphere Management Network"
         duplex auto
         firewall {
@@ -898,7 +935,7 @@ interfaces {
         speed auto
     }
     ethernet eth2 {
-        address ${bootstrap_port_ip}
+        address ${bootstrap_interface_addr}
         description "Bootstrap Network"
         duplex auto
         firewall {
@@ -912,13 +949,7 @@ interfaces {
         speed auto
     }
     ethernet eth3 {
-        address ${infrastructure_port_ip}
-        address ${deployment_port_ip}
-        address ${balancer_external_port_ip}
-        address ${balancer_internal_port_ip}
-        address ${services_port_ip}
-        address ${dynamic_port_ip}
-        address ${container_port_ip}
+        address ${pcf_interface_addr}
         description "PCF Networks"
         duplex auto
         firewall {
@@ -939,7 +970,7 @@ interfaces {
     loopback lo {
     }
     switch switch0 {
-        address ${management_port_ip}
+        address ${management_interface_addr}
         description Local
         firewall {
 

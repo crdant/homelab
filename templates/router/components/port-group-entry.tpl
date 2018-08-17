@@ -1,1 +1,1 @@
-port = ${port}
+port ${port}
