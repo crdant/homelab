@@ -10,7 +10,7 @@ variable "vcenter_license" {
   type = "string"
 }
 
-variable "infra_storage" {
+variable "infra_datastore" {
   type = "string"
 }
 
@@ -51,7 +51,7 @@ data "template_file" "vcenter_config" {
     vsphere_fqdn      = "${local.vsphere_fqdn}"
     vsphere_user      = "${var.vsphere_user}"
     vsphere_password  = "${var.vsphere_password}"
-    vcenter_datastore = "${var.infra_storage}"
+    vcenter_datastore = "${var.infra_datastore}"
 
     /* network */
     vcenter_ip           = "${local.vcenter_ip}"
