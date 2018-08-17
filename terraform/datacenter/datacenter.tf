@@ -23,19 +23,15 @@ resource "vsphere_datacenter" "homelab" {
   }
 }
 
-data "vsphere_datacenter" "homelab" {
-  name = "${vsphere_datacenter.homelab.id}"
-}
-
 resource "vsphere_compute_cluster" "homelab" {
   name          = "homelab"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-  host_system_ids = ["${vsphere_virtual_machine.physical.id}"]
+  datacenter_id = "${vsphere_datacenter.homelab.id}"
+  host_system_ids = ["${data.vsphere_host.physical.id}"]
 }
 
 data "vsphere_network" "vm_network" {
   name          = "VM Network"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+  datacenter_id = "${vsphere_datacenter.homelab.id}"
 }
 
 resource "vsphere_resource_pool" "zone_1" {
@@ -52,7 +48,6 @@ resource "vsphere_resource_pool" "zone_3" {
   name = "zone3"
   parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
 }
-*/
 
 /*
 export BBL_VSPHERE_VCENTER_USER
