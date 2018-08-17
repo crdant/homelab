@@ -21,7 +21,8 @@ init () {
     --var "vcenter_iso_path=${vcenter_iso_path}" \
     --var "vcenter_license=${vcenter_license}" \
     --var "vcenter_host=${vcenter_host}" \
-    --var "vcenter_storage=${vcenter_fast_datastore}" \
+    --var "infra_storage=${vcenter_fast_datastore}" \
+    --var "nested_esxi_ova_path=${work_dir}/vsphere/Nested_ESXi6.5d_Appliance_Template_v1.0.ova" \
     --var "router_host=${router_host}" \
     --var "router_password=$(generate_passphrase 4)" \
     --var "key_dir=${key_dir}" \
@@ -36,7 +37,7 @@ init () {
     "aws_route53_zone.homelab" "${zone_id}"
 }
 
-prepare () {
+apply () {
   terraform apply \
     --auto-approve \
     --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
@@ -47,9 +48,8 @@ prepare () {
     --var "vsphere_user=${vsphere_user}" \
     --var "vsphere_password=${vsphere_password}" \
     --var "vsphere_host=${vsphere_host}" \
-    --var "nested_esxi_prefix=${nested_esxi_prefix}" \
     --var "vcenter_host=${vcenter_host}" \
-    --var "vcenter_storage=${vcenter_fast_datastore}" \
+    --var "infra_storage=${vcenter_fast_datastore}" \
     --var "vcenter_iso_path=${vcenter_iso_path}" \
     --var "vcenter_license=${vcenter_license}" \
     --var "router_host=${router_host}" \
@@ -65,32 +65,14 @@ prepare () {
     ${terraform_dir}/infra
 }
 
-configure () {
-  scp ${work_dir}/config.boot ${router_user}@${router_host}:${router_work_dir}
-  router_exec "$(cat <<COMMANDS
-  configure
-  load ${router_work_dir}/config.boot
-  commit
-  save
-  exit
-COMMANDS
-)"
-}
-
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
       init )
         init
         ;;
-      prepare )
-        prepare
-        ;;
-      configure )
-        configure
-        ;;
-      router_exec )
-        exec ${1}
+      apply )
+        apply
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

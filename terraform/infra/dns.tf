@@ -12,6 +12,7 @@ locals {
   router_alias = "router.${var.domain}"
   vsphere_alias = "esxi.${var.domain}"
   vcenter_alias = "vcenter.${var.domain}"
+  outside_alias = "pigeon.${var.domain}"
 }
 
 resource "aws_route53_zone" "homelab" {
@@ -25,7 +26,7 @@ resource "aws_route53_record" "router" {
   type    = "A"
   ttl     = "${var.dns_ttl}"
   records = [
-    "${local.router_ip}"
+    "${local.router_management_ip}"
   ]
 }
 
@@ -70,6 +71,26 @@ resource "aws_route53_record" "vcenter" {
 }
 
 resource "aws_route53_record" "vcenter_alias" {
+  zone_id = "${aws_route53_zone.homelab.zone_id}"
+  name    = "${local.vcenter_alias}"
+  type    = "CNAME"
+  ttl     = "${var.dns_ttl}"
+  records = [
+    "${local.vcenter_fqdn}"
+  ]
+}
+
+resource "aws_route53_record" "outside" {
+  zone_id = "${aws_route53_zone.homelab.zone_id}"
+  name    = "${local.outside_fqdn}"
+  type    = "A"
+  ttl     = "${var.dns_ttl}"
+  records = [
+    "73.218.219.226"
+  ]
+}
+
+resource "aws_route53_record" "outside_alias" {
   zone_id = "${aws_route53_zone.homelab.zone_id}"
   name    = "${local.vcenter_alias}"
   type    = "CNAME"

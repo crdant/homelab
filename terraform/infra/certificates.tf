@@ -91,25 +91,6 @@ resource "local_file" "esxi_private_key" {
   filename = "${var.key_dir}/${acme_certificate.esxi.certificate_domain}/privkey.pem"
 }
 
-resource "acme_certificate" "nested_esxi" {
-  count                     = "${length(local.nested_esxi_ips)}"
-  account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
-  common_name               = "${var.nested_esxi_prefix}-${count.index}.${var.domain}"
-  subject_alternative_names = [
-    "esxi-${count.index}.${var.domain}"
-  ]
-
-  dns_challenge {
-    provider = "route53"
-
-    config {
-      AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
-      AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
-      AWS_DEFAULT_REGION    = "${var.aws_region}"
-    }
-  }
-}
-
 resource "acme_certificate" "vcenter" {
   account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
   common_name               = "${local.vcenter_fqdn}"

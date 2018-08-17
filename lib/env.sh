@@ -38,7 +38,6 @@ ntp_servers="0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org"
 router_host="savasana"
 outside_host="kapotasana"
 vsphere_host="tadasana"
-nested_esxi_prefix="virabhadrasana"
 vcenter_host="garundasana"
 
 # router configuration

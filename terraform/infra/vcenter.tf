@@ -1,15 +1,3 @@
-variable "vsphere_user" {
-  type = "string"
-}
-
-variable "vsphere_password" {
-  type = "string"
-}
-
-variable "vsphere_host" {
-  type = "string"
-}
-
 variable "vcenter_host" {
   type = "string"
 }
@@ -22,7 +10,7 @@ variable "vcenter_license" {
   type = "string"
 }
 
-variable "vcenter_storage" {
+variable "infra_storage" {
   type = "string"
 }
 
@@ -32,15 +20,8 @@ variable "site_name" {
 }
 
 locals {
-  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
-  vsphere_ip = "${cidrhost(local.vmware_cidr, 10)}"
   vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
   vcenter_ip = "${cidrhost(local.vmware_cidr, 20)}"
-  nested_esxi_ips = [
-    "${cidrhost(local.vmware_cidr, 30)}",
-    "${cidrhost(local.vmware_cidr, 40)}",
-    "${cidrhost(local.vmware_cidr, 50)}"
-  ]
 }
 
 locals {
@@ -70,7 +51,7 @@ data "template_file" "vcenter_config" {
     vsphere_fqdn      = "${local.vsphere_fqdn}"
     vsphere_user      = "${var.vsphere_user}"
     vsphere_password  = "${var.vsphere_password}"
-    vcenter_datastore = "${var.vcenter_storage}"
+    vcenter_datastore = "${var.infra_storage}"
 
     /* network */
     vcenter_ip           = "${local.vcenter_ip}"
