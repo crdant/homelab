@@ -1,39 +1,42 @@
 {
-    "__version": "2.3.0",
+    "__version": "2.13.0",
     "__comments": "Sample template to deploy a vCenter Server Appliance with an embedded Platform Services Controller on an ESXi host.",
-    "new.vcsa": {
+    "new_vcsa": {
         "esxi": {
             "hostname": "${vsphere_fqdn}",
             "username": "${vsphere_user}",
             "password": "${vsphere_password}",
-            "deployment.network": "VM Network",
+            "deployment_network": "VM Network",
             "datastore": "${vcenter_datastore}"
         },
         "appliance": {
-            "thin.disk.mode": true,
-            "deployment.option": "tiny",
+            "__comments": [
+              "You must provide the 'deployment_option' key with a value, which will affect the VCSA's configuration parameters, such as the VCSA's number of vCPUs, the memory size, the storage size, and the maximum numbers of ESXi hosts and VMs which can be managed. For a list of acceptable values, run the supported deployment sizes help, i.e. vcsa-deploy --supported-deployment-sizes"
+            ],
+            "thin_disk_mode": true,
+            "deployment_option": "tiny",
             "name": "Embedded-vCenter-Server-Appliance"
         },
         "network": {
-            "ip.family": "ipv4",
+            "ip_family": "ipv4",
             "mode": "static",
             "ip": "${vcenter_ip}",
-            "dns.servers": [
+            "dns_servers": [
                 "${primary_dns_server}",
                 "${secondary_dns_server}"
             ],
             "prefix": "${cidr_bits}",
             "gateway": "${gateway_ip}",
-            "system.name": "${vcenter_fqdn}"
+            "system_name": "${vcenter_fqdn}"
         },
         "os": {
             "password": "${vcenter_password}",
-            "ssh.enable": true
+            "ntp_servers": "time.nist.gov",
+            "ssh_enable": true
         },
         "sso": {
             "password": "${vcenter_password}",
-            "domain-name": "${domain}",
-            "site-name": "${site_name}"
+            "domain_name": "${domain}"
         }
     },
     "ceip": {
@@ -53,10 +56,10 @@
                 "Additional information regarding the data collected ",
                 "through CEIP and the purposes for which it is used by ",
                 "VMware is set forth in the Trust & Assurance Center at ",
-                "http://www.vmware.com/trustvmware/ceip.html . If you ",
+                "http://www_vmware_com/trustvmware/ceip_html . If you ",
                 "prefer not to participate in VMware's CEIP for this ",
                 "product, you should disable CEIP by setting ",
-                "'ceip.enabled': false. You may join or leave VMware's ",
+                "'ceip_enabled': false. You may join or leave VMware's ",
                 "CEIP for this product at any time. Please confirm your ",
                 "acknowledgement by passing in the parameter ",
                 "--acknowledge-ceip in the command line.",
@@ -64,7 +67,7 @@
             ]
         },
         "settings": {
-            "ceip.enabled": false
+            "ceip_enabled": false
         }
     }
 }
