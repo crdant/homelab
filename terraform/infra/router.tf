@@ -46,14 +46,14 @@ variable vcenter_management_ports {
 resource "random_pet" "admin_password" {
   length = 4
   provisioner "local-exec" {
-    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn}' -w '${self.result}'"
+    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn}' -w '${self.result}' -U"
   }
 }
 
 resource "random_pet" "vpn_psk" {
   length = 4
   provisioner "local-exec" {
-    command = "security add-generic-password -a root -s '${local.vsphere_fqdn} VPN PSK' -w '${self.result}'"
+    command = "security add-generic-password -a root -s '${local.vsphere_fqdn} VPN PSK' -w '${self.result}' -U"
   }
 }
 
@@ -61,7 +61,7 @@ resource "random_pet" "vpn_password" {
   count = "${length(var.vpn_users)}"
   length = 4
   provisioner "local-exec" {
-    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn} VPN' -w '${self.result}'"
+    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn} VPN' -w '${self.result}' -U"
   }
 }
 
