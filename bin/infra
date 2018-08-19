@@ -85,5 +85,4 @@ if [ $# -gt 0 ]; then
 fi
 
 init
-prepare
-configure
+apply
