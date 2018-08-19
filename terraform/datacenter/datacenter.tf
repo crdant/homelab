@@ -11,32 +11,44 @@ resource "vsphere_datacenter" "homelab" {
       GOVC_DATACENTER = "${self.name}"
     }
   }
+
+  provider = "vsphere.vcenter"
 }
 
 resource "vsphere_compute_cluster" "homelab" {
   name          = "homelab"
   datacenter_id = "${vsphere_datacenter.homelab.id}"
   host_system_ids = ["${data.vsphere_host.physical.id}"]
+
+  provider = "vsphere.vcenter"
 }
 
 data "vsphere_network" "vm_network" {
   name          = "VM Network"
   datacenter_id = "${vsphere_datacenter.homelab.id}"
+
+  provider = "vsphere.vcenter"
 }
 
 resource "vsphere_resource_pool" "zone_1" {
   name = "zone1"
   parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
+
+  provider = "vsphere.vcenter"
 }
 
 resource "vsphere_resource_pool" "zone_2" {
   name = "zone2"
   parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
+
+  provider = "vsphere.vcenter"
 }
 
 resource "vsphere_resource_pool" "zone_3" {
   name = "zone3"
   parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
+
+  provider = "vsphere.vcenter"
 }
 
 /*
