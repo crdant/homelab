@@ -4,12 +4,38 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-if [ ! -d ${work_dir} ] ; then
-  mkdir -p ${work_dir}
-fi
+directories() {
+  if [ ! -d ${work_dir} ] ; then
+    mkdir -p ${work_dir}
+  fi
 
-if [ ! -d ${key_dir} ] ; then
-  mkdir -p ${key_dir}
-fi
+  if [ ! -d ${key_dir} ] ; then
+    mkdir -p ${key_dir}
+  fi
+}
 
-aws s3api create-bucket --bucket ${state_bucket} --acl private --region ${aws_region}
+service_account () {
+  if [ ! -f "${key_file}" ] ; then
+    # create an account for preparing the environment
+    gcloud iam service-accounts create ${service_account_name} --no-user-output-enabled
+    gcloud iam service-accounts keys create --iam-account="${service_account}" ${key_file} --no-user-output-enabled
+    gcloud projects add-iam-policy-binding ${project} --member="serviceAccount:${service_account}" --role="roles/editor" --no-user-output-enabled
+    gcloud projects add-iam-policy-binding ${project} --member="serviceAccount:${service_account}" --role="roles/viewer" --no-user-output-enabled
+  fi
+}
+
+encryption () {
+  gcloud kms keyrings create homelab --location ${region}
+  gcloud kms keys create ${statefile_bucket} --keyring homelab --purpose encryption --location ${region}
+  gsutil kms encryption -k projects/${project}/locations/${region}/keyRings/homelab/cryptoKeys/${statefile_bucket} gs://${statefile_bucket}
+}
+
+cloud_storage () {
+  gsutil mb -c regional -l ${region} gs://${statefile_bucket}
+  gsutil versioning set on gs://${statefile_bucket}
+}
+
+directories
+service_account
+cloud_storage
+encryption

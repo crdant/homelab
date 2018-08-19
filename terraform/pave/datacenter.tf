@@ -18,7 +18,7 @@ resource "vsphere_datacenter" "homelab" {
 resource "vsphere_compute_cluster" "homelab" {
   name          = "homelab"
   datacenter_id = "${vsphere_datacenter.homelab.id}"
-  host_system_ids = ["${erraform_remote_state.infra.vsphere_physical_host.id}"]
+  host_system_ids = ["${erraform_remote_state.infra.vsphere_physical_host_id}"]
 
   provider = "vsphere.vcenter"
 }

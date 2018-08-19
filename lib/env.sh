@@ -5,7 +5,6 @@ vpn_user=crdant
 vsphere_user=root
 
 # important files and directories
-
 key_dir="${BASEDIR}/keys"
 work_dir="${BASEDIR}/work"
 etc_dir="${BASEDIR}/etc"
@@ -16,8 +15,14 @@ manifest_dir="${BASEDIR}/manifests"
 terraform_dir="${BASEDIR}/terraform"
 template_dir="${BASEDIR}/templates"
 
-# s3 buckets
-state_bucket=homelab-dewberry-word-momento-par
+# GCP for configuration remote state and DNS
+project=crdant-net
+account=chuck@crdant.io
+service_account_name=homelab
+service_account="${service_account_name}@${project}.iam.gserviceaccount.com"
+key_file="${key_dir}/${service_account}.json"
+statefile_bucket=homelab-cupboard-maladapt-stammer-dabble
+region=us-east1
 
 # software you download before
 vcenter_iso_path="${work_dir}/VMware-VCSA-all-6.7.0-8546234.iso"

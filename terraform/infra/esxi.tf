@@ -72,6 +72,6 @@ resource "null_resource" "vsan_cluster" {
   }
 }
 
-output "vsphere_physical_host" {
-  value = "${data.vsphere_host.physical}"
+output "vsphere_physical_host_id" {
+  value = "${data.vsphere_host.physical.id}"
 }

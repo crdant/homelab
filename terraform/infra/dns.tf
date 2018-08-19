@@ -9,87 +9,86 @@ locals {
   outside_alias = "pigeon.${var.domain}"
 }
 
-resource "aws_route53_zone" "homelab" {
-  name = "${var.domain}"
-  comment = "PCF Home Lab"
+data "google_dns_managed_zone" "homelab" {
+  name     = "crdant-net"
 }
 
-resource "aws_route53_record" "router" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
+resource "google_dns_record_set" "router" {
   name    = "${local.router_fqdn}"
-  type    = "A"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.router_management_ip}"
-  ]
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.router_management_ip}" ]
 }
 
-resource "aws_route53_record" "router_alias" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.router_alias}"
-  type    = "CNAME"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.router_fqdn}"
-  ]
+resource "google_dns_record_set" "router_alias" {
+  name = "${local.router_alias}"
+  type = "CNAME"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.router_fqdn}" ]
 }
 
-resource "aws_route53_record" "vsphere" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
+resource "google_dns_record_set" "vsphere" {
   name    = "${local.vsphere_fqdn}"
-  type    = "A"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.vsphere_ip}"
-  ]
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.vsphere_ip}" ]
 }
 
-resource "aws_route53_record" "vsphere_alias" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.vsphere_alias}"
-  type    = "CNAME"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.vsphere_fqdn}"
-  ]
+resource "google_dns_record_set" "vsphere_alias" {
+  name = "${local.vsphere_alias}"
+  type = "CNAME"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.vsphere_fqdn}" ]
 }
 
-resource "aws_route53_record" "vcenter" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
+resource "google_dns_record_set" "vcenter" {
   name    = "${local.vcenter_fqdn}"
-  type    = "A"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.vcenter_ip}"
-  ]
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.vcenter_ip}" ]
 }
 
-resource "aws_route53_record" "vcenter_alias" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.vcenter_alias}"
-  type    = "CNAME"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.vcenter_fqdn}"
-  ]
+resource "google_dns_record_set" "vcenter_alias" {
+  name = "${local.vcenter_alias}"
+  type = "CNAME"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.vcenter_fqdn}" ]
 }
 
-resource "aws_route53_record" "outside" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
+resource "google_dns_record_set" "outside" {
   name    = "${local.outside_fqdn}"
-  type    = "A"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "73.218.219.226"
-  ]
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "73.218.219.226" ]
 }
 
-resource "aws_route53_record" "outside_alias" {
-  zone_id = "${aws_route53_zone.homelab.zone_id}"
-  name    = "${local.vcenter_alias}"
-  type    = "CNAME"
-  ttl     = "${var.dns_ttl}"
-  records = [
-    "${local.vcenter_fqdn}"
-  ]
+resource "google_dns_record_set" "outside_alias" {
+  name = "${local.outside_alias}"
+  type = "CNAME"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.outside_fqdn}" ]
 }

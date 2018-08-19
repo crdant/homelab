@@ -8,59 +8,77 @@ vsphere_password="$(security find-generic-password -a root -s esxi -w)"
 router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
 
 init () {
-  terraform init ${terraform_dir}/infra
-  terraform import \
-    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
-    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
-    --var "domain=${domain}" \
-    --var "email=${email}" \
-    --var "dns_ttl=${dns_ttl}" \
-    --var "vsphere_user=${vsphere_user}" \
-    --var "vsphere_password=${vsphere_password}" \
-    --var "vsphere_host=${vsphere_host}" \
-    --var "vcenter_host=${vcenter_host}" \
-    --var "infra_datastore=${infra_datastore}" \
-    --var "vcenter_iso_path=${vcenter_iso_path}" \
-    --var "vcenter_license=${vcenter_license}" \
-    --var "router_host=${router_host}" \
-    --var "outside_host=${outside_host}" \
-    --var "router_password=$(generate_passphrase 4)" \
-    --var "key_dir=${key_dir}" \
-    --var "state_dir=${state_dir}" \
-    --var "template_dir=${template_dir}" \
-    --var "work_dir=${work_dir}" \
-    --var "admin_user=${admin_user}" \
-    --var "vpn_users=[ \"${vpn_user}\" ]" \
-    --config="${terraform_dir}"/infra \
-    --allow-missing-config \
-    "aws_route53_zone.homelab" "${zone_id}"
+  terraform init \
+    --backend-config=<(backend_config) \
+    "${terraform_dir}/infra"
 }
 
 apply () {
   terraform apply \
     --auto-approve \
-    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
-    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
-    --var "domain=${domain}" \
-    --var "email=${email}" \
-    --var "dns_ttl=${dns_ttl}" \
-    --var "vsphere_user=${vsphere_user}" \
-    --var "vsphere_password=${vsphere_password}" \
-    --var "vsphere_host=${vsphere_host}" \
-    --var "vcenter_host=${vcenter_host}" \
-    --var "infra_datastore=${infra_datastore}" \
-    --var "vcenter_iso_path=${vcenter_iso_path}" \
-    --var "vcenter_license=${vcenter_license}" \
-    --var "router_host=${router_host}" \
-    --var "outside_host=${outside_host}" \
-    --var "current_router_password=${current_router_password}" \
-    --var "key_dir=${key_dir}" \
-    --var "state_dir=${state_dir}" \
-    --var "template_dir=${template_dir}" \
-    --var "work_dir=${work_dir}" \
-    --var "admin_user=${admin_user}" \
-    --var "vpn_users=[ \"${vpn_user}\" ]" \
+    --var-file=<(terraform_vars) \
+    --var-file=<(backend_config) \
     ${terraform_dir}/infra
+}
+
+backend_config () {
+  cat <<CONFIG
+credentials = <<CREDENTIALS
+  $(cat ${key_file})
+CREDENTIALS
+region = "${region}"
+bucket = "${statefile_bucket}"
+CONFIG
+}
+
+terraform_vars () {
+  jq -n \
+    --arg "domain" "${domain}" \
+    --arg "email" "${email}" \
+    --arg "dns_ttl" "${dns_ttl}" \
+    --arg "project" "${project}" \
+    --arg "key_file" "${key_file}" \
+    --arg "region" "${region}" \
+    --arg "vsphere_user" "${vsphere_user}" \
+    --arg "vsphere_password" "${vsphere_password}" \
+    --arg "vsphere_host" "${vsphere_host}" \
+    --arg "vcenter_host" "${vcenter_host}" \
+    --arg "infra_datastore" "${infra_datastore}" \
+    --arg "vcenter_iso_path" "${vcenter_iso_path}" \
+    --arg "vcenter_license" "${vcenter_license}" \
+    --arg "router_host" "${router_host}" \
+    --arg "outside_host" "${outside_host}" \
+    --arg "current_router_password" "${router_password}" \
+    --arg "key_dir" "${key_dir}" \
+    --arg "statefile_bucket" "${state_dir}" \
+    --arg "template_dir" "${template_dir}" \
+    --arg "work_dir" "${work_dir}" \
+    --arg "admin_user" "${admin_user}" \
+    --argjson "vpn_users" "[ \"${vpn_user}\" ]" \
+  '{
+      domain: $domain,
+      email: $email,
+      dns_ttl: $dns_ttl,
+      project: $project,
+      key_file: $key_file,
+      region: $region,
+      vsphere_user: $vsphere_user,
+      vsphere_password: $vsphere_password,
+      vsphere_host: $vsphere_host,
+      vcenter_host: $vcenter_host,
+      infra_datastore: $infra_datastore,
+      vcenter_iso_path: $vcenter_iso_path,
+      vcenter_license: $vcenter_license,
+      router_host: $router_host,
+      outside_host: $outside_host,
+      current_router_password: $current_router_password,
+      key_dir: $key_dir,
+      statefile_bucket: $statefile_bucket,
+      template_dir: $template_dir,
+      work_dir: $work_dir,
+      admin_user: $admin_user,
+      vpn_users: $vpn_users
+   }'
 }
 
 if [ $# -gt 0 ]; then

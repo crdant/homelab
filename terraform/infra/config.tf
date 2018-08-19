@@ -1,11 +1,24 @@
-variable "state_bucket" {
+variable "project" {
   type = "string"
 }
 
-provider "aws" {
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
-  region = "${var.aws_region}"
+variable "key_file" {
+  type = "string"
+}
+
+variable "region" {
+  type = "string"
+  default = "us-east-1"
+}
+
+variable "statefile_bucket" {
+  type = "string"
+}
+
+provider "google" {
+  credentials = "${file("${var.key_file}")}"
+  project     = "${var.project}"
+  region      = "${var.region}"
 }
 
 provider "vsphere" {
@@ -19,9 +32,23 @@ provider "vsphere" {
 }
 
 terraform {
-  backend "s3" {
-    bucket = "${var.state_bucket}"
-    key    = "infra"
-    region = "${var.aws_region}"
+  backend "gcs" {
+    prefix = "infra"
   }
+}
+
+output "project" {
+  value = "${var.project}"
+}
+
+output "key_file" {
+  value = "${var.key_file}"
+}
+
+output "location" {
+  value = "${var.region}"
+}
+
+output "statefile_bucket" {
+  value = "${var.statefile_bucket}"
 }

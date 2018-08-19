@@ -19,12 +19,10 @@ resource "acme_certificate" "router" {
   ]
 
   dns_challenge {
-    provider = "route53"
+    provider = "gcloud"
 
     config {
-      AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
-      AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
-      AWS_DEFAULT_REGION    = "${var.aws_region}"
+      credentials = "${file("${var.key_file}")}"
     }
   }
 }
@@ -47,12 +45,10 @@ resource "acme_certificate" "esxi" {
   ]
 
   dns_challenge {
-    provider = "route53"
+    provider = "gcloud"
 
     config {
-      AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
-      AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
-      AWS_DEFAULT_REGION    = "${var.aws_region}"
+      credentials = "${file("${var.key_file}")}"
     }
   }
 
@@ -99,12 +95,10 @@ resource "acme_certificate" "vcenter" {
   ]
 
   dns_challenge {
-    provider = "route53"
+    provider = "gcloud"
 
     config {
-      AWS_ACCESS_KEY_ID     = "${var.aws_access_key}"
-      AWS_SECRET_ACCESS_KEY = "${var.aws_secret_key}"
-      AWS_DEFAULT_REGION    = "${var.aws_region}"
+      credentials = "${file("${var.key_file}")}"
     }
   }
 }

@@ -108,7 +108,7 @@ resource "local_file" "vcenter_config" {
   depends_on = ["null_resource.mount_iso"]
 }
 
-resource "tls_private_key" "vcenter_ssh_key" {
+resource "tls_private_key" "vcenter_ssh" {
   algorithm   = "RSA"
   rsa_bits    = 4096
 
@@ -136,8 +136,8 @@ resource "tls_private_key" "vcenter_ssh_key" {
   depends_on = ["local_file.vcenter_config"]
 }
 
-resource "local_file" "vcenter_private_key" {
-  content  = "${tls_private_key.vcenter.private_key_pem}"
+resource "local_file" "vcenter_ssh_private_key" {
+  content  = "${tls_private_key.vcenter_ssh.private_key_pem}"
   filename = "${var.key_dir}/id_vcenter_root.pem"
 }
 
@@ -154,4 +154,8 @@ output "vcenter_fqdn" {
 
 output "vcenter_ip" {
   value = "${local.vcenter_ip}"
+}
+
+output "vcenter_ssh_private_key" {
+  value = "${local_file.vcenter_ssh_private_key.filename}"
 }
