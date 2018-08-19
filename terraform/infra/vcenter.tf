@@ -147,3 +147,11 @@ resource "null_resource" "unmount_iso" {
   }
   depends_on = ["local_file.vcenter_config"]
 }
+
+output "vcenter_fqdn" {
+  value = "${local.vcenter_fqdn}"
+}
+
+output "vcenter_ip" {
+  value = "${local.vcenter_ip}"
+}

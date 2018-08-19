@@ -12,7 +12,6 @@ variable "lab_cidr" {
   default = "172.16.0.0/12"
 }
 
-
 locals {
   local_cidr        = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,0),10,0)}"
   vpn_cidr          = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,1),10,0)}"

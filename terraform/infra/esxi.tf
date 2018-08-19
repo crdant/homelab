@@ -71,3 +71,7 @@ resource "null_resource" "vsan_cluster" {
     }
   }
 }
+
+output "vsphere_physical_host" {
+  value = "${data.vsphere_host.physical}"
+}

@@ -31,7 +31,6 @@ init () {
     --var "work_dir=${work_dir}" \
     --var "admin_user=${admin_user}" \
     --var "vpn_users=[ \"${vpn_user}\" ]" \
-    --state="${state_dir}/infra.tfstate" \
     --config="${terraform_dir}"/infra \
     --allow-missing-config \
     "aws_route53_zone.homelab" "${zone_id}"
@@ -61,7 +60,6 @@ apply () {
     --var "work_dir=${work_dir}" \
     --var "admin_user=${admin_user}" \
     --var "vpn_users=[ \"${vpn_user}\" ]" \
-    --state="${state_dir}/infra.tfstate" \
     ${terraform_dir}/infra
 }
 

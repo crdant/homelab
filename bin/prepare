@@ -12,6 +12,4 @@ if [ ! -d ${key_dir} ] ; then
   mkdir -p ${key_dir}
 fi
 
-if [ ! -d ${state_dir} ] ; then
-  mkdir -p ${state_dir}
-fi
+aws s3api create-bucket --bucket ${state_bucket} --acl private --region ${aws_region}

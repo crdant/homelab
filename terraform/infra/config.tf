@@ -1,3 +1,7 @@
+variable "state_bucket" {
+  type = "string"
+}
+
 provider "aws" {
   access_key = "${var.aws_access_key}"
   secret_key = "${var.aws_secret_key}"
@@ -12,4 +16,12 @@ provider "vsphere" {
 
   # If you have a self-signed cert
   allow_unverified_ssl = true
+}
+
+terraform {
+  backend "s3" {
+    bucket = "${var.state_bucket}"
+    key    = "infra"
+    region = "${var.aws_region}"
+  }
 }
