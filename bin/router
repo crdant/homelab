@@ -10,7 +10,7 @@ router_password="$(security find-generic-password -a ubnt -s ${router_host}.${do
 init () {
   terraform init \
     --backend-config=<(backend_config) \
-    "${terraform_dir}/network"
+    "${terraform_dir}/router"
 }
 
 apply () {
@@ -18,7 +18,7 @@ apply () {
     --auto-approve \
     --var-file=<(terraform_vars) \
     --var-file=<(backend_config) \
-    ${terraform_dir}/network
+    ${terraform_dir}/router
 }
 
 backend_config () {
