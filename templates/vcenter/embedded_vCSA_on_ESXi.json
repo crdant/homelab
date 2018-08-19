@@ -37,6 +37,9 @@
         "sso": {
             "password": "${vcenter_password}",
             "domain_name": "${domain}"
+        },
+        "ovftool_arguments" : {
+          "defaultStorageRawProfile" : "((\"hostFailuresToTolerate\" i1) (\"forceProvisioning\" i1))"
         }
     },
     "ceip": {
