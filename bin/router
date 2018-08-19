@@ -39,13 +39,6 @@ terraform_vars () {
     --arg "project" "${project}" \
     --arg "key_file" "${key_file}" \
     --arg "region" "${region}" \
-    --arg "vsphere_user" "${vsphere_user}" \
-    --arg "vsphere_password" "${vsphere_password}" \
-    --arg "vsphere_host" "${vsphere_host}" \
-    --arg "vcenter_host" "${vcenter_host}" \
-    --arg "network_datastore" "${network_datastore}" \
-    --arg "vcenter_iso_path" "${vcenter_iso_path}" \
-    --arg "vcenter_license" "${vcenter_license}" \
     --arg "router_host" "${router_host}" \
     --arg "outside_host" "${outside_host}" \
     --arg "current_router_password" "${router_password}" \
@@ -62,13 +55,6 @@ terraform_vars () {
       project: $project,
       key_file: $key_file,
       region: $region,
-      vsphere_user: $vsphere_user,
-      vsphere_password: $vsphere_password,
-      vsphere_host: $vsphere_host,
-      vcenter_host: $vcenter_host,
-      network_datastore: $network_datastore,
-      vcenter_iso_path: $vcenter_iso_path,
-      vcenter_license: $vcenter_license,
       router_host: $router_host,
       outside_host: $outside_host,
       current_router_password: $current_router_password,
