@@ -5,9 +5,9 @@ resource "vsphere_datacenter" "homelab" {
     command = "govc host.add -hostname ${local.vsphere_fqdn} -username ${var.vsphere_user} -password ${var.vsphere_password} -noverify"
     environment {
       GOVC_INSECURE   = "1"
-      GOVC_URL        = "${local.vcenter_fqdn}"
-      GOVC_USERNAME   = "${local.vcenter_user}"
-      GOVC_PASSWORD   = "${random_string.vcenter_password.result}"
+      GOVC_URL        = "${terraform_remote_state.infra.vcenter_fqdn}"
+      GOVC_USERNAME   = "${terraform_remote_state.infra.vcenter_user}"
+      GOVC_PASSWORD   = "${var.vcenter_password}"
       GOVC_DATACENTER = "${self.name}"
     }
   }
@@ -18,7 +18,7 @@ resource "vsphere_datacenter" "homelab" {
 resource "vsphere_compute_cluster" "homelab" {
   name          = "homelab"
   datacenter_id = "${vsphere_datacenter.homelab.id}"
-  host_system_ids = ["${data.vsphere_host.physical.id}"]
+  host_system_ids = ["${erraform_remote_state.infra.vsphere_physical_host.id}"]
 
   provider = "vsphere.vcenter"
 }

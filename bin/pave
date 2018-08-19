@@ -4,10 +4,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-# ssh_key_file="${key_dir}/id_vcenter"
-# if [ -z "$OP_SESSION_my" ]; then
-#   eval "$(op signin my)"
-# fi
+vcenter_password="$(security find-generic-password -a root -s ${vcenter_host}.${domain} -w)"
 
 init () {
   terraform init ${terraform_dir}/pave
@@ -26,7 +23,6 @@ apply () {
     --var "state_dir=${state_dir}" \
     --var "template_dir=${template_dir}" \
     --var "work_dir=${work_dir}" \
-    --state="${state_dir}/vcenter.tfstate" \
     ${terraform_dir}/pave
 }
 
