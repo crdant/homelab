@@ -8,7 +8,7 @@ vsphere_password="$(security find-generic-password -a root -s esxi -w)"
 router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
 
 init () {
-  terraform init ${terraform_dir}/pave
+  terraform init ${terraform_dir}/infra
   terraform import \
     --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
     --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
@@ -62,7 +62,7 @@ apply () {
     --var "admin_user=${admin_user}" \
     --var "vpn_users=[ \"${vpn_user}\" ]" \
     --state="${state_dir}/infra.tfstate" \
-    ${terraform_dir}/pave
+    ${terraform_dir}/infra
 }
 
 if [ $# -gt 0 ]; then
