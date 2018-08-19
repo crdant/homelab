@@ -31,7 +31,10 @@
         },
         "os": {
             "password": "${vcenter_password}",
-            "ntp_servers": "time.nist.gov",
+            "ntp_servers": [
+                "${primary_ntp_server}",
+                "${secondary_ntp_server}"
+            ],
             "ssh_enable": true
         },
         "sso": {

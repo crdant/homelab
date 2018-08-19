@@ -67,6 +67,8 @@ data "template_file" "vcenter_config" {
 
     /* OS */
     vcenter_password = "${random_string.vcenter_password.result}"
+    primary_ntp_server   = "${var.ntp_servers[0]}"
+    secondary_ntp_server = "${var.ntp_servers[1]}"
 
     /* SSO */
     domain    = "${var.domain}"
