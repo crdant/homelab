@@ -4,65 +4,274 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-vsphere_password="$(security find-generic-password -a root -s esxi -w)"
-router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
+# ssh_key_file="${key_dir}/id_vcenter"
+# if [ -z "$OP_SESSION_my" ]; then
+#   eval "$(op signin my)"
+# fi
 
 init () {
-  terraform init ${terraform_dir}/pave
-  terraform import \
-    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
-    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
-    --var "domain=${domain}" \
-    --var "email=${email}" \
-    --var "dns_ttl=${dns_ttl}" \
-    --var "vsphere_user=${vsphere_user}" \
-    --var "vsphere_password=${vsphere_password}" \
-    --var "vsphere_host=${vsphere_host}" \
-    --var "vcenter_host=${vcenter_host}" \
-    --var "infra_datastore=${infra_datastore}" \
-    --var "vcenter_iso_path=${vcenter_iso_path}" \
-    --var "vcenter_license=${vcenter_license}" \
-    --var "router_host=${router_host}" \
-    --var "outside_host=${outside_host}" \
-    --var "router_password=$(generate_passphrase 4)" \
-    --var "key_dir=${key_dir}" \
-    --var "state_dir=${state_dir}" \
-    --var "template_dir=${template_dir}" \
-    --var "work_dir=${work_dir}" \
-    --var "admin_user=${admin_user}" \
-    --var "vpn_users=[ \"${vpn_user}\" ]" \
-    --state="${state_dir}/infra.tfstate" \
-    --config="${terraform_dir}"/infra \
-    --allow-missing-config \
-    "aws_route53_zone.homelab" "${zone_id}"
+  terraform init ${terraform_dir}/datacenter
 }
 
 apply () {
   terraform apply \
     --auto-approve \
-    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
-    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
     --var "domain=${domain}" \
     --var "email=${email}" \
-    --var "dns_ttl=${dns_ttl}" \
-    --var "vsphere_user=${vsphere_user}" \
-    --var "vsphere_password=${vsphere_password}" \
-    --var "vsphere_host=${vsphere_host}" \
+    --var "vcenter_password=\"${vcenter_password}\"" \
     --var "vcenter_host=${vcenter_host}" \
-    --var "infra_datastore=${infra_datastore}" \
-    --var "vcenter_iso_path=${vcenter_iso_path}" \
-    --var "vcenter_license=${vcenter_license}" \
-    --var "router_host=${router_host}" \
-    --var "outside_host=${outside_host}" \
-    --var "current_router_password=${current_router_password}" \
     --var "key_dir=${key_dir}" \
     --var "state_dir=${state_dir}" \
     --var "template_dir=${template_dir}" \
     --var "work_dir=${work_dir}" \
-    --var "admin_user=${admin_user}" \
-    --var "vpn_users=[ \"${vpn_user}\" ]" \
-    --state="${state_dir}/infra.tfstate" \
-    ${terraform_dir}/pave
+    --state="${state_dir}/vcenter.tfstate" \
+    ${terraform_dir}/datacenter
+}
+
+configure () {
+  # replace appliancesh with BASH
+  vsphere_exec "shell chsh -s /bin/bash"
+
+  # enable password-less SSH
+  vsphere_exec "$(cat <<COMMANDS
+    mkdir /root/.ssh
+    chmod 700 /root/.ssh
+    touch /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/authorized_keys
+    echo ${ssh_public_key} >> /root/.ssh/authorized_keys
+COMMANDS
+  )"
+  # TODO: create bucc user with dir-cli
+  # TODO: create opsman user with dir-cli
+}
+
+roles () {
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
+  (
+    GOVC_INSECURE=1
+    GOVC_URL=${vcenter_host}
+    GOVC_USERNAME=${vcenter_admin}
+    GOVC_PASSWORD=${vcenter_admin_password}
+
+    govc role.create ${bosh_director_role} \
+      Datastore.AllocateSpace \
+      Datastore.Browse \
+      Datastore.DeleteFile \
+      Datastore.FileManagement \
+      Datastore.UpdateVirtualMachineFiles \
+      Datastore.UpdateVirtualMachineMetadata \
+      Folder.Create \
+      Folder.Delete \
+      Folder.Move \
+      Folder.Rename \
+      Global.ManageCustomFields \
+      Global.SetCustomField \
+      Host.Inventory.EditCluster \
+      Host.Local.CreateVM \
+      Host.Local.DeleteVM \
+      Host.Local.InstallAgent \
+      Host.Local.ManageUserGroups \
+      Host.Local.ReconfigVM \
+      InventoryService.Tagging.AttachTag \
+      InventoryService.Tagging.CreateCategory \
+      InventoryService.Tagging.CreateTag \
+      InventoryService.Tagging.DeleteCategory \
+      InventoryService.Tagging.DeleteTag \
+      InventoryService.Tagging.EditCategory \
+      InventoryService.Tagging.EditTag \
+      InventoryService.Tagging.ModifyUsedByForCategory \
+      InventoryService.Tagging.ModifyUsedByForTag \
+      Network.Assign \
+      Network.Config \
+      Network.Delete \
+      Network.Move \
+      Resource.AssignVMToPool \
+      Resource.ColdMigrate \
+      Resource.HotMigrate \
+      System.Anonymous \
+      System.Read \
+      System.View \
+      VApp.ApplicationConfig \
+      VApp.AssignResourcePool \
+      VApp.AssignVApp \
+      VApp.AssignVM \
+      VApp.Clone \
+      VApp.Create \
+      VApp.Delete \
+      VApp.Export \
+      VApp.ExtractOvfEnvironment \
+      VApp.Import \
+      VApp.InstanceConfig \
+      VApp.ManagedByConfig \
+      VApp.Move \
+      VApp.PowerOff \
+      VApp.PowerOn \
+      VApp.Rename \
+      VApp.ResourceConfig \
+      VApp.Suspend \
+      VApp.Unregister \
+      VirtualMachine.Config.AddExistingDisk \
+      VirtualMachine.Config.AddNewDisk \
+      VirtualMachine.Config.AddRemoveDevice \
+      VirtualMachine.Config.AdvancedConfig \
+      VirtualMachine.Config.Annotation \
+      VirtualMachine.Config.CPUCount \
+      VirtualMachine.Config.ChangeTracking \
+      VirtualMachine.Config.DiskExtend \
+      VirtualMachine.Config.DiskLease \
+      VirtualMachine.Config.EditDevice \
+      VirtualMachine.Config.HostUSBDevice \
+      VirtualMachine.Config.ManagedBy \
+      VirtualMachine.Config.Memory \
+      VirtualMachine.Config.MksControl \
+      VirtualMachine.Config.QueryFTCompatibility \
+      VirtualMachine.Config.QueryUnownedFiles \
+      VirtualMachine.Config.RawDevice \
+      VirtualMachine.Config.ReloadFromPath \
+      VirtualMachine.Config.RemoveDisk \
+      VirtualMachine.Config.Rename \
+      VirtualMachine.Config.ResetGuestInfo \
+      VirtualMachine.Config.Resource \
+      VirtualMachine.Config.Settings \
+      VirtualMachine.Config.SwapPlacement \
+      VirtualMachine.Config.ToggleForkParent \
+      VirtualMachine.Config.Unlock \
+      VirtualMachine.Config.UpgradeVirtualHardware \
+      VirtualMachine.GuestOperations.Execute \
+      VirtualMachine.GuestOperations.Modify \
+      VirtualMachine.GuestOperations.ModifyAliases \
+      VirtualMachine.GuestOperations.Query \
+      VirtualMachine.GuestOperations.QueryAliases \
+      VirtualMachine.Interact.AnswerQuestion \
+      VirtualMachine.Interact.Backup \
+      VirtualMachine.Interact.ConsoleInteract \
+      VirtualMachine.Interact.CreateScreenshot \
+      VirtualMachine.Interact.CreateSecondary \
+      VirtualMachine.Interact.DefragmentAllDisks \
+      VirtualMachine.Interact.DeviceConnection \
+      VirtualMachine.Interact.DisableSecondary \
+      VirtualMachine.Interact.DnD \
+      VirtualMachine.Interact.EnableSecondary \
+      VirtualMachine.Interact.GuestControl \
+      VirtualMachine.Interact.MakePrimary \
+      VirtualMachine.Interact.Pause \
+      VirtualMachine.Interact.PowerOff \
+      VirtualMachine.Interact.PowerOn \
+      VirtualMachine.Interact.PutUsbScanCodes \
+      VirtualMachine.Interact.Record \
+      VirtualMachine.Interact.Replay \
+      VirtualMachine.Interact.Reset \
+      VirtualMachine.Interact.SESparseMaintenance \
+      VirtualMachine.Interact.SetCDMedia \
+      VirtualMachine.Interact.SetFloppyMedia \
+      VirtualMachine.Interact.Suspend \
+      VirtualMachine.Interact.TerminateFaultTolerantVM \
+      VirtualMachine.Interact.ToolsInstall \
+      VirtualMachine.Interact.TurnOffFaultTolerance \
+      VirtualMachine.Inventory.Create \
+      VirtualMachine.Inventory.CreateFromExisting \
+      VirtualMachine.Inventory.Delete \
+      VirtualMachine.Inventory.Move \
+      VirtualMachine.Inventory.Register \
+      VirtualMachine.Inventory.Unregister \
+      VirtualMachine.Namespace.Event \
+      VirtualMachine.Namespace.EventNotify \
+      VirtualMachine.Namespace.Management \
+      VirtualMachine.Namespace.ModifyContent \
+      VirtualMachine.Namespace.Query \
+      VirtualMachine.Namespace.ReadContent \
+      VirtualMachine.Provisioning.Clone \
+      VirtualMachine.Provisioning.CloneTemplate \
+      VirtualMachine.Provisioning.CreateTemplateFromVM \
+      VirtualMachine.Provisioning.Customize \
+      VirtualMachine.Provisioning.DeployTemplate \
+      VirtualMachine.Provisioning.DiskRandomAccess \
+      VirtualMachine.Provisioning.DiskRandomRead \
+      VirtualMachine.Provisioning.FileRandomAccess \
+      VirtualMachine.Provisioning.GetVmFiles \
+      VirtualMachine.Provisioning.MarkAsTemplate \
+      VirtualMachine.Provisioning.MarkAsVM \
+      VirtualMachine.Provisioning.ModifyCustSpecs \
+      VirtualMachine.Provisioning.PromoteDisks \
+      VirtualMachine.Provisioning.PutVmFiles \
+      VirtualMachine.Provisioning.ReadCustSpecs \
+      VirtualMachine.State.CreateSnapshot \
+      VirtualMachine.State.RemoveSnapshot \
+      VirtualMachine.State.RenameSnapshot \
+      VirtualMachine.State.RevertToSnapshot
+  )
+}
+
+users () {
+  echo
+}
+
+groups () {
+  # create_group "BoshDirectorServiceAccounts" "Services accounts for BOSH director installations"
+  assign_role "${bosh_director_role}" --group "${bosh_director_group}"@${domain}
+}
+
+create_user () {
+  local username=${1}
+  local password=${2}
+  local extra_args=""
+  if [ ! -z "${3}" ] ; then
+    extra_args=" --first-name ${3}"
+  fi
+  if [ ! -z "${4}" ] ; then
+    extra_args="$extra_args --last-name ${4}"
+  fi
+  dir_cli user create --account ${username} --user-password $( printf "%q" ${password}) ${extra_args}
+}
+
+
+create_group () {
+  local group=${1}
+  local description=${2}
+  dir_cli ssogroup create --name ${group} --description "${description}"
+}
+
+add_group_user () {
+  local user=${1}
+  local group=${2}
+  dir_cli group modify --name "${group}" --add "${user}"
+}
+
+assign_role () {
+  local role=${1}
+  if [ "--group" == "${2}" ] ; then
+    local group_flag="${2}"
+    local principal="${3}"
+  else
+    local principal="${2}"
+  fi
+
+  if [ -z "${vcenter_admin_password}" ] ; then
+    vcenter_admin_password="$(op get item 'vCenter (Home Lab)' | jq -r '.details.fields[] | select(.designation == "password" ).value')"
+  fi
+
+  (
+    GOVC_INSECURE=1
+    GOVC_URL=${vcenter_host}
+    GOVC_USERNAME=${vcenter_admin}
+    GOVC_PASSWORD=${vcenter_admin_password}
+
+    govc permissions.set -principal "${principal}" -role "${role}" ${group_flag}
+  )
+}
+
+dir_cli () {
+  for var in "$@"
+  do
+    args="${args} '${var}'"
+  done
+  vsphere_exec "/usr/lib/vmware-vmafd/bin/dir-cli ${args}"
+}
+
+vsphere_exec () {
+  ssh -l root ${vcenter_host} -i ${ssh_key_file} "${*}"
 }
 
 if [ $# -gt 0 ]; then
@@ -74,6 +283,67 @@ if [ $# -gt 0 ]; then
       apply )
         apply
         ;;
+      roles )
+        roles
+        ;;
+      users )
+        users
+        ;;
+      groups )
+        groups
+        ;;
+      user)
+        while [ $# -gt 0 ]; do
+          case $2 in
+            create )
+              username=${3}
+              password=${4}
+              first=${5}
+              last=${6}
+              shift 6
+              create_user ${username} ${password} ${first} ${last}
+              ;;
+            assign )
+              username="${3}"
+              role="${4}"
+              shift 4
+              assign_role "${group}" "${role}"
+              ;;
+            * )
+              echo "Unrecognized option: $1" 1>&2
+              exit 1
+              ;;
+          esac
+        done
+        ;;
+      group)
+        while [ $# -gt 0 ]; do
+          case $2 in
+            create )
+              group="${3}"
+              description="${4}"
+              shift 4
+              create_group ${group} ${description}
+              ;;
+            add )
+              group="${3}"
+              username="${4}"
+              shift 4
+              add_group_user "${group}" "${username}"
+              ;;
+            assign )
+              role="${3}"
+              group="${4}"
+              shift 4
+              assign_role "${role}" "${group}"
+              ;;
+            * )
+              echo "Unrecognized option: $1" 1>&2
+              exit 1
+              ;;
+          esac
+        done
+        ;;
       * )
         echo "Unrecognized option: $1" 1>&2
         exit 1
@@ -84,6 +354,8 @@ if [ $# -gt 0 ]; then
   done
 fi
 
-init
 prepare
 configure
+users
+roles
+groups

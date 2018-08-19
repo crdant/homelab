@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+set -e
+
+vsphere_password="$(security find-generic-password -a root -s esxi -w)"
+router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
+
+init () {
+  terraform init ${terraform_dir}/pave
+  terraform import \
+    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
+    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
+    --var "domain=${domain}" \
+    --var "email=${email}" \
+    --var "dns_ttl=${dns_ttl}" \
+    --var "vsphere_user=${vsphere_user}" \
+    --var "vsphere_password=${vsphere_password}" \
+    --var "vsphere_host=${vsphere_host}" \
+    --var "vcenter_host=${vcenter_host}" \
+    --var "infra_datastore=${infra_datastore}" \
+    --var "vcenter_iso_path=${vcenter_iso_path}" \
+    --var "vcenter_license=${vcenter_license}" \
+    --var "router_host=${router_host}" \
+    --var "outside_host=${outside_host}" \
+    --var "router_password=$(generate_passphrase 4)" \
+    --var "key_dir=${key_dir}" \
+    --var "state_dir=${state_dir}" \
+    --var "template_dir=${template_dir}" \
+    --var "work_dir=${work_dir}" \
+    --var "admin_user=${admin_user}" \
+    --var "vpn_users=[ \"${vpn_user}\" ]" \
+    --state="${state_dir}/infra.tfstate" \
+    --config="${terraform_dir}"/infra \
+    --allow-missing-config \
+    "aws_route53_zone.homelab" "${zone_id}"
+}
+
+apply () {
+  terraform apply \
+    --auto-approve \
+    --var "aws_access_key=${PERSONAL_AWS_ACCESS_KEY_ID}" \
+    --var "aws_secret_key=${PERSONAL_AWS_SECRET_ACCESS_KEY}" \
+    --var "domain=${domain}" \
+    --var "email=${email}" \
+    --var "dns_ttl=${dns_ttl}" \
+    --var "vsphere_user=${vsphere_user}" \
+    --var "vsphere_password=${vsphere_password}" \
+    --var "vsphere_host=${vsphere_host}" \
+    --var "vcenter_host=${vcenter_host}" \
+    --var "infra_datastore=${infra_datastore}" \
+    --var "vcenter_iso_path=${vcenter_iso_path}" \
+    --var "vcenter_license=${vcenter_license}" \
+    --var "router_host=${router_host}" \
+    --var "outside_host=${outside_host}" \
+    --var "current_router_password=${current_router_password}" \
+    --var "key_dir=${key_dir}" \
+    --var "state_dir=${state_dir}" \
+    --var "template_dir=${template_dir}" \
+    --var "work_dir=${work_dir}" \
+    --var "admin_user=${admin_user}" \
+    --var "vpn_users=[ \"${vpn_user}\" ]" \
+    --state="${state_dir}/infra.tfstate" \
+    ${terraform_dir}/pave
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      init )
+        init
+        ;;
+      apply )
+        apply
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+init
+prepare
+configure
