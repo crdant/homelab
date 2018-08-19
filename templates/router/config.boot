@@ -24,7 +24,6 @@ firewall {
           network "${infrastructure_cidr}"
           network "${deployment_cidr}"
           network "${services_cidr}"
-          network "${dynamic_cidr}"
           network "${container_cidr}"
       }
       network-group pcf-director-subnets {
@@ -50,7 +49,7 @@ firewall {
       }
       port-group vcenter-management-ports {
           description "vCenter Management Ports"
-          ${vsphere_management_port_group}
+          ${vcenter_management_port_group}
       }
     }
     ipv6-receive-redirects disable
@@ -950,6 +949,10 @@ interfaces {
     }
     ethernet eth3 {
         address ${pcf_interface_addr}
+        address ${infrastructure_interface_addr}
+        address ${deployment_interface_addr}
+        address ${services_interface_addr}
+        address ${container_interface_addr}
         description "PCF Networks"
         duplex auto
         firewall {
