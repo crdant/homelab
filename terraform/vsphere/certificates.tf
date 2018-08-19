@@ -9,7 +9,8 @@ resource "acme_certificate" "esxi" {
     provider = "gcloud"
 
     config {
-      credentials = "${file("${var.key_file}")}"
+      GCE_SERVICE_ACCOUNT_FILE = "${var.key_file}"
+      GCE_PROJECT  = "${var.project}"
     }
   }
 
@@ -59,7 +60,8 @@ resource "acme_certificate" "vcenter" {
     provider = "route53"
 
     config {
-      credentials = "${file("${var.key_file}")}"
+      GCE_SERVICE_ACCOUNT_FILE = "${var.key_file}"
+      GCE_PROJECT  = "${var.project}"
     }
   }
 }

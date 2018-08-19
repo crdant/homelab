@@ -10,6 +10,13 @@ variable "vsphere_host" {
   type = "string"
 }
 
+locals {
+  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
+  vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
+  vsphere_alias = "esxi.${var.domain}"
+  vcenter_alias = "vcenter.${var.domain}"
+}
+
 data "vsphere_datacenter" "default" {
   provider = "vsphere.esxi"
 }

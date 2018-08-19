@@ -10,7 +10,7 @@ locals {
 }
 
 data "google_dns_managed_zone" "homelab" {
-  name     = "crdant-net"
+  name     = "homelab"
 }
 
 resource "google_dns_record_set" "vsphere" {

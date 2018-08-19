@@ -1,21 +1,16 @@
 # router
-
 locals {
-  router_alias = "router.${var.domain}"
-  vsphere_alias = "esxi.${var.domain}"
-  vcenter_alias = "vcenter.${var.domain}"
-  outside_alias = "pigeon.${var.domain}"
+  router_ip = "${cidrhost(local.local_cidr, 1)}"
+  router_management_ip = "${cidrhost(local.management_cidr, 1)}"
 }
 
 # vsphere
 locals {
-  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
   vsphere_ip = "${cidrhost(local.vmware_cidr, 10)}"
 }
 
 # vcenter
 locals {
-  vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
   vcenter_ip = "${cidrhost(local.vmware_cidr, 20)}"
 }
 

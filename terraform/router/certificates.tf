@@ -9,7 +9,8 @@ resource "acme_certificate" "router" {
     provider = "gcloud"
 
     config {
-      credentials = "${file("${var.key_file}")}"
+      GCE_SERVICE_ACCOUNT_FILE = "${var.key_file}"
+      GCE_PROJECT  = "${var.project}"
     }
   }
 }

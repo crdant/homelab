@@ -3,11 +3,11 @@ variable "dns_ttl" {
 }
 
 data "google_dns_managed_zone" "homelab" {
-  name     = "crdant-net"
+  name     = "homelab"
 }
 
 resource "google_dns_record_set" "router" {
-  name    = "${local.router_fqdn}"
+  name    = "${local.router_fqdn}."
   type = "A"
   ttl  = "${var.dns_ttl}"
 
@@ -17,16 +17,17 @@ resource "google_dns_record_set" "router" {
 }
 
 resource "google_dns_record_set" "router_alias" {
-  name = "${local.router_alias}"
+  name = "${local.router_alias}."
   type = "CNAME"
   ttl  = "${var.dns_ttl}"
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${local.router_fqdn}" ]
+  rrdatas = [ "${local.router_fqdn}." ]
 }
+
 resource "google_dns_record_set" "outside" {
-  name    = "${local.outside_fqdn}"
+  name    = "${local.outside_fqdn}."
   type = "A"
   ttl  = "${var.dns_ttl}"
 
@@ -36,11 +37,11 @@ resource "google_dns_record_set" "outside" {
 }
 
 resource "google_dns_record_set" "outside_alias" {
-  name = "${local.outside_alias}"
+  name = "${local.outside_alias}."
   type = "CNAME"
   ttl  = "${var.dns_ttl}"
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${local.outside_fqdn}" ]
+  rrdatas = [ "${local.outside_fqdn}." ]
 }
