@@ -13,13 +13,3 @@ provider "vsphere" {
   # If you have a self-signed cert
   allow_unverified_ssl = true
 }
-
-provider vsphere {
-  alias          = "vcenter"
-  user           = "${local.vcenter_user}"
-  password       = "${random_string.vcenter_password.result}"
-  vsphere_server = "${local.vcenter_fqdn}"
-
-  # If you have a self-signed cert
-  allow_unverified_ssl = true
-}
