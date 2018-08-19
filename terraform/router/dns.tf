@@ -2,13 +2,6 @@ variable "dns_ttl" {
   type = "string"
 }
 
-locals {
-  router_alias = "router.${var.domain}"
-  vsphere_alias = "esxi.${var.domain}"
-  vcenter_alias = "vcenter.${var.domain}"
-  outside_alias = "pigeon.${var.domain}"
-}
-
 data "google_dns_managed_zone" "homelab" {
   name     = "crdant-net"
 }

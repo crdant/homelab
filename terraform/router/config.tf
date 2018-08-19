@@ -1,1 +1,1 @@
-common/config.tf
+../common/config.tf

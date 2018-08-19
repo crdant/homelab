@@ -10,11 +10,6 @@ variable "vsphere_host" {
   type = "string"
 }
 
-locals {
-  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
-  vsphere_ip = "${cidrhost(local.vmware_cidr, 10)}"
-}
-
 data "vsphere_datacenter" "default" {
   provider = "vsphere.esxi"
 }

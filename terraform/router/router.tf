@@ -53,7 +53,7 @@ resource "random_pet" "admin_password" {
 resource "random_pet" "vpn_psk" {
   length = 4
   provisioner "local-exec" {
-    command = "security add-generic-password -a root -s '${local.vsphere_fqdn} VPN PSK' -w '${self.result}' -U"
+    command = "security add-generic-password -a root -s '${local.router_fqdn} VPN PSK' -w '${self.result}' -U"
   }
 }
 
@@ -100,27 +100,27 @@ data "template_file" "gorouter_port_group" {
   }
 }
 
-data "template_file" "gorouter_address_group" {
+data "template_file" "gorouter_ip_group" {
   template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
-  count    = "${length(local.gorouter_addresses)}"
+  count    = "${length(local.gorouter_ips)}"
   vars {
-    address = "${local.gorouter_addresses[count.index]}"
+    address = "${local.gorouter_ips[count.index]}"
   }
 }
 
-data "template_file" "brain_address_group" {
+data "template_file" "brain_ip_group" {
   template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
-  count    = "${length(local.brain_addresses)}"
+  count    = "${length(local.brain_ips)}"
   vars {
-    address = "${local.brain_addresses[count.index]}"
+    address = "${local.brain_ips[count.index]}"
   }
 }
 
-data "template_file" "tcp_router_address_group" {
+data "template_file" "tcp_router_ip_group" {
   template = "${file("${var.template_dir}/router/components/address-group-entry.tpl")}"
-  count    = "${length(local.tcp_router_addresses)}"
+  count    = "${length(local.tcp_router_ips)}"
   vars {
-    address = "${local.tcp_router_addresses[count.index]}"
+    address = "${local.tcp_router_ips[count.index]}"
   }
 }
 
@@ -153,30 +153,15 @@ locals {
   router_ip = "${cidrhost(local.local_cidr, 1)}"
   router_management_ip = "${cidrhost(local.management_cidr, 1)}"
   outside_fqdn = "${var.outside_host}.${var.domain}"
+  vsphere_ip = "${cidrhost(local.vmware_cidr, 10)}"
 }
 
 locals {
-  vpn_start_address  = "${cidrhost(local.vpn_cidr, 10)}"
-  vpn_end_address  = "${cidrhost(local.vpn_cidr, 50)}"
+  vpn_start_ip  = "${cidrhost(local.vpn_cidr, 10)}"
+  vpn_end_ip  = "${cidrhost(local.vpn_cidr, 50)}"
 }
 
-locals {
-  gorouter_addresses = [
-      "${cidrhost(local.deployment_cidr, -15)}",
-      "${cidrhost(local.deployment_cidr, -14)}",
-      "${cidrhost(local.deployment_cidr, -13)}"
-    ]
-  brain_addresses = [
-      "${cidrhost(local.deployment_cidr, -10)}",
-      "${cidrhost(local.deployment_cidr, -9)}",
-      "${cidrhost(local.deployment_cidr, -8)}"
-    ]
-  tcp_router_addresses = [
-      "${cidrhost(local.deployment_cidr, -5)}",
-      "${cidrhost(local.deployment_cidr, -4)}",
-      "${cidrhost(local.deployment_cidr, -3)}"
-    ]
-}
+
 
 data "template_file" "router_config" {
   template        = "${file("${var.template_dir}/router/config.boot")}"
@@ -242,15 +227,15 @@ data "template_file" "router_config" {
     vpn_psk = "${random_pet.vpn_psk.id}"
     vpn_users = "${join("          ", data.template_file.vpn_users.*.rendered)}"
     vpn_password = "${random_pet.vpn_password.id}"
-    vpn_start_address = "${local.vpn_start_address}"
-    vpn_end_address = "${local.vpn_end_address}"
+    vpn_start_ip = "${local.vpn_start_ip}"
+    vpn_end_ip = "${local.vpn_end_ip}"
 
     /* firewall */
     bosh_port_group = "${join("          ", data.template_file.bosh_port_group.*.rendered)}"
     gorouter_port_group = "${join("          ", data.template_file.gorouter_port_group.*.rendered)}"
-    gorouter_address_group = "${join("          ", data.template_file.gorouter_address_group.*.rendered)}"
-    brain_address_group = "${join("          ", data.template_file.brain_address_group.*.rendered)}"
-    tcp_router_address_group = "${join("          ", data.template_file.tcp_router_address_group.*.rendered)}"
+    gorouter_ip_group = "${join("          ", data.template_file.gorouter_ip_group.*.rendered)}"
+    brain_ip_group = "${join("          ", data.template_file.brain_ip_group.*.rendered)}"
+    tcp_router_ip_group = "${join("          ", data.template_file.tcp_router_ip_group.*.rendered)}"
     tcp_router_port_group = "${join("          ", data.template_file.tcp_router_port_group.*.rendered)}"
     vsphere_management_port_group = "${join("          ", data.template_file.vsphere_management_port_group.*.rendered)}"
     vcenter_management_port_group = "${join("          ", data.template_file.vcenter_management_port_group.*.rendered)}"

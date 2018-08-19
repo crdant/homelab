@@ -18,12 +18,6 @@ variable "site_name" {
   type = "string"
   default = "HomeLab"
 }
-
-locals {
-  vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
-  vcenter_ip = "${cidrhost(local.vmware_cidr, 20)}"
-}
-
 locals {
   vcenter_installer = "${var.work_dir}/vsphere/vcsa_installer"
 }
