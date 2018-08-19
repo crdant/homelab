@@ -4,32 +4,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/generate_passphrase.sh"
 set -e
 
-vsphere_password="$(security find-generic-password -a root -s esxi -w)"
 router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
-
-init () {
-  terraform init \
-    --backend-config=<(backend_config) \
-    "${terraform_dir}/router"
-}
-
-apply () {
-  terraform apply \
-    --auto-approve \
-    --var-file=<(terraform_vars) \
-    --var-file=<(backend_config) \
-    ${terraform_dir}/router
-}
-
-backend_config () {
-  cat <<CONFIG
-credentials = <<CREDENTIALS
-  $(cat ${key_file})
-CREDENTIALS
-region = "${region}"
-bucket = "${statefile_bucket}"
-CONFIG
-}
 
 terraform_vars () {
   jq -n \
@@ -86,5 +61,5 @@ if [ $# -gt 0 ]; then
   done
 fi
 
-init
-apply
+init router
+apply router

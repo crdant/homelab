@@ -2,19 +2,11 @@
 BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
+
 set -e
 
-vcenter_password="$(security find-generic-password -a root -s ${vcenter_host}.${domain} -w)"
-
-init () {
-  terraform init ${terraform_dir}/pave
-}
-
-apply () {
-  terraform apply \
-    --auto-approve \
-    ${terraform_dir}/pave
-}
+vsphere_password="$(security find-generic-password -a root -s esxi -w)"
 
 terraform_vars () {
   jq -n \
@@ -24,10 +16,13 @@ terraform_vars () {
     --arg "project" "${project}" \
     --arg "key_file" "${key_file}" \
     --arg "region" "${region}" \
+    --arg "vsphere_user" "${vsphere_user}" \
+    --arg "vsphere_password" "${vsphere_password}" \
+    --arg "vsphere_host" "${vsphere_host}" \
     --arg "vcenter_host" "${vcenter_host}" \
-    --arg "vcenter_password" "${vcenter_password}" \
-    --arg "bosh_director_role=${bosh_director_role}" \
-    --arg "bosh_director_group=${bosh_director_group}" \
+    --arg "infra_datastore" "${infra_datastore}" \
+    --arg "vcenter_iso_path" "${vcenter_iso_path}" \
+    --arg "vcenter_license" "${vcenter_license}" \
     --arg "key_dir" "${key_dir}" \
     --arg "statefile_bucket" "${state_dir}" \
     --arg "template_dir" "${template_dir}" \
@@ -39,10 +34,16 @@ terraform_vars () {
       project: $project,
       key_file: $key_file,
       region: $region,
+      vsphere_user: $vsphere_user,
+      vsphere_password: $vsphere_password,
+      vsphere_host: $vsphere_host,
       vcenter_host: $vcenter_host,
-      vcenter_password: $vcenter_password,
-      bosh_director_role: $bosh_director_role,
-      bosh_director_group: $bohdirector_group
+      infra_datastore: $infra_datastore,
+      vcenter_iso_path: $vcenter_iso_path,
+      vcenter_license: $vcenter_license,
+      router_host: $router_host,
+      outside_host: $outside_host,
+      current_router_password: $current_router_password,
       key_dir: $key_dir,
       statefile_bucket: $statefile_bucket,
       template_dir: $template_dir,
@@ -67,9 +68,9 @@ if [ $# -gt 0 ]; then
         ;;
     esac
     shift
+    exit
   done
-  exit
 fi
 
-init pave
-apply pave
+init vsphere
+apply vsphere
