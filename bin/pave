@@ -10,7 +10,7 @@ set -e
 # fi
 
 init () {
-  terraform init ${terraform_dir}/datacenter
+  terraform init ${terraform_dir}/pave
 }
 
 apply () {
@@ -25,7 +25,7 @@ apply () {
     --var "template_dir=${template_dir}" \
     --var "work_dir=${work_dir}" \
     --state="${state_dir}/vcenter.tfstate" \
-    ${terraform_dir}/datacenter
+    ${terraform_dir}/pave
 }
 
 configure () {

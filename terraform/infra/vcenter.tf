@@ -106,6 +106,39 @@ resource "local_file" "vcenter_config" {
   depends_on = ["null_resource.mount_iso"]
 }
 
+resource "tls_private_key" "vcenter_ssh_key" {
+  algorithm   = "RSA"
+  rsa_bits    = 4096
+
+  provisioner "remote-exec" {
+    inline = [
+      "shell chsh -s /bin/bash",
+      "mkdir /root/.ssh",
+      "chmod 700 /root/.ssh",
+      "touch /root/.ssh/authorized_keys",
+      "chmod 600 /root/.ssh/authorized_keys"
+    ]
+    connection {
+      type     = "ssh"
+      user     = "${var.vsphere_user}"
+      password = "${var.vsphere_password}"
+      host = "${local.vsphere_fqdn}"
+    }
+  }
+
+  provisioner "file" {
+    content     = "${self.public_key_openssh}"
+    destination = "/root/.ssh/authorized_keys"
+  }
+
+  depends_on = ["local_file.vcenter_config"]
+}
+
+resource "local_file" "vcenter_private_key" {
+  content  = "${tls_private_key.vcenter.private_key_pem}"
+  filename = "${var.key_dir}/id_vcenter_root.pem"
+}
+
 resource "null_resource" "unmount_iso" {
   provisioner "local-exec" {
     command = "hdiutil unmount -force ${local.vcenter_installer}"
