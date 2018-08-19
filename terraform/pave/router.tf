@@ -1,3 +1,7 @@
+variable "current_router_password" {
+  type = "string"
+}
+
 variable "router_host" {
   type = "string"
 }
@@ -36,20 +40,29 @@ variable vsphere_management_ports {
 
 variable vcenter_management_ports {
   type = "list"
-  default = [ 22, 80, 443, 636, 902, 903, 8080, 8443, 9443, 10080, 10443 ]
+  default = [ 22, 80, 443, 636, 902, 903, 5480, 8080, 8443, 9443, 10080, 10443 ]
 }
 
 resource "random_pet" "admin_password" {
   length = 4
+  provisioner "local-exec" {
+    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn}' -w '${self.result}'"
+  }
 }
 
 resource "random_pet" "vpn_psk" {
   length = 4
+  provisioner "local-exec" {
+    command = "security add-generic-password -a root -s '${local.vsphere_fqdn} VPN PSK' -w '${self.result}'"
+  }
 }
 
 resource "random_pet" "vpn_password" {
   count = "${length(var.vpn_users)}"
   length = 4
+  provisioner "local-exec" {
+    command = "security add-generic-password -a '${var.admin_user}' -s '${local.router_fqdn} VPN' -w '${self.result}'"
+  }
 }
 
 resource "tls_private_key" "router_admin" {
@@ -213,14 +226,16 @@ data "template_file" "router_config" {
     pcf_interface_addr = "${replace(local.pcf_cidr, cidrhost(local.pcf_cidr,0), cidrhost(local.pcf_cidr,1))}"
     infrastructure_cidr = "${local.infrastructure_cidr}"
     infrastructure_port_ip = "${cidrhost(local.infrastructure_cidr,1)}"
+    infrastructure_interface_addr = "${replace(local.infrastructure_cidr, cidrhost(local.infrastructure_cidr,0), cidrhost(local.infrastructure_cidr,1))}"
     deployment_cidr = "${local.deployment_cidr}"
     deployment_port_ip = "${cidrhost(local.deployment_cidr,1)}"
+    deployment_interface_addr = "${replace(local.deployment_cidr, cidrhost(local.deployment_cidr,0), cidrhost(local.deployment_cidr,1))}"
     services_cidr = "${local.services_cidr}"
     services_port_ip = "${cidrhost(local.services_cidr,1)}"
-    dynamic_cidr = "${local.dynamic_cidr}"
-    dynamic_port_ip = "${cidrhost(local.dynamic_cidr,1)}"
+    services_interface_addr = "${replace(local.services_cidr, cidrhost(local.services_cidr,0), cidrhost(local.services_cidr,1))}"
     container_cidr = "${local.container_cidr}"
     container_port_ip = "${cidrhost(local.container_cidr,1)}"
+    container_interface_addr = "${replace(local.container_cidr, cidrhost(local.container_cidr,0), cidrhost(local.container_cidr,1))}"
 
     /* vpn */
     vpn_cidr = "${local.vpn_cidr}"
@@ -255,7 +270,7 @@ resource "local_file" "router_config" {
     connection {
       type     = "ssh"
       user     = "ubnt"
-      password = "uncontemporaneousness-insecure-nonclerical-menad"
+      password = "${var.current_router_password}"
       host     = "${local.router_fqdn}"
     }
   }

@@ -41,6 +41,10 @@ resource "random_string" "vcenter_password" {
   min_numeric = 1
   min_special = 1
   override_special = "!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+
+  provisioner "local-exec" {
+    command = "security add-generic-password -a root -s '${local.vsphere_fqdn}' -w '${self.result}' -U"
+  }
 }
 
 data "template_file" "vcenter_config" {
@@ -75,20 +79,18 @@ locals {
   vcenter_user = "administrator@${var.domain}"
 }
 
+resource "null_resource" "mount_iso" {
+  provisioner "local-exec" {
+    command = "hdiutil mount -mountpoint ${local.vcenter_installer} ${var.vcenter_iso_path}"
+  }
+}
+
 resource "local_file" "vcenter_config" {
   content = "${data.template_file.vcenter_config.rendered}"
   filename = "${var.work_dir}/vsphere/embedded_vCSA_on_ESXi.json"
 
   provisioner "local-exec" {
-    command = "hdiutil mount -mountpoint ${local.vcenter_installer} ${var.vcenter_iso_path}"
-  }
-
-  provisioner "local-exec" {
-    command = "${local.vcenter_installer}/vcsa-cli-installer/mac/vcsa-deploy install --no-esx-ssl-verify --accept-eula --acknowledge-ceip ${self.filename}"
-  }
-
-  provisioner "local-exec" {
-    command = "hdiutil unmount ${local.vcenter_installer}"
+    command = "${local.vcenter_installer}/vcsa-cli-installer/mac/vcsa-deploy install --no-ssl-certificate-verification --accept-eula --acknowledge-ceip ${self.filename}"
   }
 
   provisioner "local-exec" {
@@ -100,4 +102,13 @@ resource "local_file" "vcenter_config" {
       GOVC_PASSWORD = "${random_string.vcenter_password.result}"
     }
   }
+
+  depends_on = ["null_resource.mount_iso"]
+}
+
+resource "null_resource" "unmount_iso" {
+  provisioner "local-exec" {
+    command = "hdiutil unmount -force ${local.vcenter_installer}"
+  }
+  depends_on = ["local_file.vcenter_config"]
 }
