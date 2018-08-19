@@ -21,12 +21,6 @@ provider "google" {
   region      = "${var.region}"
 }
 
-terraform {
-  backend "gcs" {
-    prefix = "infra"
-  }
-}
-
 output "project" {
   value = "${var.project}"
 }

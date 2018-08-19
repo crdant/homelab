@@ -1,16 +1,3 @@
-provider "acme" {
-  server_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
-}
-
-resource "tls_private_key" "letsencrypt" {
-  algorithm = "RSA"
-}
-
-resource "acme_registration" "letsencrypt" {
-  account_key_pem = "${tls_private_key.letsencrypt.private_key_pem}"
-  email_address   = "${var.email}"
-}
-
 resource "acme_certificate" "router" {
   account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
   common_name               = "${local.router_fqdn}"

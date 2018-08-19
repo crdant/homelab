@@ -10,7 +10,7 @@ router_password="$(security find-generic-password -a ubnt -s ${router_host}.${do
 init () {
   terraform init \
     --backend-config=<(backend_config) \
-    "${terraform_dir}/infra"
+    "${terraform_dir}/network"
 }
 
 apply () {
@@ -18,7 +18,7 @@ apply () {
     --auto-approve \
     --var-file=<(terraform_vars) \
     --var-file=<(backend_config) \
-    ${terraform_dir}/infra
+    ${terraform_dir}/network
 }
 
 backend_config () {
@@ -43,7 +43,7 @@ terraform_vars () {
     --arg "vsphere_password" "${vsphere_password}" \
     --arg "vsphere_host" "${vsphere_host}" \
     --arg "vcenter_host" "${vcenter_host}" \
-    --arg "infra_datastore" "${infra_datastore}" \
+    --arg "network_datastore" "${network_datastore}" \
     --arg "vcenter_iso_path" "${vcenter_iso_path}" \
     --arg "vcenter_license" "${vcenter_license}" \
     --arg "router_host" "${router_host}" \
@@ -66,7 +66,7 @@ terraform_vars () {
       vsphere_password: $vsphere_password,
       vsphere_host: $vsphere_host,
       vcenter_host: $vcenter_host,
-      infra_datastore: $infra_datastore,
+      network_datastore: $network_datastore,
       vcenter_iso_path: $vcenter_iso_path,
       vcenter_license: $vcenter_license,
       router_host: $router_host,
