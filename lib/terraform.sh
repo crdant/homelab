@@ -10,6 +10,7 @@ apply () {
   component=${1}
   pushd "${terraform_dir}/${component}"
     terraform apply \
+      --input=false \
       --auto-approve \
       --var-file=<(terraform_vars)
   popd
