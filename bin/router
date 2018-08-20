@@ -2,6 +2,7 @@
 BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
 set -e
 
 router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
@@ -46,10 +47,10 @@ if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
       init )
-        init
+        init router
         ;;
       apply )
-        apply
+        apply router
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

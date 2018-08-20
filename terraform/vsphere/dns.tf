@@ -3,10 +3,10 @@ variable "dns_ttl" {
 }
 
 locals {
-  router_alias = "router.${var.domain}"
+  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
+  vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
   vsphere_alias = "esxi.${var.domain}"
   vcenter_alias = "vcenter.${var.domain}"
-  outside_alias = "pigeon.${var.domain}"
 }
 
 data "google_dns_managed_zone" "homelab" {

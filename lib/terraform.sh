@@ -11,7 +11,7 @@ apply () {
   pushd "${terraform_dir}/${component}"
     terraform apply \
       --auto-approve \
-      --var-file=<(terraform_vars) \
+      --var-file=<(terraform_vars)
   popd
 }
 

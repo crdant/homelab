@@ -2,19 +2,10 @@
 BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
 set -e
 
 vcenter_password="$(security find-generic-password -a root -s ${vcenter_host}.${domain} -w)"
-
-init () {
-  terraform init ${terraform_dir}/pave
-}
-
-apply () {
-  terraform apply \
-    --auto-approve \
-    ${terraform_dir}/pave
-}
 
 terraform_vars () {
   jq -n \
@@ -56,10 +47,10 @@ if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
       init )
-        init
+        init pave
         ;;
       apply )
-        apply
+        apply pave
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

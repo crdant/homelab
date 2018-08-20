@@ -161,7 +161,7 @@ COMMAND
       GOVC_INSECURE = "1"
       GOVC_URL = "${local.vcenter_fqdn}"
       GOVC_USERNAME = "${local.vcenter_user}"
-      GOVC_PASSWORD = "${var.vcenter_password}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
     }
   }
 }
@@ -169,7 +169,7 @@ COMMAND
 resource "null_resource" "bosh_director_group" {
   provisioner "remote-exec" {
     inline = [
-      "/usr/lib/vmware-vmafd/bin/dir-cli ssogroup create --name ${var.bosh_director_group} --description "Services accounts for BOSH director installations"
+      "/usr/lib/vmware-vmafd/bin/dir-cli ssogroup create --name ${var.bosh_director_group} --description 'Services accounts for BOSH director installations'"
     ]
     connection {
       type     = "ssh"
@@ -186,7 +186,7 @@ resource "null_resource" "bosh_director_group" {
       GOVC_INSECURE = "1"
       GOVC_URL = "${local.vcenter_fqdn}"
       GOVC_USERNAME = "${local.vcenter_user}"
-      GOVC_PASSWORD = "${var.vcenter_password}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
     }
   }
 
@@ -209,7 +209,7 @@ resource "random_string" "bbl_password" {
 resource "null_resource" "bbl_user" {
   provisioner "remote-exec" {
     inline = [
-      "/usr/lib/vmware-vmafd/bin/dir-cli user create --account ${username} --user-password ${random_string.bbl_password.result}"
+      "/usr/lib/vmware-vmafd/bin/dir-cli user create --account ${username} --user-password ${random_string.bbl_password.result}",
       "/usr/lib/vmware-vmafd/bin/dir-cli group modify --name ${group} --add ${user}"
     ]
     connection {

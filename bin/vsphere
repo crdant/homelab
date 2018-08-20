@@ -41,15 +41,10 @@ terraform_vars () {
       infra_datastore: $infra_datastore,
       vcenter_iso_path: $vcenter_iso_path,
       vcenter_license: $vcenter_license,
-      router_host: $router_host,
-      outside_host: $outside_host,
-      current_router_password: $current_router_password,
       key_dir: $key_dir,
       statefile_bucket: $statefile_bucket,
       template_dir: $template_dir,
-      work_dir: $work_dir,
-      admin_user: $admin_user,
-      vpn_users: $vpn_users
+      work_dir: $work_dir
    }'
 }
 
@@ -57,10 +52,10 @@ if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
       init )
-        init
+        init vsphere
         ;;
       apply )
-        apply
+        apply vsphere
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
