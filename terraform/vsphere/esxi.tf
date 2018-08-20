@@ -11,30 +11,30 @@ variable "vsphere_host" {
 }
 
 data "vsphere_datacenter" "default" {
-  provider = "vsphere.esxi"
+
 }
 
 data "vsphere_resource_pool" "root" {
-  provider = "vsphere.esxi"
+
 }
 
 data "vsphere_host" "physical" {
   datacenter_id = "${data.vsphere_datacenter.default.id}"
-  provider = "vsphere.esxi"
+
 }
 
 data "vsphere_vmfs_disks" "ssd" {
   host_system_id = "${data.vsphere_host.physical.id}"
   rescan         = true
   filter         = "Crucial_CT1050MX300SSD4"
-  provider = "vsphere.esxi"
+
 }
 
 data "vsphere_vmfs_disks" "spinning" {
   host_system_id = "${data.vsphere_host.physical.id}"
   rescan         = true
   filter         = "ST4000LM0242D2AN17V"
-  provider = "vsphere.esxi"
+
 }
 
 resource "null_resource" "vsan_policy" {
@@ -52,6 +52,7 @@ resource "null_resource" "vsan_policy" {
   }
 }
 
+/*
 resource "null_resource" "vsan_cluster" {
   provisioner "remote-exec" {
     inline = [
@@ -66,6 +67,7 @@ resource "null_resource" "vsan_cluster" {
     }
   }
 }
+*/
 
 output "vsphere_physical_host_id" {
   value = "${data.vsphere_host.physical.id}"

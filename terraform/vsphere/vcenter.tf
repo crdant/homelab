@@ -18,6 +18,7 @@ variable "site_name" {
   type = "string"
   default = "HomeLab"
 }
+
 locals {
   vcenter_installer = "${var.work_dir}/vsphere/vcsa_installer"
 }
@@ -75,15 +76,13 @@ locals {
   vcenter_user = "administrator@${var.domain}"
 }
 
-resource "null_resource" "mount_iso" {
-  provisioner "local-exec" {
-    command = "hdiutil mount -mountpoint ${local.vcenter_installer} ${var.vcenter_iso_path}"
-  }
-}
-
 resource "local_file" "vcenter_config" {
   content = "${data.template_file.vcenter_config.rendered}"
   filename = "${var.work_dir}/vsphere/embedded_vCSA_on_ESXi.json"
+
+  provisioner "local-exec" {
+    command = "hdiutil mount -mountpoint ${local.vcenter_installer} ${var.vcenter_iso_path}"
+  }
 
   provisioner "local-exec" {
     command = "${local.vcenter_installer}/vcsa-cli-installer/mac/vcsa-deploy install --no-ssl-certificate-verification --accept-eula --acknowledge-ceip ${self.filename}"
@@ -99,32 +98,37 @@ resource "local_file" "vcenter_config" {
     }
   }
 
-  depends_on = ["null_resource.mount_iso"]
+  provisioner "local-exec" {
+    command = "hdiutil unmount -force ${local.vcenter_installer}"
+  }
+
+}
+
+data "vsphere_virtual_machine" "vcenter" {
+  name = "Embedded-vCenter-Server-Appliance"
+  datacenter_id = "${data.vsphere_datacenter.default.id}"
 }
 
 resource "tls_private_key" "vcenter_ssh" {
   algorithm   = "RSA"
   rsa_bits    = 4096
 
-  provisioner "remote-exec" {
-    inline = [
-      "shell chsh -s /bin/bash",
-      "mkdir /root/.ssh",
-      "chmod 700 /root/.ssh",
-      "touch /root/.ssh/authorized_keys",
-      "chmod 600 /root/.ssh/authorized_keys"
-    ]
-    connection {
-      type     = "ssh"
-      user     = "${var.vsphere_user}"
-      password = "${var.vsphere_password}"
-      host = "${local.vsphere_fqdn}"
-    }
-  }
+  provisioner "local-exec" {
+    command = <<COMMAND
+      govc guest.mkdir -vm ${data.vsphere_virtual_machine.vcenter.name} -p /root/.ssh
+      govc guest.chmod -vm ${data.vsphere_virtual_machine.vcenter.name} 0700 /root/.ssh
+      govc guest.touch -vm ${data.vsphere_virtual_machine.vcenter.name} /root/.ssh/authorized_keys
+      govc guest.run -vm ${data.vsphere_virtual_machine.vcenter.id} echo "${trimspace(self.public_key_openssh)}" >> /root/.ssh/authorized_keys
+      govc guest.chmod -vm ${data.vsphere_virtual_machine.vcenter.name} 0600 /root/.ssh/authorized_keys
+COMMAND
 
-  provisioner "file" {
-    content     = "${self.public_key_openssh}"
-    destination = "/root/.ssh/authorized_keys"
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vsphere_fqdn}"
+      GOVC_USERNAME = "${var.vsphere_user}"
+      GOVC_PASSWORD = "${var.vsphere_password}"
+      GOVC_GUEST_LOGIN = "root:${random_string.vcenter_password.result}"
+    }
   }
 
   depends_on = ["local_file.vcenter_config"]
@@ -133,13 +137,9 @@ resource "tls_private_key" "vcenter_ssh" {
 resource "local_file" "vcenter_ssh_private_key" {
   content  = "${tls_private_key.vcenter_ssh.private_key_pem}"
   filename = "${var.key_dir}/id_vcenter_root.pem"
-}
-
-resource "null_resource" "unmount_iso" {
   provisioner "local-exec" {
-    command = "hdiutil unmount -force ${local.vcenter_installer}"
+    command = "chmod 600 ${self.filename}"
   }
-  depends_on = ["local_file.vcenter_config"]
 }
 
 output "vcenter_fqdn" {

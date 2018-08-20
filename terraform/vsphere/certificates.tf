@@ -57,7 +57,7 @@ resource "acme_certificate" "vcenter" {
   ]
 
   dns_challenge {
-    provider = "route53"
+    provider = "gcloud"
 
     config {
       GCE_SERVICE_ACCOUNT_FILE = "${var.key_file}"
