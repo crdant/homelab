@@ -74,8 +74,8 @@ dynamic_network=dynamic-port-group
 container_network=container-port-group
 balancer_internal_network=lb-internal-port-group
 balancer_external_network=lb-external-port-group
-dns_servers="8.8.8.8,8.8.4.4"
-dns_servers_array="[ 172.20.0.0, 8.8.4.4 ]"
+dns_servers="172.20.0.0,1.1.1.1,8.8.8.8"
+dns_servers_array="[ 172.20.0.0,1.1.1.1,8.8.8.8 ]"
 
 # PCF configuration
 om_datastore=vsanDatastore
