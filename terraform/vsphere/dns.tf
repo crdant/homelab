@@ -3,7 +3,6 @@ variable "dns_ttl" {
 }
 
 locals {
-  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
   vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
   vsphere_alias = "esxi.${var.domain}"
   vcenter_alias = "vcenter.${var.domain}"
@@ -11,16 +10,6 @@ locals {
 
 data "google_dns_managed_zone" "homelab" {
   name     = "homelab"
-}
-
-resource "google_dns_record_set" "vsphere" {
-  name    = "${local.vsphere_fqdn}"
-  type = "A"
-  ttl  = "${var.dns_ttl}"
-
-  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
-
-  rrdatas = [ "${local.vsphere_ip}" ]
 }
 
 resource "google_dns_record_set" "vsphere_alias" {
@@ -34,7 +23,7 @@ resource "google_dns_record_set" "vsphere_alias" {
 }
 
 resource "google_dns_record_set" "vcenter" {
-  name    = "${local.vcenter_fqdn}"
+  name    = "${local.vcenter_fqdn}."
   type = "A"
   ttl  = "${var.dns_ttl}"
 

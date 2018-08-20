@@ -45,3 +45,21 @@ resource "google_dns_record_set" "outside_alias" {
 
   rrdatas = [ "${local.outside_fqdn}." ]
 }
+
+variable "vsphere_host" {
+  type = "string"
+}
+
+locals {
+  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
+}
+
+resource "google_dns_record_set" "vsphere" {
+  name    = "${local.vsphere_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.vsphere_ip}" ]
+}

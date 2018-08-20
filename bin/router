@@ -17,6 +17,7 @@ terraform_vars () {
     --arg "region" "${region}" \
     --arg "router_host" "${router_host}" \
     --arg "outside_host" "${outside_host}" \
+    --arg "vsphere_host" "${vsphere_host}" \
     --arg "current_router_password" "${router_password}" \
     --arg "key_dir" "${key_dir}" \
     --arg "statefile_bucket" "${state_dir}" \
@@ -33,6 +34,7 @@ terraform_vars () {
       region: $region,
       router_host: $router_host,
       outside_host: $outside_host,
+      vsphere_host: $vsphere_host,
       current_router_password: $current_router_password,
       key_dir: $key_dir,
       statefile_bucket: $statefile_bucket,
