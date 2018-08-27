@@ -35,7 +35,13 @@ cloud_storage () {
   gsutil versioning set on gs://${statefile_bucket}
 }
 
+trust() {
+  # golang commands don't love Let's Encrypt
+  wget -O ${ca_cert_file} https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem.txt
+}
+
 directories
 service_account
 cloud_storage
 encryption
+trust
