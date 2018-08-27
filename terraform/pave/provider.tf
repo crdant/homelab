@@ -1,5 +1,12 @@
+variable "vcenter_host" {
+  type = "string"
+}
+
+locals {
+  vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
+}
+
 provider "vsphere" {
-  alias = "vcenter"
   user           = "${data.terraform_remote_state.vsphere.vcenter_user}"
   password       = "${data.terraform_remote_state.vsphere.vcenter_password}"
   vsphere_server = "${local.vcenter_fqdn}"

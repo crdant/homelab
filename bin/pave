@@ -5,6 +5,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/terraform.sh"
 set -e
 
+vsphere_password="$(security find-generic-password -a root -s esxi -w)"
 vcenter_password="$(security find-generic-password -a root -s ${vcenter_host}.${domain} -w)"
 
 terraform_vars () {
@@ -15,12 +16,16 @@ terraform_vars () {
     --arg "project" "${project}" \
     --arg "key_file" "${key_file}" \
     --arg "region" "${region}" \
+    --arg "vsphere_host" "${vsphere_host}" \
+    --arg "vsphere_user" "${vsphere_user}" \
+    --arg "vsphere_password" "${vsphere_password}" \
     --arg "vcenter_host" "${vcenter_host}" \
     --arg "vcenter_password" "${vcenter_password}" \
-    --arg "bosh_director_role=${bosh_director_role}" \
-    --arg "bosh_director_group=${bosh_director_group}" \
+    --arg "bosh_director_role" "${bosh_director_role}" \
+    --arg "bosh_director_group" "${bosh_director_group}" \
+    --arg "infra_datastore" "${infra_datastore}" \
     --arg "key_dir" "${key_dir}" \
-    --arg "statefile_bucket" "${state_dir}" \
+    --arg "statefile_bucket" "${statefile_bucket}" \
     --arg "template_dir" "${template_dir}" \
     --arg "work_dir" "${work_dir}" \
   '{
@@ -30,16 +35,18 @@ terraform_vars () {
       project: $project,
       key_file: $key_file,
       region: $region,
+      vsphere_host: $vsphere_host,
+      vsphere_user: $vsphere_user,
+      vsphere_password: $vsphere_password,
       vcenter_host: $vcenter_host,
       vcenter_password: $vcenter_password,
       bosh_director_role: $bosh_director_role,
-      bosh_director_group: $bohdirector_group
+      bosh_director_group: $bosh_director_group,
+      infra_datastore: $infra_datastore,
       key_dir: $key_dir,
       statefile_bucket: $statefile_bucket,
       template_dir: $template_dir,
-      work_dir: $work_dir,
-      admin_user: $admin_user,
-      vpn_users: $vpn_users
+      work_dir: $work_dir
    }'
 }
 

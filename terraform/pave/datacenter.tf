@@ -1,54 +1,76 @@
-resource "vsphere_datacenter" "homelab" {
+variable "vsphere_user" {
+  type = "string"
+}
+
+variable "vsphere_password" {
+  type = "string"
+}
+
+variable "vsphere_host" {
+  type = "string"
+}
+
+locals {
+  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
+}
+
+data "vsphere_datacenter" "homelab" {
   name = "homelab"
-
-  provisioner "local-exec" {
-    command = "govc host.add -hostname ${local.vsphere_fqdn} -username ${data.terraform_remote_state.vsphere.vcenter_user} -password ${data.terraform_remote_state.vsphere.vcenter_password} -noverify"
-    environment {
-      GOVC_INSECURE   = "1"
-      GOVC_URL        = "${local.vcenter_fqdn}"
-      GOVC_USERNAME   = "${data.terraform_remote_state.vsphere.vcenter_user}"
-      GOVC_PASSWORD   = "${data.terraform_remote_state.vsphere.vcenter_password}"
-      GOVC_DATACENTER = "${self.name}"
-    }
-  }
-
-  provider = "vsphere.vcenter"
 }
 
-resource "vsphere_compute_cluster" "homelab" {
+data "vsphere_compute_cluster" "homelab" {
   name          = "homelab"
-  datacenter_id = "${vsphere_datacenter.homelab.id}"
-  host_system_ids = ["${data.terraform_remote_state.vsphere.vsphere_physical_host_id}"]
-
-  provider = "vsphere.vcenter"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-data "vsphere_network" "vm_network" {
-  name          = "VM Network"
-  datacenter_id = "${vsphere_datacenter.homelab.id}"
-
-  provider = "vsphere.vcenter"
+data "vsphere_resource_pool" "zone_1" {
+  name = "zone-1"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_resource_pool" "zone_1" {
-  name = "zone1"
-  parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
-
-  provider = "vsphere.vcenter"
+data "vsphere_resource_pool" "zone_2" {
+  name = "zone-2"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_resource_pool" "zone_2" {
-  name = "zone2"
-  parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
-
-  provider = "vsphere.vcenter"
+data "vsphere_resource_pool" "zone_3" {
+  name = "zone-3"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_resource_pool" "zone_3" {
-  name = "zone3"
-  parent_resource_pool_id = "${vsphere_compute_cluster.homelab.id}"
+data "vsphere_network" "bootstrap" {
+  name          = "bootstrap"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
 
-  provider = "vsphere.vcenter"
+data "vsphere_network" "lb_internal" {
+  name          = "lb_internal"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "lb_external" {
+  name          = "lb_external"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "infrastructure" {
+  name          = "infrastructure"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "deployment" {
+  name          = "deployment"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "services" {
+  name          = "services"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "pks_clusters" {
+  name          = "pks_clusters"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
 /*
