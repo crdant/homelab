@@ -1,0 +1,29 @@
+{
+      "Deployment": "dualcpu",
+      "DiskProvisioning": "thin",
+      "IPAllocationPolicy": "dhcpPolicy",
+      "IPProtocol": "IPv4",
+      "NetworkMapping": [
+        {
+          "Name": "Management",
+          "Network": "${management_network}"
+        },
+        {
+          "Name": "Internal",
+          "Network": "${internal_network}"
+        },
+        {
+          "Name": "External",
+          "Network": "${external_network}"
+        },
+        {
+          "Name": "HA",
+          "Network": ""
+        }
+      ],
+      "Annotation": "BIG-IP Local Traffic Manager Virtual Edition\n    Copyright 2009-2016 F5 Networks (http://www.f5.com)\n    \n    For support please visit http://support.f5.com\n          ",
+      "PowerOn": false,
+      "InjectOvfEnv": false,
+      "WaitForIP": false,
+      "Name": "${template_name}"
+    }
