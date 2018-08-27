@@ -20,39 +20,20 @@ data "vsphere_resource_pool" "root" {
 
 data "vsphere_host" "physical" {
   datacenter_id = "${data.vsphere_datacenter.default.id}"
-
 }
 
 data "vsphere_vmfs_disks" "ssd" {
   host_system_id = "${data.vsphere_host.physical.id}"
   rescan         = true
   filter         = "Crucial_CT1050MX300SSD4"
-
 }
 
 data "vsphere_vmfs_disks" "spinning" {
   host_system_id = "${data.vsphere_host.physical.id}"
   rescan         = true
   filter         = "ST4000LM0242D2AN17V"
-
 }
 
-resource "null_resource" "vsan_policy" {
-  provisioner "remote-exec" {
-    inline = [
-      "esxcli vsan policy setdefault -c vdisk -p \"((\\\"hostFailuresToTolerate\\\" i1) (\\\"forceProvisioning\\\" i1))\"",
-      "esxcli vsan policy setdefault -c vmnamespace -p \"((\\\"hostFailuresToTolerate\\\" i1) (\\\"forceProvisioning\\\" i1))\""
-    ]
-    connection {
-      type     = "ssh"
-      user     = "${var.vsphere_user}"
-      password = "${var.vsphere_password}"
-      host = "${local.vsphere_fqdn}"
-    }
-  }
-}
-
-/*
 resource "null_resource" "vsan_cluster" {
   provisioner "remote-exec" {
     inline = [
@@ -66,8 +47,20 @@ resource "null_resource" "vsan_cluster" {
       host = "${local.vsphere_fqdn}"
     }
   }
+  depends_on = [ "null_resource.enable_ssh"]
 }
-*/
+
+resource "null_resource" "enable_ssh" {
+  provisioner "local-exec" {
+    command = "govc host.service enable TSM-SSH"
+    environment {
+      GOVC_INSECURE=1
+      GOVC_URL = "${local.vsphere_fqdn}"
+      GOVC_USERNAME = "${var.vsphere_user}"
+      GOVC_PASSWORD = "${var.vsphere_password}"
+    }
+  }
+}
 
 output "vsphere_physical_host_id" {
   value = "${data.vsphere_host.physical.id}"

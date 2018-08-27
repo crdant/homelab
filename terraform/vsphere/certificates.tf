@@ -37,6 +37,19 @@ resource "acme_certificate" "esxi" {
       host     = "${local.vsphere_fqdn}"
     }
   }
+
+  provisioner "remote-exec" {
+    inline = [
+      "services.sh restart"
+    ]
+    connection {
+      type     = "ssh"
+      user     = "${var.vsphere_user}"
+      password = "${var.vsphere_password}"
+      host     = "${local.vsphere_fqdn}"
+    }
+  }
+
 }
 
 resource "local_file" "esxi_certificate" {

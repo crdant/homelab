@@ -99,14 +99,25 @@ resource "local_file" "vcenter_config" {
   }
 
   provisioner "local-exec" {
+    command = "govc license.assign ${var.vcenter_license}"
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vcenter_fqdn}"
+      GOVC_USERNAME = "${local.vcenter_user}"
+      GOVC_PASSWORD = "${random_string.vcenter_password.result}"
+    }
+  }
+
+  provisioner "local-exec" {
     command = "hdiutil unmount -force ${local.vcenter_installer}"
   }
 
+  depends_on = [ "null_resource.vsan_cluster"]
 }
 
-data "vsphere_virtual_machine" "vcenter" {
-  name = "Embedded-vCenter-Server-Appliance"
-  datacenter_id = "${data.vsphere_datacenter.default.id}"
+variable "vcsa_name" {
+  type = "string"
+  default = "Embedded-vCenter-Server-Appliance"
 }
 
 resource "tls_private_key" "vcenter_ssh" {
@@ -115,11 +126,13 @@ resource "tls_private_key" "vcenter_ssh" {
 
   provisioner "local-exec" {
     command = <<COMMAND
-      govc guest.mkdir -vm ${data.vsphere_virtual_machine.vcenter.name} -p /root/.ssh
-      govc guest.chmod -vm ${data.vsphere_virtual_machine.vcenter.name} 0700 /root/.ssh
-      govc guest.touch -vm ${data.vsphere_virtual_machine.vcenter.name} /root/.ssh/authorized_keys
-      govc guest.run -vm ${data.vsphere_virtual_machine.vcenter.id} echo "${trimspace(self.public_key_openssh)}" >> /root/.ssh/authorized_keys
-      govc guest.chmod -vm ${data.vsphere_virtual_machine.vcenter.name} 0600 /root/.ssh/authorized_keys
+      govc guest.mkdir -vm ${var.vcsa_name} -p /root/.ssh
+      govc guest.chmod -vm ${var.vcsa_name} 0700 /root/.ssh
+      govc guest.touch -vm ${var.vcsa_name} /root/.ssh/authorized_keys
+      govc guest.download -vm ${var.vcsa_name} /root/.ssh/authorized_keys ${var.work_dir}/authorized_keys
+      echo "${trimspace(self.public_key_openssh)}" >> ${var.work_dir}/authorized_keys
+      govc guest.upload -f -vm ${var.vcsa_name} ${var.work_dir}/authorized_keys /root/.ssh/authorized_keys
+      govc guest.chmod -vm ${var.vcsa_name} 0600 /root/.ssh/authorized_keys
 COMMAND
 
     environment {
@@ -142,6 +155,42 @@ resource "local_file" "vcenter_ssh_private_key" {
   }
 }
 
+resource "null_resource" "enable_remote_exec" {
+  provisioner "local-exec" {
+    command = <<COMMAND
+govc guest.download -vm ${var.vcsa_name} /etc/ssh/sshd_config ${var.work_dir}/vsphere/sshd_config
+sed -i -e "s/^AllowTcpForwarding no/AllowTcpForwarding yes/g " ${var.work_dir}/vsphere/sshd_config
+govc guest.upload -f -vm ${var.vcsa_name} ${var.work_dir}/vsphere/sshd_config /etc/ssh/sshd_config
+COMMAND
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vsphere_fqdn}"
+      GOVC_USERNAME = "${var.vsphere_user}"
+      GOVC_PASSWORD = "${var.vsphere_password}"
+      GOVC_GUEST_LOGIN = "root:${random_string.vcenter_password.result}"
+    }
+  }
+
+  provisioner "local-exec" {
+    command = <<COMMAND
+govc guest.download -vm ${var.vcsa_name} /etc/passwd ${var.work_dir}/vsphere/etc_passwd
+sed -i -e "s#^root:x:0:0:root:/root:/bin/appliancesh#root:x:0:0:root:/root:/bin/bash# " ${var.work_dir}/vsphere/etc_passwd
+# govc guest.upload -f -vm ${var.vcsa_name} ${var.work_dir}/vsphere/etc_passwd /etc/passwd
+COMMAND
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vsphere_fqdn}"
+      GOVC_USERNAME = "${var.vsphere_user}"
+      GOVC_PASSWORD = "${var.vsphere_password}"
+      GOVC_GUEST_LOGIN = "root:${random_string.vcenter_password.result}"
+    }
+  }
+
+  depends_on = [ "local_file.vcenter_config" ]
+}
+
 output "vcenter_fqdn" {
   value = "${local.vcenter_fqdn}"
 }
@@ -152,4 +201,12 @@ output "vcenter_ip" {
 
 output "vcenter_ssh_private_key" {
   value = "${local_file.vcenter_ssh_private_key.filename}"
+}
+
+output "vcenter_user" {
+  value = "${local.vcenter_user}"
+}
+
+output "vcenter_password" {
+  value = "${random_string.vcenter_password.result}"
 }
