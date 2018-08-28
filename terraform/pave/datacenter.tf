@@ -10,66 +10,53 @@ variable "vsphere_host" {
   type = "string"
 }
 
+variable "datacenter" {
+  type = "string"
+  default = "homelab"
+}
+
+variable "cluster" {
+  type = "string"
+  default = "homelab_primary"
+}
+
+variable "resource_pools" {
+  type = "list"
+  default = [ "zone-1", "zone-2", "zone-3" ]
+}
+
 locals {
   vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
 }
 
+resource "vsphere_datacenter" "homelab" {
+  name = "${var.datacenter}"
+}
+
 data "vsphere_datacenter" "homelab" {
-  name = "homelab"
+  name = "${var.datacenter}"
+}
+
+resource "vsphere_compute_cluster" "homelab" {
+  name = "${var.cluster}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+
+  drs_enabled          = true
 }
 
 data "vsphere_compute_cluster" "homelab" {
-  name          = "homelab"
+  name          = "${var.cluster}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-data "vsphere_resource_pool" "zone_1" {
-  name = "zone-1"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+resource "vsphere_resource_pool" "zones" {
+  count = "${length(var.resource_pools)}"
+  name = "zone-${count.index}"
+  parent_resource_pool_id = "${data.vsphere_compute_cluster.homelab.id}"
 }
 
-data "vsphere_resource_pool" "zone_2" {
-  name = "zone-2"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_resource_pool" "zone_3" {
-  name = "zone-3"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "bootstrap" {
-  name          = "bootstrap"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "lb_internal" {
-  name          = "lb_internal"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "lb_external" {
-  name          = "lb_external"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "infrastructure" {
-  name          = "infrastructure"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "deployment" {
-  name          = "deployment"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "services" {
-  name          = "services"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
-data "vsphere_network" "pks_clusters" {
-  name          = "pks_clusters"
+data "vsphere_resource_pool" "pool" {
+  name          = "${var.cluster}/Resources"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
