@@ -34,3 +34,7 @@ output "work_dir" {
 output "template_dir" {
   value = "${var.template_dir}"
 }
+
+variable "dns_ttl" {
+  type = "string"
+}

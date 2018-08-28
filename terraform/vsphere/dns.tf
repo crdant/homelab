@@ -1,7 +1,3 @@
-variable "dns_ttl" {
-  type = "string"
-}
-
 locals {
   vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
   vcenter_fqdn = "${var.vcenter_host}.${var.domain}"
