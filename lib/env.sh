@@ -47,6 +47,7 @@ router_host="savasana"
 outside_host="kapotasana"
 vsphere_host="tadasana"
 vcenter_host="garundasana"
+bigip_management_host="vasisthasana"
 
 # router configuration
 router_user=ubnt
@@ -70,7 +71,6 @@ pcf_switch=pcf-switch
 infrastructure_network=infra-port-group
 deployment_network=deployment-port-group
 services_network=services-port-group
-dynamic_network=dynamic-port-group
 container_network=container-port-group
 balancer_internal_network=lb-internal-port-group
 balancer_external_network=lb-external-port-group
