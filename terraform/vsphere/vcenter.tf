@@ -6,10 +6,6 @@ variable "vcenter_iso_path" {
   type = "string"
 }
 
-variable "vcenter_license" {
-  type = "string"
-}
-
 variable "infra_datastore" {
   type = "string"
 }
@@ -86,26 +82,6 @@ resource "local_file" "vcenter_config" {
 
   provisioner "local-exec" {
     command = "${local.vcenter_installer}/vcsa-cli-installer/mac/vcsa-deploy install --no-ssl-certificate-verification --accept-eula --acknowledge-ceip ${self.filename}"
-  }
-
-  provisioner "local-exec" {
-    command = "govc license.add ${var.vcenter_license}"
-    environment {
-      GOVC_INSECURE = "1"
-      GOVC_URL = "${local.vcenter_fqdn}"
-      GOVC_USERNAME = "${local.vcenter_user}"
-      GOVC_PASSWORD = "${random_string.vcenter_password.result}"
-    }
-  }
-
-  provisioner "local-exec" {
-    command = "govc license.assign ${var.vcenter_license}"
-    environment {
-      GOVC_INSECURE = "1"
-      GOVC_URL = "${local.vcenter_fqdn}"
-      GOVC_USERNAME = "${local.vcenter_user}"
-      GOVC_PASSWORD = "${random_string.vcenter_password.result}"
-    }
   }
 
   provisioner "local-exec" {
