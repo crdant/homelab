@@ -16,6 +16,16 @@ apply () {
   popd
 }
 
+destroy () {
+  component=${1}
+  pushd "${terraform_dir}/${component}"
+    terraform destroy \
+      --input=false \
+      --auto-approve \
+      --var-file=<(terraform_vars)
+  popd
+}
+
 backend_config () {
   cat <<CONFIG
 credentials = <<CREDENTIALS
