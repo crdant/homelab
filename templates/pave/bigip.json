@@ -18,7 +18,7 @@
         },
         {
           "Name": "HA",
-          "Network": ""
+          "Network": "${ha_network}"
         }
       ],
       "Annotation": "BIG-IP Local Traffic Manager Virtual Edition\n    Copyright 2009-2016 F5 Networks (http://www.f5.com)\n    \n    For support please visit http://support.f5.com\n          ",
