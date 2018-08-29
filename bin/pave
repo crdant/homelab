@@ -5,51 +5,17 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/terraform.sh"
 set -e
 
-vsphere_password="$(security find-generic-password -a root -s esxi -w)"
+vsphere_password="$(security find-generic-password -a root -s ${vsphere_host} -w)"
 vcenter_password="$(security find-generic-password -a root -s ${vcenter_host}.${domain} -w)"
 
+vsphere_license="$(security find-generic-password -a license_key -s ${vsphere_host} -w)"
+vcenter_license="$(security find-generic-password -a license_key -s ${vcenter_host} -w)"
+
 terraform_vars () {
-  jq -n \
-    --arg "domain" "${domain}" \
-    --arg "email" "${email}" \
-    --arg "dns_ttl" "${dns_ttl}" \
-    --arg "project" "${project}" \
-    --arg "key_file" "${key_file}" \
-    --arg "region" "${region}" \
-    --arg "vsphere_host" "${vsphere_host}" \
-    --arg "vsphere_user" "${vsphere_user}" \
-    --arg "vsphere_password" "${vsphere_password}" \
-    --arg "vcenter_host" "${vcenter_host}" \
-    --arg "vcenter_password" "${vcenter_password}" \
-    --arg "bosh_director_role" "${bosh_director_role}" \
-    --arg "bosh_director_group" "${bosh_director_group}" \
-    --arg "infra_datastore" "${infra_datastore}" \
-    --arg "bigip_management_host" "${bigip_management_host}" \
-    --arg "key_dir" "${key_dir}" \
-    --arg "statefile_bucket" "${statefile_bucket}" \
-    --arg "template_dir" "${template_dir}" \
-    --arg "work_dir" "${work_dir}" \
-  '{
-      domain: $domain,
-      email: $email,
-      dns_ttl: $dns_ttl,
-      project: $project,
-      key_file: $key_file,
-      region: $region,
-      vsphere_host: $vsphere_host,
-      vsphere_user: $vsphere_user,
-      vsphere_password: $vsphere_password,
-      vcenter_host: $vcenter_host,
-      vcenter_password: $vcenter_password,
-      bosh_director_role: $bosh_director_role,
-      bosh_director_group: $bosh_director_group,
-      infra_datastore: $infra_datastore,
-      bigip_management_host: $bigip_management_host,
-      key_dir: $key_dir,
-      statefile_bucket: $statefile_bucket,
-      template_dir: $template_dir,
-      work_dir: $work_dir
-   }'
+  env -i BASEDIR=${BASEDIR} \
+    vsphere_password=${vsphere_password} \
+    vsphere_license=${vsphere_license} vcenter_license=${vcenter_license}  \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
 if [ $# -gt 0 ]; then
@@ -60,6 +26,9 @@ if [ $# -gt 0 ]; then
         ;;
       apply )
         apply pave
+        ;;
+      destroy )
+        destroy pave
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
