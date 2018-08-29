@@ -44,6 +44,20 @@ resource "local_file" "bigip_spec" {
       GOVC_RESOURCE_POOL = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${element(var.resource_pools, length(var.resource_pools) - 1)}"
     }
   }
+
+  provisioner "local-exec" {
+    command = "govc vm.markastemplate '${var.lb_template_name}'"
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vcenter_fqdn}"
+      GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
+      GOVC_DATASTORE = "${var.infra_datastore}"
+      GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
+      GOVC_RESOURCE_POOL = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${element(var.resource_pools, length(var.resource_pools) - 1)}"
+    }
+  }
 }
 
 data "vsphere_virtual_machine" "bigip_template" {
