@@ -23,6 +23,7 @@ data "template_file" "bigip_spec" {
     management_network = "${data.vsphere_network.infrastructure.name}"
     internal_network = "${data.vsphere_network.lb_internal.name}"
     external_network = "${data.vsphere_network.lb_external.name}"
+    ha_network = "${data.vsphere_network.infrastructure.name}"
   }
 }
 
@@ -40,6 +41,7 @@ resource "local_file" "bigip_spec" {
       GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
       GOVC_DATASTORE = "${var.infra_datastore}"
       GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
+      GOVC_RESOURCE_POOL = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${element(var.resource_pools, length(var.resource_pools) - 1)}"
     }
   }
 }
@@ -49,6 +51,7 @@ data "vsphere_virtual_machine" "bigip_template" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on = [ "local_file.bigip_spec" ]
 }
+
 
 /*
 govc vm.power --on --vm.ipath /home-lab/vm/${inventory_folder}/${appliance_name}

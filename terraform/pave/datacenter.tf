@@ -1,15 +1,3 @@
-variable "vsphere_user" {
-  type = "string"
-}
-
-variable "vsphere_password" {
-  type = "string"
-}
-
-variable "vsphere_host" {
-  type = "string"
-}
-
 variable "datacenter" {
   type = "string"
   default = "homelab"
@@ -25,16 +13,12 @@ variable "resource_pools" {
   default = [ "zone-1", "zone-2", "zone-3" ]
 }
 
-locals {
-  vsphere_fqdn = "${var.vsphere_host}.${var.domain}"
-}
-
 resource "vsphere_datacenter" "homelab" {
   name = "${var.datacenter}"
 }
 
 data "vsphere_datacenter" "homelab" {
-  name = "${var.datacenter}"
+  name = "${vsphere_datacenter.homelab.name}"
 }
 
 resource "vsphere_compute_cluster" "homelab" {
@@ -42,22 +26,48 @@ resource "vsphere_compute_cluster" "homelab" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 
   drs_enabled          = true
+
+  provisioner "local-exec" {
+    command = "govc cluster.change --vsan-enabled ${self.name}"
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vcenter_fqdn}"
+      GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
+      GOVC_DATASTORE = "${var.infra_datastore}"
+      GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "govc cluster.add --hostname ${var.vsphere_host} --username ${var.vsphere_user} --password ${var.vsphere_password}"
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vcenter_fqdn}"
+      GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
+      GOVC_DATASTORE = "${var.infra_datastore}"
+      GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
+      GOVC_CLUSTER = "${self.name}"
+    }
+  }
+
 }
 
 data "vsphere_compute_cluster" "homelab" {
-  name          = "${var.cluster}"
+  name          = "${vsphere_compute_cluster.homelab.name}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+
+  depends_on = [ "vsphere_compute_cluster.homelab" ]
 }
 
 resource "vsphere_resource_pool" "zones" {
   count = "${length(var.resource_pools)}"
-  name = "zone-${count.index}"
-  parent_resource_pool_id = "${data.vsphere_compute_cluster.homelab.id}"
-}
+  name  = "${var.resource_pools[count.index]}"
 
-data "vsphere_resource_pool" "pool" {
-  name          = "${var.cluster}/Resources"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+  parent_resource_pool_id = "${data.vsphere_compute_cluster.homelab.resource_pool_id}"
 }
 
 /*
