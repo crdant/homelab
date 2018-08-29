@@ -40,8 +40,54 @@ trust() {
   wget -O ${ca_cert_file} https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem.txt
 }
 
+secrets () {
+  read -sp "Enter your ESXi Password: " vsphere_password
+  security add-generic-password -a root -s ${vsphere_host} -p ${vsphere_password} -U
+  echo ""
+
+  read -p "Enter your ESXi Licesnse Key: " vsphere_license
+  security add-generic-password -a license_key -s ${vsphere_host} -p ${vsphere_license} -U
+  echo ""
+
+  read -p "Enter your vCenter Licesnse Key: " vcenter_license
+  security add-generic-password -a license_key -s ${vcenter_host} -p ${vcenter_license} -U
+  echo ""
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      directories )
+        directories
+        ;;
+      service_account )
+        service_account
+        ;;
+      cloud_storage )
+        cloud_storage
+        ;;
+      encryption )
+        encryption
+        ;;
+      trust )
+        trust
+        ;;
+      secrets)
+        secrets
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+  done
+  exit
+fi
+
 directories
 service_account
 cloud_storage
 encryption
 trust
+secrets
