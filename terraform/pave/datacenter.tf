@@ -26,7 +26,8 @@ resource "vsphere_compute_cluster" "homelab" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 
   drs_enabled          = true
-
+  drs_automation_level = "partiallyAutomated"
+  
   provisioner "local-exec" {
     command = "govc cluster.change --vsan-enabled ${self.name}"
 
