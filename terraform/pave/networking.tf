@@ -1,11 +1,18 @@
 variable "vsan_switch" {
   type = "string"
-  default = "vSAN"
+  default = "vSwitch0"
 }
 
-variable "vsan_nic" {
+variable "vsan_port" {
   type = "string"
-  default = "vmnic1"
+  default = "255"
+}
+
+locals {
+  vsan_vmk = "vmk${var.vsan_port}"
+  vsan_ip = "${cidrhost(local.vmware_cidr,34)}"
+  vsan_gateway = "${cidrhost(local.vmware_cidr,1)}"
+  vsan_netmask = "${cidrnetmask(local.vmware_cidr)}"
 }
 
 variable "vsan_portgroup" {
@@ -18,9 +25,16 @@ variable "bootstrap_switch" {
   default = "bootstrap_switch"
 }
 
-variable "bootstrap_nic" {
+variable "bootstrap_port" {
   type = "string"
-  default = "vmnic2"
+  default = "2"
+}
+
+locals {
+  bootstrap_nic = "vmnic${var.bootstrap_port}"
+  bootstrap_ip = "${cidrhost(local.bootstrap_cidr,2)}"
+  bootstrap_gateway = "${cidrhost(local.bootstrap_cidr,1)}"
+  bootstrap_netmask = "${cidrnetmask(local.bootstrap_cidr)}"
 }
 
 variable "bootstrap_portgroup" {
@@ -33,9 +47,37 @@ variable "pcf_switch" {
   default = "pcf_switch"
 }
 
-variable "pcf_nic" {
+variable "pcf_port" {
   type = "string"
-  default = "vmnic3"
+  default = "3"
+}
+
+locals {
+  pcf_nic = "vmnic${var.pcf_port}"
+
+  infrastructure_ip = "${cidrhost(local.infrastructure_cidr,2)}"
+  infrastructure_gateway = "${cidrhost(local.infrastructure_cidr,1)}"
+  infrastructure_netmask = "${cidrnetmask(local.infrastructure_cidr)}"
+
+  lb_internal_ip = "${cidrhost(local.balancer_internal_cidr,2)}"
+  lb_internal_gateway = "${cidrhost(local.balancer_internal_cidr,1)}"
+  lb_internal_netmask = "${cidrnetmask(local.balancer_internal_cidr)}"
+
+  lb_external_ip = "${cidrhost(local.balancer_external_cidr,2)}"
+  lb_external_gateway = "${cidrhost(local.balancer_external_cidr,1)}"
+  lb_external_netmask = "${cidrnetmask(local.balancer_external_cidr)}"
+
+  deployment_ip = "${cidrhost(local.deployment_cidr,2)}"
+  deployment_gateway = "${cidrhost(local.deployment_cidr,1)}"
+  deployment_netmask = "${cidrnetmask(local.deployment_cidr)}"
+
+  services_ip = "${cidrhost(local.services_cidr,2)}"
+  services_gateway = "${cidrhost(local.services_cidr,1)}"
+  services_netmask = "${cidrnetmask(local.services_cidr)}"
+
+  pks_clusters_ip = "${cidrhost(local.container_cidr,2)}"
+  pks_clusters_gateway = "${cidrhost(local.container_cidr,1)}"
+  pks_clusters_netmask = "${cidrnetmask(local.container_cidr)}"
 }
 
 variable "infrastructure_portgroup" {
@@ -68,41 +110,51 @@ variable "load_balancer_external_portgroup" {
   default = "bigip_external"
 }
 
-resource "vsphere_distributed_virtual_switch" "vsan" {
-  name          = "${var.vsan_switch}"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+resource "vsphere_host_port_group" "vsan" {
+  name = "${var.vsan_portgroup}"
+  host_system_id = "${data.vsphere_host.homelab.id}"
 
-  uplinks         = [ "uplink1" ]
-  active_uplinks  = [ "uplink1" ]
+  virtual_switch_name = "${var.vsan_switch}"
 
-  host {
-    host_system_id = "${data.vsphere_host.homelab.id}"
-    devices        = [ "${var.vsan_nic}" ]
+  provisioner "local-exec" {
+    command = <<COMMANDS
+govc host.esxcli network ip interface add --interface-name '${local.vsan_vmk}' --portgroup-name '${self.name}'
+govc host.esxcli network ip interface ipv4 set --interface-name ${local.vsan_vmk} --ipv4 ${local.vsan_ip} --netmask ${local.vsan_netmask} --gateway ${local.vsan_gateway} --type static
+govc host.esxcli network ip interface tag add --interface-name ${local.vsan_vmk} -t VSAN
+COMMANDS
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vsphere_fqdn}"
+      GOVC_USERNAME = "${var.vsphere_user}"
+      GOVC_PASSWORD = "${var.vsphere_password}"
+    }
   }
 
 }
 
-data "vsphere_distributed_virtual_switch" "vsan" {
-  name          = "${vsphere_distributed_virtual_switch.vsan.name}"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-  depends_on    = [ "vsphere_distributed_virtual_switch.vsan" ]
-}
 
-resource "vsphere_distributed_port_group" "vsan" {
-  name                            = "${var.vsan_portgroup}"
-  distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.vsan.id}"
+locals {
+  nic_add_script = [ "yes", "|", "pwsh -Command \"",
+    "Set-PowerCLIConfiguration -InvalidCertificateAction 'Ignore'  -Scope 'Session' ;",
+    "Connect-VIServer -Server ${local.vcenter_fqdn} -Protocol https -User '${data.terraform_remote_state.vsphere.vcenter_user}' -Password '${data.terraform_remote_state.vsphere.vcenter_password}' ;",
+    "\\$$homelabHost = Get-VMHost -Name ${local.vsphere_fqdn} ;",
+    "\\$$pcfSwitch = Get-VDSwitch -VMHost \\$$homelabHost -Name $SWITCH ;",
+    "New-VMHostNetworkAdapter -VMHost \\$$homelabHost -VirtualSwitch \\$$pcfSwitch -PortGroup $PORTGROUP -IP $IP -SubnetMask $NETMASK",
+    "\""
+  ]
 }
 
 resource "vsphere_distributed_virtual_switch" "bootstrap" {
   name          = "${var.bootstrap_switch}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 
-  uplinks         = [ "uplink1" ]
-  active_uplinks  = [ "uplink1" ]
+  uplinks         = [ "${var.bootstrap_switch}" ]
+  active_uplinks  = [ "${var.bootstrap_switch}" ]
 
   host {
     host_system_id = "${data.vsphere_host.homelab.id}"
-    devices        = [ "${var.bootstrap_nic}" ]
+    devices        = [ "${local.bootstrap_nic}" ]
   }
 
 }
@@ -111,12 +163,21 @@ data "vsphere_distributed_virtual_switch" "bootstrap" {
   name          = "${vsphere_distributed_virtual_switch.bootstrap.name}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on    = [ "vsphere_distributed_virtual_switch.bootstrap" ]
-
 }
 
 resource "vsphere_distributed_port_group" "bootstrap" {
   name                            = "${var.bootstrap_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.bootstrap.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.bootstrap.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.bootstrap_ip}"
+      NETMASK = "${local.bootstrap_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "bootstrap" {
@@ -125,16 +186,21 @@ data "vsphere_network" "bootstrap" {
   depends_on    = [ "vsphere_distributed_port_group.bootstrap" ]
 }
 
+
+resource "null_resource" "provision_fixup" {
+
+}
+
 resource "vsphere_distributed_virtual_switch" "pcf" {
   name          = "${var.pcf_switch}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 
-  uplinks         = [ "uplink1" ]
-  active_uplinks  = [ "uplink1" ]
+  uplinks         = [ "${var.pcf_switch}" ]
+  active_uplinks  = [ "${var.pcf_switch}" ]
 
   host {
     host_system_id = "${data.vsphere_host.homelab.id}"
-    devices        = [ "${var.pcf_nic}" ]
+    devices        = [ "${local.pcf_nic}" ]
   }
 }
 
@@ -147,6 +213,16 @@ data "vsphere_distributed_virtual_switch" "pcf" {
 resource "vsphere_distributed_port_group" "lb_internal" {
   name                            = "${var.load_balancer_internal_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.lb_internal_ip}"
+      NETMASK = "${local.lb_internal_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "lb_internal" {
@@ -158,6 +234,16 @@ data "vsphere_network" "lb_internal" {
 resource "vsphere_distributed_port_group" "lb_external" {
   name                            = "${var.load_balancer_external_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.lb_external_ip}"
+      NETMASK = "${local.lb_external_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "lb_external" {
@@ -169,6 +255,16 @@ data "vsphere_network" "lb_external" {
 resource "vsphere_distributed_port_group" "infrastructure" {
   name                            = "${var.infrastructure_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.infrastructure_ip}"
+      NETMASK = "${local.infrastructure_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "infrastructure" {
@@ -180,6 +276,16 @@ data "vsphere_network" "infrastructure" {
 resource "vsphere_distributed_port_group" "deployment" {
   name                            = "${var.deployment_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.deployment_ip}"
+      NETMASK = "${local.deployment_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "deployment" {
@@ -191,6 +297,16 @@ data "vsphere_network" "deployment" {
 resource "vsphere_distributed_port_group" "services" {
   name                            = "${var.services_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.services_ip}"
+      NETMASK = "${local.services_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "services" {
@@ -202,6 +318,16 @@ data "vsphere_network" "services" {
 resource "vsphere_distributed_port_group" "pks_clusters" {
   name                            = "${var.pks_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.pks_clusters_ip}"
+      NETMASK = "${local.pks_clusters_netmask}"
+    }
+  }
 }
 
 data "vsphere_network" "pks_clusters" {
