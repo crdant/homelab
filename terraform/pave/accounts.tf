@@ -6,6 +6,11 @@ variable "bosh_director_group" {
   type = "string"
 }
 
+variable "bbl_username" {
+  type = "string"
+  default = "bbl"
+}
+
 resource "null_resource" "bosh_director_role" {
   provisioner "local-exec" {
     command = <<COMMAND
@@ -154,7 +159,7 @@ resource "random_string" "bbl_password" {
 
 resource "null_resource" "bbl_user" {
   provisioner "local-exec" {
-    command = "govc sso.user.create -p '${random_string.bbl_password.result}' bbl"
+    command = "govc sso.user.create -p '${random_string.bbl_password.result}' ${var.bbl_user}"
 
     environment {
       GOVC_INSECURE = "1"
@@ -179,6 +184,11 @@ resource "null_resource" "bbl_user" {
   depends_on = [ "null_resource.bosh_director_group" ]
 }
 
+output "bbl_user" {
+  value = "${var.bbl_username}@{var.domain}"
+}
+
 output "bbl_password" {
   value = "${random_string.bbl_password.result}"
+  sensitive = true
 }

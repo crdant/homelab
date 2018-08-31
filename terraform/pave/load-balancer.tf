@@ -158,8 +158,8 @@ resource "vsphere_virtual_machine" "bigip" {
 
   vapp {
     properties {
-      "user.admin.pwd" = "${random_pet.bigip_admin_password.result}"
-      "user.root.pwd" = "${random_pet.bigip_admin_password.result}"
+      "user.admin.pwd" = "${random_pet.bigip_admin_password.id}"
+      "user.root.pwd" = "${random_pet.bigip_admin_password.id}"
       "net.mgmt.add" = "${local.bigip_management_ip}"
       "net.mgmt.gw" = "${local.bigip_management_gateway}"
     }
@@ -178,10 +178,28 @@ resource "vsphere_virtual_machine" "bigip" {
   }
 }
 
+output "bigip_management_host" {
+  value = "${var.bigip_management_host}"
+}
+
 output "bigip_root_password" {
   value = "${random_pet.bigip_root_password.id}"
+  sensitive = true
 }
 
 output "bigip_admin_password" {
   value = "${random_pet.bigip_admin_password.id}"
+  sensitive = true
+}
+
+output "bigip_management_ip" {
+  value = "{local.bigip_management_ip}"
+}
+
+output "bigip_internal_ip" {
+  value = "{local.bigip_internal_ip}"
+}
+
+output "bigip_external_ip" {
+  value = "{local.bigip_external_ip}"
 }

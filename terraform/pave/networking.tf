@@ -186,11 +186,6 @@ data "vsphere_network" "bootstrap" {
   depends_on    = [ "vsphere_distributed_port_group.bootstrap" ]
 }
 
-
-resource "null_resource" "provision_fixup" {
-
-}
-
 resource "vsphere_distributed_virtual_switch" "pcf" {
   name          = "${var.pcf_switch}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
@@ -334,4 +329,8 @@ data "vsphere_network" "pks_clusters" {
   name          = "${vsphere_distributed_port_group.pks_clusters.name}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on    = [ "vsphere_distributed_port_group.pks_clusters" ]
+}
+
+output "bbl_network" {
+  value = "${data.vsphere_network.infrastructure.name}"
 }

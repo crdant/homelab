@@ -32,3 +32,7 @@ locals {
       "${cidrhost(local.deployment_cidr, -3)}"
     ]
 }
+
+output "vcenter_ip" {
+  value = "locals.vcenter_ip"
+}

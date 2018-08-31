@@ -85,14 +85,23 @@ data "vsphere_resource_pool" "last_zone" {
   depends_on = [ "vsphere_resource_pool.zones" ]
 }
 
-/*
-export BBL_VSPHERE_VCENTER_USER
-export BBL_VSPHERE_VCENTER_PASSWORD
-export BBL_VSPHERE_VCENTER_IP
-export BBL_VSPHERE_VCENTER_DC
-export BBL_VSPHERE_VCENTER_CLUSTER
-export BBL_VSPHERE_VCENTER_RP
-export BBL_VSPHERE_NETWORK
-export BBL_VSPHERE_VCENTER_DS
-export BBL_VSPHERE_SUBNET
-*/
+data "vsphere_datastore" "vsan" {
+  name  = "${var.infra_datastore}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+output "bbl_datacenter" {
+  value = "${data.vsphere_datacenter.homelab.name}"
+}
+
+output "bbl_cluster" {
+  value = "${data.vsphere_compute_cluster.homelab.name}"
+}
+
+output "bbl_resource_pool" {
+  value = "${data.vsphere_resource_pool.first_zone.name}"
+}
+
+output "bbl_datastore" {
+  value = "${data.vsphere_datastore.vsan.name}"
+}
