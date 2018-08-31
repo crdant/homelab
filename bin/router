@@ -8,41 +8,26 @@ set -e
 router_password="$(security find-generic-password -a ubnt -s ${router_host}.${domain} -w)"
 
 terraform_vars () {
-  jq -n \
-    --arg "domain" "${domain}" \
-    --arg "email" "${email}" \
-    --arg "dns_ttl" "${dns_ttl}" \
-    --arg "project" "${project}" \
-    --arg "key_file" "${key_file}" \
-    --arg "region" "${region}" \
-    --arg "router_host" "${router_host}" \
-    --arg "outside_host" "${outside_host}" \
-    --arg "vsphere_host" "${vsphere_host}" \
-    --arg "current_router_password" "${router_password}" \
-    --arg "key_dir" "${key_dir}" \
-    --arg "statefile_bucket" "${state_dir}" \
-    --arg "template_dir" "${template_dir}" \
-    --arg "work_dir" "${work_dir}" \
-    --arg "admin_user" "${admin_user}" \
-    --argjson "vpn_users" "[ \"${vpn_user}\" ]" \
-  '{
-      domain: $domain,
-      email: $email,
-      dns_ttl: $dns_ttl,
-      project: $project,
-      key_file: $key_file,
-      region: $region,
-      router_host: $router_host,
-      outside_host: $outside_host,
-      vsphere_host: $vsphere_host,
-      current_router_password: $current_router_password,
-      key_dir: $key_dir,
-      statefile_bucket: $statefile_bucket,
-      template_dir: $template_dir,
-      work_dir: $work_dir,
-      admin_user: $admin_user,
-      vpn_users: $vpn_users
-   }'
+  dns_servers_json=$(printf '%s\n' "${dns_servers[@]}" | jq -R . | jq -s .)
+  ntp_servers_json=$(printf '%s\n' "${ntp_servers[@]}" | jq -R . | jq -s .)
+  vpn_users_json=$(printf '%s\n' "${vpn_users[@]}" | jq -R . | jq -s .)
+
+  jq_query=$(jq -n \
+    --argjson dns_servers "$dns_servers_json" \
+    --argjson ntp_servers "$ntp_servers_json" \
+    --argjson vpn_users "$vpn_users_json" \
+    --arg current_router_password "${router_password}" \
+    'env + {
+      dns_servers: $dns_servers,
+      ntp_servers: $ntp_servers,
+      vpn_users: $vpn_users,
+      current_router_password: $current_router_password
+    }'
+  )
+
+  env -i BASEDIR="${BASEDIR}" \
+    jq_query="${jq_query}" \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n "$jq_query"'
 }
 
 if [ $# -gt 0 ]; then
@@ -56,6 +41,9 @@ if [ $# -gt 0 ]; then
         ;;
       destroy )
         destroy router
+        ;;
+      vars )
+        terraform_vars
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

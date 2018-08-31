@@ -1,7 +1,6 @@
 # identity
 email=cdantonio@pivotal.io
 admin_user=arceus
-vpn_user=crdant
 vsphere_user=root
 
 # important files and directories
@@ -30,7 +29,7 @@ subdomain=cloud.${domain}
 dns_ttl=60
 
 # NTP
-ntp_servers=( "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org" )
+ntp_servers=( "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" "3.pool.ntp.org" )
 
 # static hosts
 router_host="savasana"
@@ -41,7 +40,7 @@ bigip_management_host="vasisthasana"
 
 # router configuration
 router_user=ubnt
-vpn_user="${USER}"
+vpn_users=( "crdant" )
 
 # vcenter configuration
 vcenter_admin=administrator@${domain}
@@ -51,8 +50,7 @@ bosh_director_group="BoshDirectorServiceAccounts"
 
 infra_datastore=vsanDatastore
 
-dns_servers=( "1.1.1.1", "1.0.0.1", "8.8.8.8" )
-dns_servers_string="1.1.1.1,1.0.0.1,8.8.8.8"
+dns_servers=( "1.1.1.1" "1.0.0.1" "8.8.8.8" )
 
 # PCF configuration
 om_datastore=vsanDatastore
