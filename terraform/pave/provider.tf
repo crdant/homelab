@@ -14,3 +14,7 @@ provider "vsphere" {
   # If you have a self-signed cert
   allow_unverified_ssl = true
 }
+
+output "vcenter_fqdn" {
+  value = "locals.vcenter_fqdn"
+}
