@@ -159,7 +159,7 @@ resource "random_string" "bbl_password" {
 
 resource "null_resource" "bbl_user" {
   provisioner "local-exec" {
-    command = "govc sso.user.create -p '${random_string.bbl_password.result}' ${var.bbl_user}"
+    command = "govc sso.user.create -p '${random_string.bbl_password.result}' ${var.bbl_username}"
 
     environment {
       GOVC_INSECURE = "1"
@@ -171,7 +171,7 @@ resource "null_resource" "bbl_user" {
 /*
   provisioner "remote-exec" {
     inline = [
-      "/usr/lib/vmware-vmafd/bin/dir-cli group modify --name ${var.bosh_director_group} --add bbl"
+      "/usr/lib/vmware-vmafd/bin/dir-cli group modify --name ${var.bosh_director_group} --add ${var.bbl_username}"
     ]
     connection {
       type     = "ssh"
