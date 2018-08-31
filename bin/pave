@@ -30,6 +30,9 @@ if [ $# -gt 0 ]; then
       destroy )
         destroy pave
         ;;
+      vars )
+        terraform_vars
+        ;;
       * )
         echo "Unrecognized option: $1" 1>&2
         exit 1
