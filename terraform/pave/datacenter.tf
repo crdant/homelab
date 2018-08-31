@@ -27,7 +27,7 @@ resource "vsphere_compute_cluster" "homelab" {
 
   drs_enabled          = true
   drs_automation_level = "partiallyAutomated"
-  
+
   provisioner "local-exec" {
     command = "govc cluster.change --vsan-enabled ${self.name}"
 
@@ -69,6 +69,20 @@ resource "vsphere_resource_pool" "zones" {
   name  = "${var.resource_pools[count.index]}"
 
   parent_resource_pool_id = "${data.vsphere_compute_cluster.homelab.resource_pool_id}"
+}
+
+data "vsphere_resource_pool" "first_zone" {
+  name  = "${var.resource_pools[0]}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+
+  depends_on = [ "vsphere_resource_pool.zones" ]
+}
+
+data "vsphere_resource_pool" "last_zone" {
+  name  = "${var.resource_pools[length(var.resource_pools) - 1]}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+
+  depends_on = [ "vsphere_resource_pool.zones" ]
 }
 
 /*
