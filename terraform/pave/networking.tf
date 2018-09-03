@@ -331,6 +331,22 @@ data "vsphere_network" "pks_clusters" {
   depends_on    = [ "vsphere_distributed_port_group.pks_clusters" ]
 }
 
-output "bbl_network" {
+output "bootstrap_network" {
+  value = "${data.vsphere_network.bootstrap.name}"
+}
+
+output "infrastructure_network" {
   value = "${data.vsphere_network.infrastructure.name}"
+}
+
+output "deployment_network" {
+  value = "${data.vsphere_network.deployment.name}"
+}
+
+output "services_network" {
+  value = "${data.vsphere_network.services.name}"
+}
+
+output "pks_clusters_network" {
+  value = "${data.vsphere_network.pks_clusters.name}"
 }
