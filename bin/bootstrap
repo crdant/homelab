@@ -2,111 +2,42 @@
 BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/env.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
 set -e
 
-bucc_repository="https://github.com/starkandwayne/bucc.git"
-bucc_dir=${work_dir}/bucc
+environment () {
+  source_json="$(outputs pave)"
 
-ip_base=$(echo ${bootstrap_cidr} | awk -F. '{print $1 "." $2 "." $3}')
-gateway_ip="${ip_base}.1"
-internal_ip="${ip_base}.6"
-
-prepare () {
-  eval "$(op signin my)"
-  if [ ! -d "${bucc_dir}" ] ; then
-    git clone ${bucc_repository} ${bucc_dir}
-    populate_vars_file
-  else
-    pushd ${bucc_dir}
-      git pull
-      populate_vars_file
-    popd
-  fi
-}
-
-populate_vars_file () {
-  vcenter_password="$(op get item "Bootstrap BOSH Service Account (Home Lab)" | jq -r '.details.password')"
-
-  cat  <<VARS > ${bucc_dir}/vars.yml
-director_name: bucc-${env_id}
-internal_cidr: ${bootstrap_cidr}
-internal_gw: ${gateway_ip}
-internal_ip: ${internal_ip}
-network_name: ${bootstrap_network}
-vcenter_cluster: ${vcenter_cluster}
-vcenter_dc: ${vcenter_data_center}
-vcenter_disks: bucc-${env_id}-disks
-vcenter_ds: ${vcenter_fast_datastore}
-vcenter_ip: ${vcenter_host}
-vcenter_password: ${vcenter_password}
-vcenter_templates: bucc-${env_id}-templates
-vcenter_user: ${bucc_service_account}
-vcenter_vms: bucc-${env_id}-templates
-
-# flag: --dns
-vcenter_dns: ${dns_servers_array}
-
-# flag: --resource-pool
-vcenter_rp: # my-bosh-rp
-VARS
+  export BBL_IAAS=${iaas}
+  export BBL_VSPHERE_VCENTER_USER="$(echo "$source_json" | jq -r .bbl_user.value )"
+  export BBL_VSPHERE_VCENTER_PASSWORD="$(echo "$source_json" | jq -r .bbl_password.value )"
+  export BBL_VSPHERE_VCENTER_IP="$(echo "$source_json" | jq -r .vcenter_fqdn.value )"
+  export BBL_VSPHERE_VCENTER_DC="$(echo "$source_json" | jq -r .bbl_datacenter.value )"
+  export BBL_VSPHERE_VCENTER_CLUSTER="$(echo "$source_json" | jq -r .bbl_cluster.value )"
+  export BBL_VSPHERE_VCENTER_RP="$(echo "$source_json" | jq -r .bbl_resource_pool.value )"
+  export BBL_VSPHERE_NETWORK="$(echo "$source_json" | jq -r .bootstrap_network.value )"
+  export BBL_VSPHERE_VCENTER_DS="$(echo "$source_json" | jq -r .bbl_datastore.value )"
+  export BBL_VSPHERE_SUBNET="$(echo "$source_json" | jq -r .bootstrap_cidr.value )"
+  export BBL_VSPHERE_VCENTER_DISKS
+  export BBL_VSPHERE_VCENTER_TEMPLATES
+  export BBL_VSPHERE_VCENTER_VMS
 }
 
 up () {
-  old_path=${PATH}
-  PATH=${bucc_dir}/bin:${PATH}
-  pushd ${bucc_dir}
-    bucc up --cpi vsphere
-  popd
-  PATH=${old_path}
+  environment
+  bbl up --debug --state-dir ${state_dir}
 }
 
 login() {
-  old_path=${PATH}
-  PATH=${bucc_dir}/bin:${PATH}
-  bucc uaac
-  bucc credhub
-  bucc fly
-  PATH=${old_path}
+  eval "$(bbl print-env)"
+  export BOSH_ENVIRONMENT=$(bbl director-address)
+  bosh alias-env $(bbl env-id)
+  bosh log-in
 }
 
 down () {
-  old_path=${PATH}
-  PATH=${bucc_dir}/bin:${PATH}
-  pushd ${bucc_dir}
-    bucc down
-  popd
-  PATH=${old_path}
-}
-
-cleanup () {
-  old_path=${PATH}
-  PATH=${bucc_dir}/bin:${PATH}
-  pushd ${bucc_dir}
-    bucc clean
-  popd
-  rm -rf ${bucc_dir}
-  PATH=${old_path}
-}
-
-url () {
-  ip_base=$(echo ${bootstrap_cidr} | awk -F. '{print $1 "." $2 "." $3}')
-  gateway_ip="${ip_base}.1"
-  internal_ip="${ip_base}.6"
-  echo https://${internal_ip}
-}
-
-cert () {
-  echo "$(bosh int ${bucc_dir}/state/creds.yml --path /default_ca/certificate)"
-}
-
-password () {
-  local option=$1
-  if [ $option == "concourse" ] ; then
-    echo "$(bosh int ${bucc_dir}/state/creds.yml --path /ui_password)"
-  fi
-  if [ $option == "bosh" ] ; then
-    echo "$(bosh int ${bucc_dir}/state/creds.yml --path /admin_password)"
-  fi
+  environment
+  bbl down --state-dir ${state_dir}
 }
 
 if [ $# -gt 0 ]; then
@@ -124,20 +55,6 @@ if [ $# -gt 0 ]; then
       down )
         down
         ;;
-      cleanup )
-        cleanup
-        ;;
-      url )
-        url
-        ;;
-      cert )
-        cert
-        ;;
-      password )
-        option=${2}
-        shift;
-        password ${option}
-        ;;
       * )
         echo "Unrecognized option: $1" 1>&2
         exit 1
@@ -148,6 +65,6 @@ if [ $# -gt 0 ]; then
   done
 fi
 
-prepare
+
 up
 login
