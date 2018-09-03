@@ -3,7 +3,11 @@ email=cdantonio@pivotal.io
 admin_user=arceus
 vsphere_user=root
 
+# vsphere
+iaas=vsphere
+
 # important files and directories
+lib_dir="${BASEDIR}/lib"
 key_dir="${BASEDIR}/keys"
 work_dir="${BASEDIR}/work"
 state_dir="${BASEDIR}/state"
