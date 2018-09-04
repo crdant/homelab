@@ -1,0 +1,40 @@
+# from the example CLI
+deployment_name: ${concourse_deployment}
+web_ip: ${concourse_static_ip}
+external_url: ${concourse_url}
+network_name: ${concourse_network}
+
+# from the manifest
+postgres_password: ${postgres_password}
+token_signing_key:
+  private_key: ${token_signing_private_key}
+  public_key: ${token_signing_public_key}
+tsa_host_key:
+  private_key: ${tsa_host_public_key}
+  public_key: ${tsa_host_public_key}
+worker_key:
+  private_key: ${worker_private_key}
+  public_key: ${worker_public_key}
+
+# for the credhub ops file
+credhub_url: ${credhub_url}
+client_id: ${credhub_client_id}
+client_secret: ${credhub_client_secret}
+tls:
+  ca_cert:
+    certificate: ${credhub_certificate}
+
+# for TLS ops files
+atc_tls:
+  bind_port: "${concourse_tls_port}"
+  certificate: "${concourse_tls_certificate}"
+  private_key: "${concourse_tls_private_key}"
+
+# for github auth ops file
+github_client:
+  username: "${concourse_github_client}"
+  password: "${concourse_github_secret}"
+
+main_team:
+  github_users:
+  - "${concourse_main_github_user}"

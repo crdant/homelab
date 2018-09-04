@@ -5,6 +5,12 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/terraform.sh"
 set -e
 
+prepare () {
+  git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
+  git clone https://github.com/pivotal-cf/credhub-release.git ${work_dir}/credhub
+  git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
+}
+
 environment () {
   source_json="$(outputs pave)"
 
@@ -23,9 +29,46 @@ environment () {
   export BBL_VSPHERE_VCENTER_VMS
 }
 
+patch () {
+  local job="bootstrap"
+  cp -r ${terraform_dir}/${job}/. ${state_dir}/terraform
+  env -i BASEDIR=${BASEDIR} \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env' > ${state_dir}/terraform/${job}.tfvars
+}
+
+plan () {
+  environment
+  bbl plan --state-dir ${state_dir}
+}
+
 up () {
   environment
-  bbl up --debug --state-dir ${state_dir}
+  bbl up --state-dir ${state_dir}
+}
+
+deploy () {
+  deploy_concourse
+  deploy_credhub
+}
+
+deploy_concourse () {
+  bosh -e $BOSH_ENVIRONMENT deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
+    -l ${work_dir}/concourse/versions.yml \
+    --vars-store ${work_dir}/bootstrap/concourse-vars.yml \
+    -o operations/static-web.yml \
+    -o operations/tls-port.yml \
+    -o operations/tls-vars.yml \
+    -o operations/tls.yml \
+    -o operations/github-auth.yml \
+    --var web_vm_type=${concourse_web_vm_type:-medium} \
+    --var db_vm_type=${concourse_db_vm_type:-medium} \
+    --var db_persistent_disk_type=${concourse_db_disk_type:-50GB} \
+    --var worker_vm_type=${concourse_worker_vm_type:-medium}
+}
+
+deploy_credhub () {
+  bosh -e $BOSH_ENVIRONMENT deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
+    --vars-store ${work_dir}/bootstrap/credhub-vars.yml 
 }
 
 login() {
@@ -46,8 +89,17 @@ if [ $# -gt 0 ]; then
       prepare )
         prepare
         ;;
+      plan )
+        plan
+        ;;
+      patch )
+        patch
+        ;;
       up )
         up
+        ;;
+      deploy )
+        deploy
         ;;
       login )
         login
@@ -65,6 +117,9 @@ if [ $# -gt 0 ]; then
   done
 fi
 
-
+prepare
+plan
+patch
 up
 login
+deploy
