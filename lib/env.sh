@@ -48,7 +48,6 @@ vpn_users=( "crdant" )
 
 # vcenter configuration
 vcenter_admin=administrator@${domain}
-bucc_service_account=${domain}\\bucc
 bosh_director_role="BOSH Director"
 bosh_director_group="BoshDirectorServiceAccounts"
 
