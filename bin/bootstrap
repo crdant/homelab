@@ -73,8 +73,8 @@ deploy_credhub () {
 }
 
 deploy_prometheus () {
-  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
-    --vars-store ${work_dir}/bootstrap/credhub-vars.yml
+  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/prometheus/manifests/prometheus.yml \
+    --vars-store ${work_dir}/bootstrap/prometheus-vars.yml
 }
 
 login() {
