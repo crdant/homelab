@@ -1,15 +1,11 @@
 credhub-encryption-password: ${credhub_encryption_password}
-credhub-ca
-credhub-tls
-database-tls
-database-admin
-uaa-tls
-uaa-jwt
-uaa-users-admin
-uaa-admin
-uaa-login
-credhub-admin-client-password
-credhub-admin-user-password
-credhub-mtls-ca
-jumpbox-ssh
-uaa-encryption-password
+database-admin: "${credhub_db_password}"
+uaa-users-admin: "${credhub_uaa_users_admin_password}"
+uaa-admin: "${credhub_uaa_admin_password}"
+uaa-login: "${credhub_uaa_login_password}"
+credhub-admin-client-password: "${credhub_admin_client_password}"
+credhub-admin-user-password: "${credhub_admin_user_password}"
+jumpbox-ssh:
+  private_key: "${jumpbox_ssh_private_key}"
+  public_key: "${jumpbox_ssh_public_key}"
+uaa-encryption-password: "${uaa_encryption_password}"

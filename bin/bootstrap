@@ -49,10 +49,11 @@ up () {
 deploy () {
   deploy_concourse
   deploy_credhub
+  deploy_prometheus
 }
 
 deploy_concourse () {
-  bosh -e $BOSH_ENVIRONMENT deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
+  bosh -e "$(bbl env-id)" deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
     -l ${work_dir}/concourse/versions.yml \
     --vars-store ${work_dir}/bootstrap/concourse-vars.yml \
     -o operations/static-web.yml \
@@ -67,8 +68,13 @@ deploy_concourse () {
 }
 
 deploy_credhub () {
-  bosh -e $BOSH_ENVIRONMENT deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
-    --vars-store ${work_dir}/bootstrap/credhub-vars.yml 
+  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
+    --vars-store ${work_dir}/bootstrap/credhub-vars.yml
+}
+
+deploy_prometheus () {
+  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
+    --vars-store ${work_dir}/bootstrap/credhub-vars.yml
 }
 
 login() {
