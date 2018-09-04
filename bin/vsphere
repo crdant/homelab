@@ -26,6 +26,9 @@ if [ $# -gt 0 ]; then
       destroy )
         destroy vsphere
         ;;
+      outputs )
+        outputs vsphere
+        ;;
       vars )
         terraform_vars
         ;;

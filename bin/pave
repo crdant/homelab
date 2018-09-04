@@ -30,6 +30,9 @@ if [ $# -gt 0 ]; then
       destroy )
         destroy pave
         ;;
+      outputs )
+        outputs pave
+        ;;
       vars )
         terraform_vars
         ;;

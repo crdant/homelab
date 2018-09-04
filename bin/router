@@ -42,6 +42,9 @@ if [ $# -gt 0 ]; then
       destroy )
         destroy router
         ;;
+      outputs )
+        outputs router
+        ;;
       vars )
         terraform_vars
         ;;
