@@ -5,10 +5,12 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/terraform.sh"
 set -e
 
+concourse_github_client="$(security find-generic-password -a "Concourse Client" -s github.com -w)"
+concourse_github_secret="$(security find-generic-password -a "Concourse Secret" -s github.com -w)"
+
 prepare () {
   git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
   git clone https://github.com/pivotal-cf/credhub-release.git ${work_dir}/credhub
-  git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
 }
 
 environment () {
@@ -33,34 +35,38 @@ patch () {
   local job="bootstrap"
   cp -r ${terraform_dir}/${job}/. ${state_dir}/terraform
   env -i BASEDIR=${BASEDIR} \
-    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env' > ${state_dir}/terraform/${job}.tfvars
+    concourse_main_github_user="${concourse_main_github_user:-$user}" \
+    concourse_main_github_org="${concourse_main_github_org}" \
+    concourse_github_client="${concourse_github_client}" \
+    concourse_github_secret="${concourse_github_secret}" \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env' > ${state_dir}/vars/${job}.tfvars
 }
 
 plan () {
   environment
-  bbl plan --state-dir ${state_dir}
+  bbl plan --debug --state-dir ${state_dir}
 }
 
 up () {
   environment
-  bbl up --state-dir ${state_dir}
+  bbl up --debug --state-dir ${state_dir}
 }
 
 deploy () {
+  eval "$(bbl print-env)"
   deploy_concourse
   deploy_credhub
-  deploy_prometheus
 }
 
 deploy_concourse () {
   bosh -e "$(bbl env-id)" deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
     -l ${work_dir}/concourse/versions.yml \
     --vars-store ${work_dir}/bootstrap/concourse-vars.yml \
-    -o operations/static-web.yml \
-    -o operations/tls-port.yml \
-    -o operations/tls-vars.yml \
-    -o operations/tls.yml \
-    -o operations/github-auth.yml \
+    -o ${work_dir}/concourse/cluster/operations/static-web.yml \
+    -o ${work_dir}/concourse/cluster/operations/tls-port.yml \
+    -o ${work_dir}/concourse/cluster/operations/tls-vars.yml \
+    -o ${work_dir}/concourse/cluster/operations/tls.yml \
+    -o ${work_dir}/concourse/cluster/operations/github-auth.yml \
     --var web_vm_type=${concourse_web_vm_type:-medium} \
     --var db_vm_type=${concourse_db_vm_type:-medium} \
     --var db_persistent_disk_type=${concourse_db_disk_type:-50GB} \
@@ -72,11 +78,6 @@ deploy_credhub () {
     --vars-store ${work_dir}/bootstrap/credhub-vars.yml
 }
 
-deploy_prometheus () {
-  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/prometheus/manifests/prometheus.yml \
-    --vars-store ${work_dir}/bootstrap/prometheus-vars.yml
-}
-
 login() {
   eval "$(bbl print-env)"
   export BOSH_ENVIRONMENT=$(bbl director-address)
@@ -86,7 +87,7 @@ login() {
 
 down () {
   environment
-  bbl down --state-dir ${state_dir}
+  bbl down --debug --state-dir ${state_dir}
 }
 
 if [ $# -gt 0 ]; then
@@ -112,6 +113,12 @@ if [ $# -gt 0 ]; then
         ;;
       down )
         down
+        ;;
+      concourse )
+        deploy_concourse
+        ;;
+      credhub )
+        deploy_credhub
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
