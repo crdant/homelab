@@ -11,14 +11,12 @@ locals {
 
 # vcenter
 locals {
-  vcenter_ip = "${cidrhost(local.vmware_cidr, 20)}"
+  vcenter_server_ip = "${cidrhost(local.vmware_cidr, 20)}"
 }
 
 # bootstrap
 locals {
   concourse_ip = "${cidrhost(local.bootstrap_cidr,20)}"
-  credhub_ip = "${cidrhost(local.bootstrap_cidr,25)}"
-  prometheus_ip = "${cidrhost(local.bootstrap_cidr,30)}"
 }
 
 # pcf
@@ -40,6 +38,6 @@ locals {
     ]
 }
 
-output "vcenter_ip" {
-  value = "locals.vcenter_ip"
+output "vcenter_server_ip" {
+  value = "local.vcenter_ip"
 }

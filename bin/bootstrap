@@ -10,7 +10,6 @@ concourse_github_secret="$(security find-generic-password -a "Concourse Secret" 
 
 prepare () {
   git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
-  git clone https://github.com/pivotal-cf/credhub-release.git ${work_dir}/credhub
 }
 
 environment () {
@@ -59,23 +58,22 @@ deploy () {
 }
 
 deploy_concourse () {
+  bosh upload-stemcell --sha1 ${concourse_stemcell_sha:-f3fa12c62892de8df5d404a6fb0875a3fb340569} \
+    https://bosh.io/d/stemcells/bosh-vsphere-esxi-${concourse_stemcell_os:-ubuntu-xenial}-go_agent?v=${concourse_stemcell_version:-97.15}
+
   bosh -n -e "$(bbl env-id)" deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
     -l ${work_dir}/concourse/versions.yml \
     --vars-store ${work_dir}/bootstrap/concourse-vars.yml \
+    --vars-store ${work_dir}/bootstrap/director-vars-store.yml \
     -o ${work_dir}/concourse/cluster/operations/static-web.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-port.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/tls.yml \
     -o ${work_dir}/concourse/cluster/operations/github-auth.yml \
-    --var web_vm_type=${concourse_web_vm_type:-medium} \
-    --var db_vm_type=${concourse_db_vm_type:-medium} \
+    --var web_vm_type=${concourse_web_vm_type:-small} \
+    --var db_vm_type=${concourse_db_vm_type:-small} \
     --var db_persistent_disk_type=${concourse_db_disk_type:-50GB} \
-    --var worker_vm_type=${concourse_worker_vm_type:-medium}
-}
-
-deploy_credhub () {
-  bosh -n -e "$(bbl env-id)" deploy -d credhub ${work_dir}/credhub/sample-manifests/credhub-postgres-uaa.yml \
-    --vars-store ${work_dir}/bootstrap/credhub-vars.yml
+    --var worker_vm_type=${concourse_worker_vm_type:-small}
 }
 
 login() {
@@ -116,9 +114,6 @@ if [ $# -gt 0 ]; then
         ;;
       concourse )
         deploy_concourse
-        ;;
-      credhub )
-        deploy_credhub
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
