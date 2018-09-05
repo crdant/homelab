@@ -1,7 +1,0 @@
-# from the manifest
-alertmanager_password: ${prometheus_alert_manager_password}
-alertmanager_mesh_password: ${prometheus_alert_mesh_password}
-prometheus_password: ${prometheus_password}
-postgres_grafana_password: ${prometheus_db_grafana_password}
-grafana_password: ${prometheus_grafana_password}
-grafana_secret_key: ${prometheus_grafana_secret_key}
