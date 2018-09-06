@@ -2,8 +2,8 @@ variable "pivnet_token" {
   type = "string"
 }
 
-data "template_file" "prometheus_secrets" {
-  template = "${file("${var.template_dir}/pivotalcf/pivnet-secrets.yml")}"
+data "template_file" "pivnet_secrets" {
+  template = "${file("${var.template_dir}/pipelines/pivnet-secrets.yml")}"
   vars {
     # from the manifest
     pcf_team_secret_root = "${local.pcf_team_secret_root}"
@@ -11,9 +11,9 @@ data "template_file" "prometheus_secrets" {
   }
 }
 
-resource "local_file" "prometheus_secrets" {
+resource "local_file" "pivnet_secrets" {
   content  = "${data.template_file.pivnet_secrets.rendered}"
-  filename = "${var.key_dir}/pivotalcf/pivnet-secrets.yml"
+  filename = "${var.key_dir}/pipelines/pivnet-secrets.yml"
 
   provisioner "local-exec" {
     command =<<COMMAND

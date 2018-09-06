@@ -19,8 +19,15 @@ locals {
   concourse_ip = "${cidrhost(local.bootstrap_static_cidr,10)}"
 }
 
-# pcf
+# pipelines
+
 locals {
+  # prometheus
+  prometheus_ip = "${cidrhost(local.infrastructure_cidr,-10)}"
+}
+
+locals {
+  # pas statics
   gorouter_ips = [
       "${cidrhost(local.deployment_cidr, -15)}",
       "${cidrhost(local.deployment_cidr, -14)}",

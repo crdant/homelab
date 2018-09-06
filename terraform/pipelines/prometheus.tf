@@ -9,7 +9,7 @@ variable "prometheus_install_pipeline" {
 }
 
 locals {
-  prometheus_secrets_root = "${var.pcf_team_secret_root}/${var.prometheus_install_pipeline}"
+  prometheus_secret_root = "${local.pcf_team_secret_root}/${var.prometheus_install_pipeline}"
 }
 
 resource "random_pet" "prometheus_alert_manager_password" {
@@ -37,10 +37,10 @@ resource "random_pet" "prometheus_grafana_secret_key" {
 }
 
 data "template_file" "prometheus_secrets" {
-  template = "${file("${var.template_dir}/pivotalcf/prometheus-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/prometheus-secrets.yml")}"
   vars {
     # from the manifest
-    prometheus_secret_root = "${local.prometheus_secrets_root}"
+    prometheus_secret_root = "${local.prometheus_secret_root}"
     prometheus_alert_manager_password = "${random_pet.prometheus_alert_manager_password.id}"
     prometheus_alert_mesh_password = "${random_pet.prometheus_alert_mesh_password.id}"
     prometheus_password = "${random_pet.prometheus_password.id}"
@@ -52,7 +52,7 @@ data "template_file" "prometheus_secrets" {
 
 resource "local_file" "prometheus_secrets" {
   content  = "${data.template_file.prometheus_secrets.rendered}"
-  filename = "${var.key_dir}/pivotalcf/prometheus-secrets.yml"
+  filename = "${var.key_dir}/pipelines/prometheus-secrets.yml"
 
   provisioner "local-exec" {
     command =<<COMMAND
