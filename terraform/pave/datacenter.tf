@@ -105,3 +105,15 @@ output "bbl_resource_pool" {
 output "bbl_datastore" {
   value = "${data.vsphere_datastore.vsan.name}"
 }
+
+output "om_resource_pool" {
+  value = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${data.vsphere_resource_pool.last_zone.name}"
+}
+
+output "director_cluster" {
+  value = "${data.vsphere_compute_cluster.homelab.name}"
+}
+
+output "director_resource_pools" {
+  value = "${vsphere_resource_pool.zones.*.name}"
+}

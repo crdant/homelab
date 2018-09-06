@@ -331,6 +331,7 @@ data "vsphere_network" "pks_clusters" {
   depends_on    = [ "vsphere_distributed_port_group.pks_clusters" ]
 }
 
+
 output "bootstrap_network" {
   value = "${data.vsphere_network.bootstrap.name}"
 }
@@ -339,14 +340,46 @@ output "infrastructure_network" {
   value = "${data.vsphere_network.infrastructure.name}"
 }
 
+output "infrastructure_gateway" {
+  value = "${local.infrastructure_gateway}"
+}
+
+output "infrastructure_netmask" {
+  value = "${local.infrastructure_netmask}"
+}
+
 output "deployment_network" {
   value = "${data.vsphere_network.deployment.name}"
+}
+
+output "deployment_gateway" {
+  value = "${local.deployment_gateway}"
+}
+
+output "deployment_netmask" {
+  value = "${local.deployment_netmask}"
 }
 
 output "services_network" {
   value = "${data.vsphere_network.services.name}"
 }
 
+output "services_gateway" {
+  value = "${local.services_gateway}"
+}
+
+output "services_netmask" {
+  value = "${local.services_netmask}"
+}
+
 output "pks_clusters_network" {
   value = "${data.vsphere_network.pks_clusters.name}"
+}
+
+output "pks_clusters_gateway" {
+  value = "${local.services_gateway}"
+}
+
+output "pks_clusters_netmask" {
+  value = "${local.services_netmask}"
 }
