@@ -2,6 +2,16 @@ data "google_dns_managed_zone" "homelab" {
   name     = "homelab"
 }
 
+resource "google_dns_record_set" "opsman" {
+  name    = "${local.opsman_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.opsman_ip}" ]
+}
+
 resource "google_dns_record_set" "apps_domain" {
   name    = "${local.apps_domain_wildcard}."
   type = "A"

@@ -1,0 +1,4 @@
+  - name: ${key_name}
+    key:
+      secret: ${key_value}
+    primary: true
