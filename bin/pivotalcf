@@ -57,6 +57,8 @@ download () {
   pivnet download-product-files --product-slug pcf-automation --release-version ${pcf_pipelines_version} --download-dir ${work_dir} --glob "pcf-pipelines-${pcf_pipelines_version}.tgz" --accept-eula
   tar -xzf "${work_dir}/pcf-pipelines-${pcf_pipelines_version}.tgz" -C "${work_dir}"
   transform_pipelines
+
+  git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
 }
 
 transform_pipelines() {
@@ -345,6 +347,11 @@ END {
   echo "export ${bosh_vars} BOSH_ENVIRONMENT=${env_id}-pcf"
 }
 
+deploy_prometheus () {
+  bosh -e "$(bbl env-id)" deploy -d credhub ${work_dir}/prometheus/manifests/prometheus.yml \
+    --vars-store ${work_dir}/bootstrap/prometheus-vars.yml
+}
+
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
@@ -400,6 +407,9 @@ if [ $# -gt 0 ]; then
         ;;
       teardown)
         teardown
+        ;;
+      prometheus )
+        deploy_prometheus
         ;;
       tunnel)
         tunnel
