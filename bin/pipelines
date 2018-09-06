@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
+set -e
+
+concourse_github_client="$(security find-generic-password -a "Concourse Client" -s github.com -w)"
+concourse_github_secret="$(security find-generic-password -a "Concourse Secret" -s github.com -w)"
+
+# defaults that can be overridden in ${BASEDIR}/lib/env.sh, essentially these are currently
+# per my most recent major rebuild
+default_pcf_pipelines_version="v0.23.6"
+
+pipelines_work_dir=${work_dir}/pcf-pipelines
+pcf_install_pipeline_file="${pipelines_work_dir}/install-pcf/vsphere/pipeline.yml"
+tile_upgrade_pipeline_file="${pipelines_work_dir}/upgrade-tile/pipeline.yml"
+om_upgrade_pipeline_file="${pipelines_work_dir}/upgrade-ops-manager/vsphere/pipeline.yml"
+
+terraform_vars () {
+  env -i BASEDIR=${BASEDIR} \
+    pivnet_token=${PIVNET_TOKEN} \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
+}
+
+prepare () {
+  pivnet login --api-token ${PIVNET_TOKEN}
+  pivnet download-product-files --product-slug pcf-automation --release-version ${pcf_pipelines_version:-$default_pcf_pipelines_version} \
+    --download-dir ${work_dir} --glob "pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" --accept-eula
+  tar -xzf "${work_dir}/pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" -C "${work_dir}"
+  transform_pipelines
+
+  if [ ! -d ${work_dir}/prometheus ] ; then
+    git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
+  else
+    pushd ${work_dir}/prometheus > /dev/null
+      git pull
+    popd > /dev/null
+  fi
+}
+
+transform_pipelines() {
+  local pipelines=( $pcf_install_pipeline_file $tile_upgrade_pipeline_file $om_upgrade_pipeline_file )
+
+  for pipeline_file in "${pipelines[@]}"
+  do
+    # new style replacement
+    sed -i '' -e 's/{{/((/g' "${pipeline_file}"
+    sed -i '' -e 's/}}/))/g' "${pipeline_file}"
+  done
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      prepare )
+        prepare
+        ;;
+      init )
+        init pipelines
+        ;;
+      apply )
+        apply pipelines
+        ;;
+      set )
+        set_pipelines
+        ;;
+      install )
+        install
+        ;;
+      destroy )
+        destroy
+        ;;
+      * )
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+prepare
+plan
+patch
+up
+login
+deploy
