@@ -71,11 +71,6 @@ director_host_name=director
 om_admin_user=arceus
 pcf_datastore=vsanDatastore
 
-## Deployment domain names
-pcf_system_prefix=run
-pcf_apps_prefix=apps
-pcf_tcp_prefix=tcp
-
 # leverage the various YML files BBL creates to add environment variables
 bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null)"
 variables=( uaa_admin_client_secret )
