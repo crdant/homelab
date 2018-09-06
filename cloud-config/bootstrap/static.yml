@@ -1,0 +1,3 @@
+- type: replace
+  path: /networks/name=default/subnets/range=((internal_cidr))/static?
+  value: [((bootstrap_static_cidr))]

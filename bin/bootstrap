@@ -8,6 +8,16 @@ set -e
 concourse_github_client="$(security find-generic-password -a "Concourse Client" -s github.com -w)"
 concourse_github_secret="$(security find-generic-password -a "Concourse Secret" -s github.com -w)"
 
+# defaults that can be overridden in ${BASEDIR}/lib/env.sh, essentially these are currently
+# per my most recent major rebuild
+default_stemcell_os=ubuntu-xenial
+default_stemcell_version=97.15
+default_stemcell_sha=f3fa12c62892de8df5d404a6fb0875a3fb340569
+default_web_vm_type=small
+default_db_vm_type=small
+default_worker_vm_type=small
+default_db_disk_type=50GB
+
 prepare () {
   git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
 }
@@ -33,6 +43,7 @@ environment () {
 patch () {
   local job="bootstrap"
   cp -r ${terraform_dir}/${job}/. ${state_dir}/terraform
+  cp -r ${cloud_config_dir}/${job}/. ${state_dir}/cloud-config
   env -i BASEDIR=${BASEDIR} \
     concourse_main_github_user="${concourse_main_github_user:-$user}" \
     concourse_main_github_org="${concourse_main_github_org}" \
@@ -53,27 +64,41 @@ up () {
 
 deploy () {
   eval "$(bbl print-env)"
+  concourse_uaa
   deploy_concourse
-  deploy_credhub
+}
+
+concourse_uaa () {
+  # create a UAA client for Concourse to access Credhub
+  uaac target $(echo $BOSH_ENVIRONMENT | cut -d ":" -f2 | tr -d '/'):8443 --ca-cert <(bbl director-ca-cert)
+  uaac token client get uaa_admin --secret "${uaa_admin_client_secret}"
+  uaac client get ${concourse_credhub_client_id:-concourse}
+  if [ ! $? ] ; then
+    concourse_credhub_client_secret="$(grep concourse_credhub_client_secret ${state_dir}/vars/cloud-config-vars.yml | cut -d ":" -f2 | tr -d ' ')"
+    uaac client add ${concourse_credhub_client_id:-concourse} --name "${concourse_fqdn}" --secret ${concourse_credhub_client_secret} --scope uaa.none --authorized_grant_types client_credentials --authorities "credhub.write,credhub.read";
+  fi
 }
 
 deploy_concourse () {
-  bosh upload-stemcell --sha1 ${concourse_stemcell_sha:-f3fa12c62892de8df5d404a6fb0875a3fb340569} \
-    https://bosh.io/d/stemcells/bosh-vsphere-esxi-${concourse_stemcell_os:-ubuntu-xenial}-go_agent?v=${concourse_stemcell_version:-97.15}
+  # upload stemcell
+  bosh upload-stemcell --sha1 ${concourse_stemcell_sha:-$default_stemcell_sha} \
+    https://bosh.io/d/stemcells/bosh-vsphere-esxi-${concourse_stemcell_os:-$default_stemcell_os}-go_agent?v=${concourse_stemcell_version:-$default_stemcell_version}
 
+  # deploy with TLS, a static web IP, and github authentication
   bosh -n -e "$(bbl env-id)" deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
     -l ${work_dir}/concourse/versions.yml \
-    --vars-store ${work_dir}/bootstrap/concourse-vars.yml \
-    --vars-store ${work_dir}/bootstrap/director-vars-store.yml \
+    --vars-file ${state_dir}/vars/director-vars-store.yml \
+    --vars-file ${state_dir}/vars/cloud-config-vars.yml \
+    --vars-file ${work_dir}/bootstrap/concourse-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/static-web.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-port.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/tls.yml \
     -o ${work_dir}/concourse/cluster/operations/github-auth.yml \
-    --var web_vm_type=${concourse_web_vm_type:-small} \
-    --var db_vm_type=${concourse_db_vm_type:-small} \
-    --var db_persistent_disk_type=${concourse_db_disk_type:-50GB} \
-    --var worker_vm_type=${concourse_worker_vm_type:-small}
+    --var web_vm_type=${concourse_web_vm_type:-$default_web_vm_type} \
+    --var db_vm_type=${concourse_db_vm_type:-$default_db_vm_type} \
+    --var db_persistent_disk_type=${concourse_db_disk_type:-$default_db_disk_type} \
+    --var worker_vm_type=${concourse_worker_vm_type:-$default_worker_vm_type}
 }
 
 login() {
@@ -111,9 +136,6 @@ if [ $# -gt 0 ]; then
         ;;
       down )
         down
-        ;;
-      concourse )
-        deploy_concourse
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

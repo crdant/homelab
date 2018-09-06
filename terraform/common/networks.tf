@@ -17,7 +17,8 @@ locals {
   vpn_cidr          = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,1),10,0)}"
   management_cidr   = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,2),10,0)}"
   vmware_cidr       = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,3),10,0)}"
-  bootstrap_cidr    = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,4),10,0)}"
+  bootstrap_cidr        = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,4),10,0)}"
+  bootstrap_static_cidr = "${cidrsubnet(local.bootstrap_cidr,2,1)}"
 
   # subnets provided to PCF
   pcf_cidr          = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),-3,1)}"
@@ -50,6 +51,10 @@ output "vmware_cidr" {
 
 output "bootstrap_cidr" {
   value = "${local.bootstrap_cidr}"
+}
+
+output "bootstrap_static_cidr" {
+  value = "${local.bootstrap_static_cidr}"
 }
 
 output "pcf_cidr" {

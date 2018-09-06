@@ -13,6 +13,7 @@ work_dir="${BASEDIR}/work"
 state_dir="${BASEDIR}/state"
 terraform_dir="${BASEDIR}/terraform"
 template_dir="${BASEDIR}/templates"
+cloud_config_dir="${BASEDIR}/cloud-config"
 
 # GCP for configuration remote state and DNS
 project=crdant-net
@@ -85,7 +86,6 @@ if [ -n "${bbl_vars_entries}" ] ; then
   bbl_vars=$(echo "${bbl_vars_entries}" | grep $regex | sed -e 's/:[^:\/\/]/="/;' | sed -e 's/$/"/;')
   set -e
   if [ -n "${bbl_vars}" ] ; then
-    echo "evaluating"
     eval "${bbl_vars}"
   fi
   short_id=${short_env_id}

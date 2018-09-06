@@ -16,7 +16,7 @@ locals {
 
 # bootstrap
 locals {
-  concourse_ip = "${cidrhost(local.bootstrap_cidr,20)}"
+  concourse_ip = "${cidrhost(local.bootstrap_static_cidr,10)}"
 }
 
 # pcf
