@@ -55,6 +55,13 @@ infra_datastore=vsanDatastore
 
 dns_servers=( "1.1.1.1" "1.0.0.1" "8.8.8.8" )
 
+# concourse
+concourse_stemcell_os=ubuntu-xenial
+concourse_stemcell_version=97.15
+concourse_stemcell_sha=f3fa12c62892de8df5d404a6fb0875a3fb340569
+concourse_main_github_user=crdant
+concourse_main_github_org=FlyingMist
+
 # PCF configuration
 om_datastore=vsanDatastore
 om_host_name=manager
@@ -67,3 +74,19 @@ pcf_datastore=vsanDatastore
 pcf_system_prefix=run
 pcf_apps_prefix=apps
 pcf_tcp_prefix=tcp
+
+# leverage the various YML files BBL creates to add environment variables
+bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null)"
+variables=( uaa_admin_client_secret )
+regex="$(printf "^%s|" ${variables[@]})"
+regex="${regex%?}"
+if [ -n "${bbl_vars_entries}" ] ; then
+  set +e
+  bbl_vars=$(echo "${bbl_vars_entries}" | grep $regex | sed -e 's/:[^:\/\/]/="/;' | sed -e 's/$/"/;')
+  set -e
+  if [ -n "${bbl_vars}" ] ; then
+    echo "evaluating"
+    eval "${bbl_vars}"
+  fi
+  short_id=${short_env_id}
+fi
