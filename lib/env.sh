@@ -25,9 +25,6 @@ key_file="${key_dir}/${service_account}.json"
 statefile_bucket=homelab-cupboard-maladapt-stammer-dabble
 region=us-east1
 
-# some go lang cli apps still not reading accepting let's encrypt certs
-ca_cert_file=${key_dir}/letsencrypt.pem
-
 # software you download before
 vcenter_iso_path="${work_dir}/VMware-VCSA-all-6.7.0-8546234.iso"
 vcenter_license=${VCENTER_LICENSE}
@@ -75,18 +72,11 @@ director_host_name=director
 om_admin_user=arceus
 pcf_datastore=vsanDatastore
 
-# make sure we have an environment id to work with
-if [ -f "${state_dir}/bbl-state.json" ] ; then
-  env_id="$(bbl env-id --state-dir ${state_dir})"
-else
-  env_id="${subdomain_token}"
-fi
-
 # leverage the various YML files BBL creates to add environment variables
-bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null | sort | uniq)"
-variables=( uaa_admin_client_secret concourse_url concourse_main_basic_user concourse_main_basic_password )
-regex="$(printf "^%s\|" ${variables[@]})"
-regex="${regex%??}"
+bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null)"
+variables=( uaa_admin_client_secret )
+regex="$(printf "^%s|" ${variables[@]})"
+regex="${regex%?}"
 if [ -n "${bbl_vars_entries}" ] ; then
   set +e
   bbl_vars=$(echo "${bbl_vars_entries}" | grep $regex | sed -e 's/:[^:\/\/]/="/;' | sed -e 's/$/"/;')
@@ -94,4 +84,5 @@ if [ -n "${bbl_vars_entries}" ] ; then
   if [ -n "${bbl_vars}" ] ; then
     eval "${bbl_vars}"
   fi
+  short_id=${short_env_id}
 fi
