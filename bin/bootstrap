@@ -94,6 +94,7 @@ deploy_concourse () {
     -o ${work_dir}/concourse/cluster/operations/tls-port.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/tls.yml \
+    -o ${work_dir}/concourse/cluster/operations/basic-auth.yml \
     -o ${work_dir}/concourse/cluster/operations/github-auth.yml \
     --var web_vm_type=${concourse_web_vm_type:-$default_web_vm_type} \
     --var db_vm_type=${concourse_db_vm_type:-$default_db_vm_type} \

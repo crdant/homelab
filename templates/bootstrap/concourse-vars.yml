@@ -15,6 +15,8 @@ tls:
 external_host: ${concourse_external_host}
 atc_tls:
   bind_port: ${concourse_tls_port}
+  certificate: ((atc_tls.certificate))
+  private_key: ((atc_tls.private_key))
 
 main_team:
   github_users:

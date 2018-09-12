@@ -106,7 +106,7 @@ data "template_file" "concourse_secrets" {
   template = "${file("${var.template_dir}/bootstrap/concourse-secrets.yml")}"
 
   vars {
-    concourse_secret_root = "/bosh-${var.env_id}/${var.concourse_deployment}/"
+    concourse_secret_root = "/bosh-${var.env_id}/${var.concourse_deployment}"
 
     # from the cluster manifest
     postgres_password = "${random_pet.concourse_db_password.id}"
@@ -130,7 +130,7 @@ data "template_file" "concourse_secrets" {
     concourse_github_secret = "${var.concourse_github_secret}"
 
     # for the basic auth ops file
-    concourse_main_basic_user     = "${concourse_main_basic_user}"
+    concourse_main_basic_user     = "${var.concourse_main_basic_user}"
     concourse_main_basic_password = "${random_pet.concourse_main_basic_password.id}"
   }
 }
@@ -153,4 +153,8 @@ output "concourse_ip" {
 
 output "concourse_credhub_client_secret" {
   value = "${random_pet.concourse_credhub_client_secret.id}"
+}
+
+output "concourse_main_basic_password" {
+  value = "${random_pet.concourse_main_basic_password.id}"
 }
