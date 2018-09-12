@@ -14,13 +14,15 @@ concourse_github_secret="$(security find-generic-password -a "Concourse Secret" 
 default_pcf_pipelines_version="v0.23.6"
 
 pipelines_work_dir=${work_dir}/pcf-pipelines
-pcf_install_pipeline_file="${pipelines_work_dir}/install-pcf/vsphere/pipeline.yml"
-tile_upgrade_pipeline_file="${pipelines_work_dir}/upgrade-tile/pipeline.yml"
-om_upgrade_pipeline_file="${pipelines_work_dir}/upgrade-ops-manager/vsphere/pipeline.yml"
+pcf_install_pipeline_path="install-pcf/vsphere"
+tile_upgrade_pipeline_path="upgrade-tile"
+om_upgrade_pipeline_path="upgrade-ops-manager/vsphere"
 
 terraform_vars () {
   env -i BASEDIR=${BASEDIR} \
     pivnet_token=${PIVNET_TOKEN} \
+    trusted_certificates="$(cat ${key_dir}/letsencrypt.pem)" \
+    env_id="$(bbl env-id)" \
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
@@ -30,6 +32,14 @@ prepare () {
     --download-dir ${work_dir} --glob "pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" --accept-eula
   tar -xzf "${work_dir}/pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" -C "${work_dir}"
   transform_pipelines
+
+  if [ ! -d ${work_dir}/concourse-pipeline-samples ] ; then
+    git clone https://github.com/pivotalservices/concourse-pipeline-samples.git ${work_dir}/concourse-pipeline-samples
+  else
+    pushd ${work_dir}/concourse-pipeline-samples > /dev/null
+      git pull
+    popd > /dev/null
+  fi
 
   if [ ! -d ${work_dir}/prometheus ] ; then
     git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
@@ -41,14 +51,34 @@ prepare () {
 }
 
 transform_pipelines() {
-  local pipelines=( $pcf_install_pipeline_file $tile_upgrade_pipeline_file $om_upgrade_pipeline_file )
+  local pipelines=( $pcf_install_pipeline_path $tile_upgrade_pipeline_path $om_upgrade_pipeline_path )
 
-  for pipeline_file in "${pipelines[@]}"
+  for pipeline_path in "${pipelines[@]}"
   do
+    pipeline_file="${pipelines_work_dir}/${pipeline_path}/pipeline.yml"
+    echo "transforming ${pipeline_file}"
+
     # new style replacement
     sed -i '' -e 's/{{/((/g' "${pipeline_file}"
     sed -i '' -e 's/}}/))/g' "${pipeline_file}"
+
+    # apply operations files
+    if [ -d "${pipelines_dir}/${pipeline_path}/ops" ] ; then
+      echo "found it: ${pipelines_dir}/${pipeline_path}/ops"
+      ops_files="$(ls ${pipelines_dir}/${pipeline_path}/ops)"
+      for ops_file in "${ops_files[@]}"
+      do
+        ops_file="${pipelines_dir}/${pipeline_path}/ops/${ops_file}"
+        echo "applying ops file: ${ops_file}"
+        cp ${pipeline_file} ${pipeline_file}.orig
+        cat "${pipeline_file}.orig" | yaml-patch -o ${ops_file} > ${pipeline_file}
+      done
+    fi
   done
+}
+
+set_pipelines () {
+  fly -t ${}
 }
 
 if [ $# -gt 0 ]; then

@@ -1,5 +1,5 @@
 # PCF Ops Manager minor version to track
-version_number: ^2\.1\..*$
+version_number: ^2\.3\..*$
 
 # FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
 opsman_domain: ${opsman_domain}
@@ -22,7 +22,7 @@ opsman_resource_pool: ${opsman_resource_pool}
 # Optional - vCenter folder to put Ops Manager in
 opsman_vm_folder: ${opsman_vm_folder}
 # Optional - vCenter host to deploy Ops Manager in
-opsman_vm_host: ${opsman_vm_host}
+opsman_vm_host:
 # Name to use for Ops Manager VM
 opsman_vm_name: ${opsman_vm_name}
 # vCenter network name to use to deploy Ops Manager in
@@ -48,9 +48,6 @@ vm_disk_type: ${vm_disk_type}
 vcenter_ca_cert: ${vcenter_ca_cert}
 ephemeral_storage_names: ${ephemeral_storage_names} # Ephemeral Storage names in vCenter for use by PCF. e.g. a-xio, b-xio, c-xio
 persistent_storage_names: ${persistent_storage_names} # Persistent Storage names in vCenter for use by PCF, e.g. a-xio, b-xio, c-xio
-
-# Optional PEM-encoded certificates to add to BOSH director
-trusted_certificates: ${trusted_certificates}
 
 # AZ configuration for Ops Director
 az_1_name: AZ01
@@ -79,16 +76,6 @@ infra_nw_dns: ${infra_nw_dns}
 infra_nw_gateway: ${infra_nw_gateway}
 infra_nw_azs: AZ01,AZ02,AZ03
 
-# Services network
-services_network_name: "SERVICES"
-is_service_network: false
-services_vsphere_network: ${services_vsphere_network}
-services_nw_cidr: ${services_nw_cidr}
-services_excluded_range: ${services_excluded_range}
-services_nw_dns: ${services_nw_dns}
-services_nw_gateway: ${services_nw_gateway}
-services_nw_azs: AZ01,AZ02,AZ03
-
 # Deployment
 deployment_network_name: "DEPLOYMENT"
 deployment_vsphere_network: ${deployment_vsphere_network}
@@ -99,7 +86,7 @@ deployment_nw_gateway: ${deployment_nw_gateway}
 deployment_nw_azs: AZ01,AZ02,AZ03
 
 # Dynamic Services Network
-dynamic_services_network_name: "DYNAMIC-SERVICES"
+dynamic_services_network_name: "SERVICES"
 dynamic_services_vsphere_network: ${dynamic_services_vsphere_network}
 dynamic_services_nw_cidr: ${dynamic_services_nw_cidr}
 dynamic_services_excluded_range: ${dynamic_services_excluded_range}
