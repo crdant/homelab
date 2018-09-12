@@ -14,6 +14,7 @@ state_dir="${BASEDIR}/state"
 terraform_dir="${BASEDIR}/terraform"
 template_dir="${BASEDIR}/templates"
 cloud_config_dir="${BASEDIR}/cloud-config"
+pipelines_dir="${BASEDIR}/pipelines"
 
 # GCP for configuration remote state and DNS
 project=crdant-net
