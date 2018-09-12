@@ -4,7 +4,7 @@ variable "domain" {
 
 variable "dns_servers" {
   type = "list"
-  default = [ "1.1.1.1", "1.0.0.1" ]
+  default = [ "1.1.1.1", "1.0.0.1", "8.8.8.8" ]
 }
 
 variable "lab_cidr" {
@@ -31,6 +31,26 @@ locals {
   # load balancer subnets
   balancer_external_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,0)}"
   balancer_internal_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,1)}"
+}
+
+locals {
+  infrastructure_gateway = "${cidrhost(local.infrastructure_cidr,1)}"
+  infrastructure_netmask = "${cidrnetmask(local.infrastructure_cidr)}"
+
+  lb_internal_gateway = "${cidrhost(local.balancer_internal_cidr,1)}"
+  lb_internal_netmask = "${cidrnetmask(local.balancer_internal_cidr)}"
+
+  lb_external_gateway = "${cidrhost(local.balancer_external_cidr,1)}"
+  lb_external_netmask = "${cidrnetmask(local.balancer_external_cidr)}"
+
+  deployment_gateway = "${cidrhost(local.deployment_cidr,1)}"
+  deployment_netmask = "${cidrnetmask(local.deployment_cidr)}"
+
+  services_gateway = "${cidrhost(local.services_cidr,1)}"
+  services_netmask = "${cidrnetmask(local.services_cidr)}"
+
+  pks_clusters_gateway = "${cidrhost(local.container_cidr,1)}"
+  pks_clusters_netmask = "${cidrnetmask(local.container_cidr)}"
 }
 
 output "local_cidr" {
