@@ -56,28 +56,11 @@ locals {
   pcf_nic = "vmnic${var.pcf_port}"
 
   infrastructure_ip = "${cidrhost(local.infrastructure_cidr,2)}"
-  infrastructure_gateway = "${cidrhost(local.infrastructure_cidr,1)}"
-  infrastructure_netmask = "${cidrnetmask(local.infrastructure_cidr)}"
-
   lb_internal_ip = "${cidrhost(local.balancer_internal_cidr,2)}"
-  lb_internal_gateway = "${cidrhost(local.balancer_internal_cidr,1)}"
-  lb_internal_netmask = "${cidrnetmask(local.balancer_internal_cidr)}"
-
   lb_external_ip = "${cidrhost(local.balancer_external_cidr,2)}"
-  lb_external_gateway = "${cidrhost(local.balancer_external_cidr,1)}"
-  lb_external_netmask = "${cidrnetmask(local.balancer_external_cidr)}"
-
   deployment_ip = "${cidrhost(local.deployment_cidr,2)}"
-  deployment_gateway = "${cidrhost(local.deployment_cidr,1)}"
-  deployment_netmask = "${cidrnetmask(local.deployment_cidr)}"
-
   services_ip = "${cidrhost(local.services_cidr,2)}"
-  services_gateway = "${cidrhost(local.services_cidr,1)}"
-  services_netmask = "${cidrnetmask(local.services_cidr)}"
-
   pks_clusters_ip = "${cidrhost(local.container_cidr,2)}"
-  pks_clusters_gateway = "${cidrhost(local.container_cidr,1)}"
-  pks_clusters_netmask = "${cidrnetmask(local.container_cidr)}"
 }
 
 variable "infrastructure_portgroup" {
@@ -340,46 +323,14 @@ output "infrastructure_network" {
   value = "${data.vsphere_network.infrastructure.name}"
 }
 
-output "infrastructure_gateway" {
-  value = "${local.infrastructure_gateway}"
-}
-
-output "infrastructure_netmask" {
-  value = "${local.infrastructure_netmask}"
-}
-
 output "deployment_network" {
   value = "${data.vsphere_network.deployment.name}"
-}
-
-output "deployment_gateway" {
-  value = "${local.deployment_gateway}"
-}
-
-output "deployment_netmask" {
-  value = "${local.deployment_netmask}"
 }
 
 output "services_network" {
   value = "${data.vsphere_network.services.name}"
 }
 
-output "services_gateway" {
-  value = "${local.services_gateway}"
-}
-
-output "services_netmask" {
-  value = "${local.services_netmask}"
-}
-
 output "pks_clusters_network" {
   value = "${data.vsphere_network.pks_clusters.name}"
-}
-
-output "pks_clusters_gateway" {
-  value = "${local.services_gateway}"
-}
-
-output "pks_clusters_netmask" {
-  value = "${local.services_netmask}"
 }

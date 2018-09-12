@@ -33,6 +33,11 @@ variable "pcf_folder" {
   default = "pivotal_cloud_foundry"
 }
 
+variable "pcf_disk_folder" {
+  type = "string"
+  default = "disks"
+}
+
 variable "pcf_template_folder" {
   type = "string"
   default = "pcf_templates"
@@ -86,4 +91,26 @@ resource "vsphere_folder" "pivotal_cloud_foundry" {
   path          = "${vsphere_folder.homelab.path}/${var.pcf_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+resource "vsphere_folder" "pcf_disks" {
+  path          = "${vsphere_folder.homelab.path}/${var.pcf_folder}/${var.pcf_disks_folder}"
+  type          = "disk"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+output "infra_inventory_folder" {
+  value = "${vsphere_folder.pivotal_cloud_foundry.path}"
+}
+
+output "pcf_inventory_folder" {
+  value = "${vsphere_folder.pivotal_cloud_foundry.path}"
+}
+
+output "pcf_template_folder" {
+  value = "${vsphere_folder.pcf_templates.path}"
+}
+
+output "pcf_disks_folder" {
+  value = "${vsphere_folder.pcf_disks.path}"
 }
