@@ -37,6 +37,9 @@ dns_ttl=60
 # NTP
 ntp_servers=( "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" "3.pool.ntp.org" )
 
+# some golang CLI tools still not accepting Let's Encrypt certs
+ca_cert_file="${key_dir}/letsencrypt.pem"
+
 # static hosts
 router_host="savasana"
 outside_host="kapotasana"
@@ -74,7 +77,7 @@ pcf_datastore=vsanDatastore
 
 # leverage the various YML files BBL creates to add environment variables
 bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null)"
-variables=( uaa_admin_client_secret )
+variables=( uaa_admin_client_secret concourse_main_basic_user concourse_main_basic_password )
 regex="$(printf "^%s|" ${variables[@]})"
 regex="${regex%?}"
 if [ -n "${bbl_vars_entries}" ] ; then

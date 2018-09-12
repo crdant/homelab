@@ -1,5 +1,5 @@
 # PCF Ops Manager minor version to track
-version_number: ^2\.3\..*$
+opsman_major_minor_version: ${opsman_version_regex}
 
 # FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
 opsman_domain: ${opsman_domain}

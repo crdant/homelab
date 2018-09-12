@@ -60,6 +60,8 @@ plan () {
 up () {
   environment
   bbl up --debug --state-dir ${state_dir}
+  # refresh variables
+  . "${BASEDIR}/lib/env.sh"
 }
 
 deploy () {
@@ -100,6 +102,12 @@ deploy_concourse () {
     --var db_vm_type=${concourse_db_vm_type:-$default_db_vm_type} \
     --var db_persistent_disk_type=${concourse_db_disk_type:-$default_db_disk_type} \
     --var worker_vm_type=${concourse_worker_vm_type:-$default_worker_vm_type}
+
+    concourse_login
+}
+
+concourse_login () {
+  fly --target "${env_id}"  login --team-name main --concourse-url=${concourse_url} --ca-cert=${ca_cert_file} --username="${concourse_main_basic_user}" --password="${concourse_main_basic_password}"
 }
 
 login() {

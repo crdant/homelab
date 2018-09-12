@@ -155,6 +155,10 @@ output "concourse_credhub_client_secret" {
   value = "${random_pet.concourse_credhub_client_secret.id}"
 }
 
+output "concourse_main_basic_user" {
+  value = "${var.concourse_main_basic_user}"
+}
+
 output "concourse_main_basic_password" {
   value = "${random_pet.concourse_main_basic_password.id}"
 }

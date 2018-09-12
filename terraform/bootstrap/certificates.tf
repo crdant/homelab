@@ -21,3 +21,7 @@ resource "local_file" "concourse_private_key" {
   content  = "${acme_certificate.concourse.private_key_pem}"
   filename = "${var.key_dir}/${acme_certificate.concourse.certificate_domain}/privkey.pem"
 }
+
+output "concourse_cert_file" {
+  value = "${local_file.concourse_certificate.filename}"
+}
