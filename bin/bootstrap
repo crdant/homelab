@@ -10,6 +10,7 @@ concourse_github_secret="$(security find-generic-password -a "Concourse Secret" 
 
 # defaults that can be overridden in ${BASEDIR}/lib/env.sh, essentially these are currently
 # per my most recent major rebuild
+default_github_user=${USER}
 default_stemcell_os=ubuntu-xenial
 default_stemcell_version=97.15
 default_stemcell_sha=f3fa12c62892de8df5d404a6fb0875a3fb340569
@@ -45,7 +46,7 @@ patch () {
   cp -r ${terraform_dir}/${job}/. ${state_dir}/terraform
   cp -r ${cloud_config_dir}/${job}/. ${state_dir}/cloud-config
   env -i BASEDIR=${BASEDIR} \
-    concourse_main_github_user="${concourse_main_github_user:-$user}" \
+    concourse_main_github_user="${concourse_main_github_user:-$default_github_user}" \
     concourse_main_github_org="${concourse_main_github_org}" \
     concourse_github_client="${concourse_github_client}" \
     concourse_github_secret="${concourse_github_secret}" \
@@ -100,10 +101,17 @@ deploy_concourse () {
     --var db_vm_type=${concourse_db_vm_type:-$default_db_vm_type} \
     --var db_persistent_disk_type=${concourse_db_disk_type:-$default_db_disk_type} \
     --var worker_vm_type=${concourse_worker_vm_type:-$default_worker_vm_type}
+
+    concourse_login
+}
+
+concourse_login () {
+  echo fly --target "${env_id}"  login --team-name main --concourse-url=${concourse_url} --username="${concourse_main_basic_user}" --password="${concourse_main_basic_password}"
 }
 
 login() {
   eval "$(bbl print-env)"
+  env_id="$(bbl env-id)"
   export BOSH_ENVIRONMENT=$(bbl director-address)
   bosh -n alias-env $(bbl env-id)
   bosh -n log-in

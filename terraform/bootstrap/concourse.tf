@@ -72,6 +72,10 @@ resource "random_pet" "concourse_main_basic_password" {
   length = 4
 }
 
+locals {
+  concourse_url = "https://${local.concourse_fqdn}"
+}
+
 data "template_file" "concourse_varfile" {
   template = "${file("${var.template_dir}/bootstrap/concourse-vars.yml")}"
 
@@ -79,7 +83,7 @@ data "template_file" "concourse_varfile" {
     # from the example CLI
     concourse_deployment = "${var.concourse_deployment}"
     concourse_static_ip = "${local.concourse_ip}"
-    concourse_url = "https://${local.concourse_fqdn}"
+    concourse_url = "${local.concourse_url}"
     concourse_network = "${var.concourse_bosh_network_name}"
 
     # credhub ops file
@@ -151,8 +155,16 @@ output "concourse_ip" {
   value = "${local.concourse_ip}"
 }
 
+output "concourse_url" {
+  value = "${local.concourse_url}"
+}
+
 output "concourse_credhub_client_secret" {
   value = "${random_pet.concourse_credhub_client_secret.id}"
+}
+
+output "concourse_main_basic_user" {
+  value = "${var.concourse_main_basic_user}"
 }
 
 output "concourse_main_basic_password" {
