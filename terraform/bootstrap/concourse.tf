@@ -22,7 +22,7 @@ variable "concourse_github_secret" {
   type = "string"
 }
 
-variable "concourse_main_basic_user" {
+variable "concourse_main_local_user" {
   type = "string"
   default = "admin"
 }
@@ -33,6 +33,11 @@ variable "concourse_main_github_user" {
 
 variable "concourse_main_github_org" {
   type = "string"
+}
+
+variable "concourse_pcf_local_user" {
+  type = "string"
+  default = "pivot"
 }
 
 variable "concourse_tls_port" {
@@ -68,8 +73,16 @@ resource "random_pet" "concourse_credhub_client_secret" {
   length = 4
 }
 
-resource "random_pet" "concourse_main_basic_password" {
+resource "random_pet" "concourse_main_local_password" {
   length = 4
+}
+
+resource "random_pet" "concourse_pcf_local_password" {
+  length = 4
+}
+
+locals {
+  concourse_url = "https://${local.concourse_fqdn}"
 }
 
 data "template_file" "concourse_varfile" {
@@ -79,7 +92,7 @@ data "template_file" "concourse_varfile" {
     # from the example CLI
     concourse_deployment = "${var.concourse_deployment}"
     concourse_static_ip = "${local.concourse_ip}"
-    concourse_url = "https://${local.concourse_fqdn}"
+    concourse_url = "${local.concourse_url}"
     concourse_network = "${var.concourse_bosh_network_name}"
 
     # credhub ops file
@@ -129,9 +142,12 @@ data "template_file" "concourse_secrets" {
     concourse_github_client = "${var.concourse_github_client}"
     concourse_github_secret = "${var.concourse_github_secret}"
 
-    # for the basic auth ops file
-    concourse_main_basic_user     = "${var.concourse_main_basic_user}"
-    concourse_main_basic_password = "${random_pet.concourse_main_basic_password.id}"
+    # for the local users ops file
+    concourse_main_local_user     = "${var.concourse_main_local_user}"
+    concourse_main_local_password = "${random_pet.concourse_main_local_password.id}"
+
+    concourse_pcf_local_user     = "${var.concourse_pcf_local_user}"
+    concourse_pcf_local_password = "${random_pet.concourse_pcf_local_password.id}"
   }
 }
 
@@ -151,14 +167,27 @@ output "concourse_ip" {
   value = "${local.concourse_ip}"
 }
 
+output "concourse_url" {
+  value = "${local.concourse_url}"
+}
+
 output "concourse_credhub_client_secret" {
   value = "${random_pet.concourse_credhub_client_secret.id}"
 }
 
-output "concourse_main_basic_user" {
-  value = "${var.concourse_main_basic_user}"
+output "concourse_main_local_user" {
+  value = "${var.concourse_main_local_user}"
 }
 
-output "concourse_main_basic_password" {
-  value = "${random_pet.concourse_main_basic_password.id}"
+output "concourse_main_local_password" {
+  value = "${random_pet.concourse_main_local_password.id}"
+}
+
+output "concourse_pcf_local_user" {
+  value = "${var.concourse_pcf_local_user}"
+}
+
+output "concourse_pcf_local_password" {
+  value = "${random_pet.concourse_pcf_local_password.id}"
+  sensitive = true
 }

@@ -1,5 +1,5 @@
 locals {
-  concourse_fqdn = "${var.concourse_host}.${var.domain}"
+  concourse_fqdn = "${var.concourse_host}.${local.bootstrap_domain}"
 }
 
 data "google_dns_managed_zone" "homelab" {

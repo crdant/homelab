@@ -5,10 +5,7 @@ external_url: ${concourse_url}
 network_name: ${concourse_network}
 
 # for the credhub ops file
-credhub_url: ${credhub_ip}
-tls:
-  ca_cert:
-    certificate: ((credhub_tls.ca))
+credhub_url: https://${credhub_ip}:8844
 
 # for TLS ops files
 # NB: since we provide a certificate external_host is not really used
@@ -24,3 +21,6 @@ main_team:
   github_orgs:
   - ${concourse_main_github_org}
   github_teams:
+
+main_team_local_users: [ ((admin_user.username)) ]
+add_local_users: [ '((admin_user.username)):((admin_user.password))', '((pcf_user.username)):((pcf_user.password))' ]
