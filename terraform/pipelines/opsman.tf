@@ -24,6 +24,7 @@ variable "trusted_certificates" {
 
 locals {
   opsman_fqdn = "manager.pcf.${var.domain}"
+  director_fqdn = "director.pcf.${var.domain}"
 }
 
 locals {
@@ -32,13 +33,14 @@ locals {
   infrastructure_excluded = "${cidrhost(local.infrastructure_cidr,1)}-${cidrhost(local.infrastructure_cidr,10)}"
   deployment_excluded = "${cidrhost(local.deployment_cidr,1)}-${cidrhost(local.deployment_cidr,10)}"
   services_excluded = "${cidrhost(local.services_cidr,1)}-${cidrhost(local.services_cidr,10)}"
+  pks_clusters_excluded = "${cidrhost(local.container_cidr,1)}-${cidrhost(local.container_cidr,10)}"
 }
 
 
 data "template_file" "opsman_install_vars" {
   template = "${file("${var.template_dir}/pipelines/opsman-vars.yml")}"
   vars {
-    version_number =  "${var.opsman_version_regex}"
+    opsman_version_regex =  "${var.opsman_version_regex}"
 
     # opsman network info
     opsman_domain = "${local.opsman_fqdn}"
@@ -50,13 +52,14 @@ data "template_file" "opsman_install_vars" {
 
     # opsman vm parameters config
     opsman_resource_pool = "${data.terraform_remote_state.pave.opsman_resource_pool}"
-    opsman_vm_folder = "${data.terraform_remote_state.pave.infra_inventory_folder}"
+    opsman_vm_folder = "${data.terraform_remote_state.bbl.opsman_vm_folder}"
     opsman_vm_name = "${local.opsman_vm_name}"
+    opsman_vm_host = "${data.terraform_remote_state.pave.vsphere_host}"
     opsman_vm_network = "${data.terraform_remote_state.pave.infrastructure_network}"
     opsman_vm_power_state = true
     opsman_disk_type = "${var.vm_disk_type}"
 
-    # directory vsphere configuration
+    # director vsphere configuration
 
     # vCenter configuration
     vcenter_host = "${data.terraform_remote_state.bbl.vcenter_ip}"
@@ -68,18 +71,21 @@ data "template_file" "opsman_install_vars" {
     ephemeral_storage_names = "${data.terraform_remote_state.bbl.vcenter_ds}"  # Ephemeral Storage names in vCenter for use by PCF. e.g. a-xio, b-xio, c-xio
     persistent_storage_names = "${data.terraform_remote_state.bbl.vcenter_ds}" # Persistent Storage names in vCenter for use by PCF, e.g. a-xio, b-xio, c-xio
 
+    # Optional DNS name for Ops Director. Should be reachable from all networks.
+    director_host = "${local.director_fqdn}"
+
     # availability zones for the director
     az_1_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
-    az_1_rp_name = "${data.terraform_remote_state.pave.director_resource_pools[0]}"
+    az_1_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[0]}"
     az_2_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
-    az_2_rp_name = "${data.terraform_remote_state.pave.director_resource_pools[1]}"
+    az_2_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[1]}"
     az_3_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
-    az_3_rp_name = "${data.terraform_remote_state.pave.director_resource_pools[2]}"
+    az_3_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[2]}"
 
     # director vsphere inventory
-    bosh_disk_path = "${data.terraform_remote_state.pave.pcf_disks_folder}"
-    bosh_template_folder = "${data.terraform_remote_state.pave.pcf_template_folder}"
-    bosh_vm_folder = "${data.terraform_remote_state.pave.pcf_inventory_folder}"
+    bosh_disk_path = "${data.terraform_remote_state.bbl.pcf_disk_folder}"
+    bosh_template_folder = "${data.terraform_remote_state.bbl.pcf_template_folder}"
+    bosh_vm_folder = "${data.terraform_remote_state.bbl.pcf_inventory_folder}"
 
     # director networks
     ntp_servers = "${join(",", var.ntp_servers)}"
@@ -96,12 +102,23 @@ data "template_file" "opsman_install_vars" {
     deployment_nw_dns = "${join(",", var.dns_servers)}"
     deployment_nw_gateway = "${local.deployment_gateway}"
 
-    dynamic_services_vsphere_network = "${data.terraform_remote_state.pave.services_network}"
-    dynamic_services_nw_cidr = "${local.services_cidr}"
-    dynamic_services_excluded_range = "${local.services_excluded}"
+    services_vsphere_network = "${data.terraform_remote_state.pave.services_network}"
+    services_nw_cidr = "${local.services_cidr}"
+    services_excluded_range = "${local.services_excluded}"
+    services_nw_dns = "${join(",", var.dns_servers)}"
+    services_nw_gateway = "${local.services_gateway}"
+
+    dynamic_services_vsphere_network = "${data.terraform_remote_state.pave.pks_clusters_network}"
+    dynamic_services_nw_cidr = "${local.container_cidr}"
+    dynamic_services_excluded_range = "${local.pks_clusters_excluded}"
     dynamic_services_nw_dns = "${join(",", var.dns_servers)}"
-    dynamic_services_nw_gateway = "${local.services_gateway}"
+    dynamic_services_nw_gateway = "${local.pks_clusters_gateway}"
   }
+}
+
+resource "local_file" "opsman_install_vars" {
+  content  = "${data.template_file.opsman_install_vars.rendered}"
+  filename = "${var.work_dir}/pipelines/opsman-vars.yml"
 }
 
 resource "random_pet" "opsman_admin_password" {
@@ -152,7 +169,73 @@ data "template_file" "opsman_install_secrets" {
 
 resource "local_file" "opsman_install_secrets" {
   content  = "${data.template_file.opsman_install_secrets.rendered}"
-  filename = "${var.key_dir}/pipelines/om-secrets.yml"
+  filename = "${var.key_dir}/pipelines/opsman-secrets.yml"
+
+  provisioner "local-exec" {
+    command =<<COMMAND
+eval "$(bbl print-env)"
+credhub import --file ${self.filename}
+COMMAND
+  }
+}
+
+data "template_file" "opsman_upgrade_vars" {
+  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-vars.yml")}"
+  vars {
+    opsman_version_regex =  "${var.opsman_version_regex}"
+
+    # opsman network info
+    opsman_domain = "${local.opsman_fqdn}"
+    opsman_dns_servers = "${join(",", var.dns_servers)}"
+    opsman_gateway = "${data.terraform_remote_state.pave.infrastructure_gateway}"
+    opsman_ip_address = "${local.opsman_ip}"
+    opsman_netmask = "${data.terraform_remote_state.pave.infrastructure_netmask}"
+    opsman_ntp_servers = "${join(",", var.ntp_servers)}"
+
+    # opsman vm parameters config
+    opsman_resource_pool = "${data.terraform_remote_state.pave.opsman_resource_pool}"
+    opsman_vm_folder = "${data.terraform_remote_state.pave.infra_inventory_folder}"
+    opsman_vm_network = "${data.terraform_remote_state.pave.infrastructure_network}"
+    opsman_disk_type = "${var.vm_disk_type}"
+
+    # vCenter configuration
+    vcenter_host = "${data.terraform_remote_state.bbl.vcenter_ip}"
+    vcenter_datastore = "${data.terraform_remote_state.bbl.vcenter_ds}"        # vCenter datastore name to deploy Ops Manager in
+    vcenter_datacenter = "${data.terraform_remote_state.bbl.vcenter_dc}"
+    vcenter_insecure = true  # true or false
+    vcenter_ca_cert = ""
+    vm_disk_type = "${var.vm_disk_type}"
+  }
+}
+
+resource "local_file" "opsman_upgrade_vars" {
+  content  = "${data.template_file.opsman_upgrade_vars.rendered}"
+  filename = "${var.work_dir}/pipelines/opsman-upgrade-vars.yml"
+}
+
+data "template_file" "opsman_upgrade_secrets" {
+  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-secrets.yml")}"
+
+  vars {
+    pipeline_secret_root = "${local.upgrade_om_secret_root}"
+    # Leave opsman_client_id/opsman_client_secret blank; opsman_admin_username/opsman_admin_password needs to be specified
+    opsman_admin_username = "${var.opsman_admin_username}"
+    opsman_admin_password = "${random_pet.opsman_admin_password.id}"
+    opsman_ssh_password = "${random_pet.opsman_ssh_password.id}"
+    opsman_decryption_pwd = "${random_pet.opsman_decryption_password.id}"
+
+    vcenter_username = "${data.terraform_remote_state.bbl.pcf_vcenter_user}"
+    vcenter_password = "${data.terraform_remote_state.bbl.pcf_vcenter_password}"
+
+    # Optional PEM-encoded certificates to add to BOSH director
+    trusted_certificates = "${replace(var.trusted_certificates, "\n", "\n    ")}"
+  }
+
+}
+
+resource "local_file" "opsman_upgrade_secrets" {
+  content  = "${data.template_file.opsman_upgrade_secrets.rendered}"
+  filename = "${var.key_dir}/pipelines/opsman-upgrade-secrets.yml"
 
   provisioner "local-exec" {
     command =<<COMMAND

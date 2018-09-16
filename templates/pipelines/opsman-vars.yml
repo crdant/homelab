@@ -2,33 +2,33 @@
 opsman_major_minor_version: ${opsman_version_regex}
 
 # FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
-opsman_domain: ${opsman_domain}
+opsman_domain_or_ip_address: ${opsman_domain}
 
 # DNS servers
-opsman_dns_servers: ${opsman_dns_servers}
+om_dns_servers: ${opsman_dns_servers}
 # Gateway for Ops Manager network
-opsman_gateway: ${opsman_gateway}
+om_gateway: ${opsman_gateway}
 # IP to assign to Ops Manager VM (for proxy env and for wipe-env job)
-opsman_ip_address: ${opsman_ip_address}
+om_ip: ${opsman_ip_address}
 # Netmask for Ops Manager network
-opsman_netmask: ${opsman_netmask}
+om_netmask: ${opsman_netmask}
 # Comma-separated list of NTP Servers
-opsman_ntp_servers: ${opsman_ntp_servers}
+om_ntp_servers: ${opsman_ntp_servers}
 # vCenter Cluster or Resource Pool to use to deploy Ops Manager.
 # Possible formats:
 #   cluster:       /<Data Center Name>/host/<Cluster Name>
 #   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
-opsman_resource_pool: ${opsman_resource_pool}
+om_resource_pool: ${opsman_resource_pool}
 # Optional - vCenter folder to put Ops Manager in
-opsman_vm_folder: ${opsman_vm_folder}
+om_vm_folder: ${opsman_vm_folder}
 # Optional - vCenter host to deploy Ops Manager in
-opsman_vm_host:
+om_vm_host: ${opsman_vm_host}
 # Name to use for Ops Manager VM
-opsman_vm_name: ${opsman_vm_name}
+om_vm_name: ${opsman_vm_name}
 # vCenter network name to use to deploy Ops Manager in
-opsman_vm_network: ${opsman_vm_network}
+om_vm_network: ${opsman_vm_network}
 # Whether to power on Ops Manager VM after creation
-opsman_vm_power_state: true
+om_vm_power_state: true
 # Disk type for Ops Manager VM (thick|thin)
 opsman_disk_type: ${opsman_disk_type}
 
@@ -36,7 +36,7 @@ opsman_disk_type: ${opsman_disk_type}
 ntp_servers: ${ntp_servers}
 
 # Optional DNS name for Ops Director. Should be reachable from all networks.
-ops_dir_hostname:
+ops_dir_hostname: ${director_host}
 
 # vCenter configuration
 vcenter_host: ${vcenter_host}
@@ -85,8 +85,17 @@ deployment_nw_dns: ${deployment_nw_dns}
 deployment_nw_gateway: ${deployment_nw_gateway}
 deployment_nw_azs: AZ01,AZ02,AZ03
 
-# Dynamic Services Network
-dynamic_services_network_name: "SERVICES"
+# Services network
+services_network_name: "SERVICES"
+services_vsphere_network: ${services_vsphere_network}
+services_nw_cidr: ${services_nw_cidr}
+services_excluded_range: ${services_excluded_range}
+services_nw_dns: ${services_nw_dns}
+services_nw_gateway: ${services_nw_gateway}
+services_nw_azs: AZ01,AZ02,AZ03
+
+# PKS Network
+dynamic_services_network_name: "PKS-CLUSTERS"
 dynamic_services_vsphere_network: ${dynamic_services_vsphere_network}
 dynamic_services_nw_cidr: ${dynamic_services_nw_cidr}
 dynamic_services_excluded_range: ${dynamic_services_excluded_range}

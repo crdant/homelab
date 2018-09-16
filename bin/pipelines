@@ -12,6 +12,7 @@ concourse_github_secret="$(security find-generic-password -a "Concourse Secret" 
 # defaults that can be overridden in ${BASEDIR}/lib/env.sh, essentially these are currently
 # per my most recent major rebuild
 default_pcf_pipelines_version="v0.23.6"
+default_github_user=${USER}
 
 pipelines_work_dir=${work_dir}/pcf-pipelines
 pcf_install_pipeline_path="install-pcf/vsphere"
@@ -22,11 +23,15 @@ terraform_vars () {
   env -i BASEDIR=${BASEDIR} \
     pivnet_token=${PIVNET_TOKEN} \
     trusted_certificates="$(cat ${key_dir}/letsencrypt.pem)" \
-    env_id="$(bbl env-id)" \
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
 prepare () {
+  download_pipelines
+  setup_concourse
+}
+
+download_pipelines() {
   pivnet login --api-token ${PIVNET_TOKEN}
   pivnet download-product-files --product-slug pcf-automation --release-version ${pcf_pipelines_version:-$default_pcf_pipelines_version} \
     --download-dir ${work_dir} --glob "pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" --accept-eula
@@ -77,8 +82,24 @@ transform_pipelines() {
   done
 }
 
+setup_concourse () {
+  outputs="$(outputs pipelines)"
+  team_name="$(echo "${outputs}" | jq --raw-output .pcf_concourse_team.value)"
+  username="$(echo "${outputs}" | jq --raw-output .pcf_concourse_user.value)"
+  fly --target "${env_id}" set-team --team-name ${team_name} --local-user=${concourse_pcf_local_user} --github-user="${concourse_pcf_github_user:-$default_github_user}"
+  fly --target "${env_id}-pcf" login --team-name ${team_name} --concourse-url=${concourse_url} --ca-cert=${ca_cert_file} --username="${concourse_pcf_local_username}" --password="${concourse_pcf_local_password}"
+}
+
 set_pipelines () {
-  fly -t ${}
+  outputs="$(outputs pipelines)"
+  om_install_pipeline="$(echo "${outputs}" | jq --raw-output .om_install_pipeline.value)"
+  om_upgrade_pipeline="$(echo "${outputs}" | jq --raw-output .om_upgrade_pipeline.value)"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_install_pipeline}" \
+    --config "${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/opsman-vars.yml"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_upgrade_pipeline}" \
+    --config "${work_dir}/pcf-pipelines/upgrade-ops-manager/vsphere/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/opsman-upgrade-vars.yml"
 }
 
 if [ $# -gt 0 ]; then
