@@ -114,6 +114,6 @@ output "director_cluster" {
   value = "${data.vsphere_compute_cluster.homelab.name}"
 }
 
-output "director_resource_pools" {
-  value = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${vsphere_resource_pool.zones.*.name}"
+output "director_resource_pool_names" {
+  value = "${vsphere_resource_pool.zones.*.name}"
 }

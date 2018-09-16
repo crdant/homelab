@@ -43,26 +43,20 @@ variable "pcf_template_folder" {
   default = "pcf_templates"
 }
 
-resource "vsphere_folder" "homelab" {
-  path          = "${var.homelab_folder}"
-  type          = "vm"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
 resource "vsphere_folder" "hosts" {
-  path          = "${vsphere_folder.homelab.path}/${var.hosts_folder}"
-  type          = "vm"
+  path          = "${var.hosts_folder}"
+  type          = "host"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
 resource "vsphere_folder" "infrastructure" {
-  path          = "${vsphere_folder.homelab.path}/${var.infrastructure_folder}"
+  path          = "${var.infrastructure_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
 resource "vsphere_folder" "templates" {
-  path          = "${vsphere_folder.homelab.path}/${var.template_folder}"
+  path          = "${var.template_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
@@ -82,35 +76,33 @@ resource "vsphere_folder" "pcf_templates" {
 }
 
 resource "vsphere_folder" "bosh_bootloader" {
-  path          = "${vsphere_folder.homelab.path}/${var.bbl_folder}"
+  path          = "${var.bbl_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
 resource "vsphere_folder" "pivotal_cloud_foundry" {
-  path          = "${vsphere_folder.homelab.path}/${var.pcf_folder}"
+  path          = "${var.pcf_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_folder" "pcf_disks" {
-  path          = "${vsphere_folder.homelab.path}/${var.pcf_folder}/${var.pcf_disks_folder}"
-  type          = "disk"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+output "opsman_vm_folder" {
+  value = "/${data.vsphere_datacenter.homelab.name}/vm/${var.pcf_folder}"
 }
 
 output "infra_inventory_folder" {
-  value = "${vsphere_folder.pivotal_cloud_foundry.path}"
+  value = "/${data.vsphere_datacenter.homelab.name}/vm/${var.infrastructure_folder}"
 }
 
 output "pcf_inventory_folder" {
-  value = "${vsphere_folder.pivotal_cloud_foundry.path}"
+  value = "${data.vsphere_datacenter.homelab.name}/vm/${var.pcf_folder}"
 }
 
 output "pcf_template_folder" {
-  value = "${vsphere_folder.pcf_templates.path}"
+  value = "${data.vsphere_datacenter.homelab.name}/vm/${vsphere_folder.templates.path}/${var.pcf_template_folder}"
 }
 
-output "pcf_disks_folder" {
-  value = "${vsphere_folder.pcf_disks.path}"
+output "pcf_disk_folder" {
+  value = "${var.pcf_folder}"
 }

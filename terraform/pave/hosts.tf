@@ -63,3 +63,7 @@ data "vsphere_host" "homelab" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on = [ "null_resource.homelab_host" ]
 }
+
+output "vsphere_host" {
+  value = "${data.vsphere_host.homelab.name}"
+}
