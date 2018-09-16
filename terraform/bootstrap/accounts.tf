@@ -45,7 +45,7 @@ resource "null_resource" "pcf_vcenter_user" {
 }
 
 output "pcf_vcenter_user" {
-  value = "${var.pcf_vcenter_username}@{var.domain}"
+  value = "${var.pcf_vcenter_username}@${var.domain}"
 }
 
 output "pcf_vcenter_password" {
