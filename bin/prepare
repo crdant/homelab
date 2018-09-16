@@ -12,6 +12,10 @@ directories() {
   if [ ! -d ${key_dir} ] ; then
     mkdir -p ${key_dir}
   fi
+
+  if [ ! -d ${state_dir} ] ; then
+    mkdir -p ${state_dir}
+  fi
 }
 
 service_account () {
@@ -68,10 +72,10 @@ if [ $# -gt 0 ]; then
       directories )
         directories
         ;;
-      service_account )
+      account | service_account )
         service_account
         ;;
-      cloud_storage )
+      storage | cloud_storage )
         cloud_storage
         ;;
       encryption )
