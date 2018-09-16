@@ -29,7 +29,8 @@ locals {
 locals {
   # operations manager
   opsman_ip = "${cidrhost(local.infrastructure_cidr,10)}"
-  
+  director_ip = "${cidrhost(local.infrastructure_cidr,11)}"
+
   # pas statics
   gorouter_ips = [
       "${cidrhost(local.deployment_cidr, -15)}",
