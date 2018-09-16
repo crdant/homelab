@@ -22,7 +22,7 @@ account=chuck@crdant.io
 service_account_name=homelab
 service_account="${service_account_name}@${project}.iam.gserviceaccount.com"
 key_file="${key_dir}/${service_account}.json"
-statefile_bucket=homelab-cupboard-maladapt-stammer-dabble
+statefile_bucket=homelab-oozy-virus-raze-utah
 region=us-east1
 
 # software you download before
@@ -75,14 +75,19 @@ director_host_name=director
 om_admin_user=arceus
 pcf_datastore=vsanDatastore
 
+# leverage the env_id from BBL
+if [ -f "${state_dir}/bbl-state.json" ] ; then
+  env_id=`bbl env-id --state-dir ${state_dir}`
+fi
+
 # leverage the various YML files BBL creates to add environment variables
-bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null)"
-variables=( uaa_admin_client_secret concourse_main_basic_user concourse_main_basic_password )
-regex="$(printf "^%s|" ${variables[@]})"
-regex="${regex%?}"
+bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null | sort | uniq )"
+variables=( uaa_admin_client_secret concourse_url concourse_main_local_user concourse_main_local_password concourse_pcf_local_user concourse_pcf_local_password om_install_pipeline om_upgrade_pipeline )
+regex="$(printf "^%s\|" ${variables[@]})"
+regex="${regex%??}"
 if [ -n "${bbl_vars_entries}" ] ; then
   set +e
-  bbl_vars=$(echo "${bbl_vars_entries}" | grep $regex | sed -e 's/:[^:\/\/]/="/;' | sed -e 's/$/"/;')
+  bbl_vars=$(echo "${bbl_vars_entries}" | grep "$regex" | sed -e 's/:[^:\/\/]/="/;' | sed -e 's/$/"/;')
   set -e
   if [ -n "${bbl_vars}" ] ; then
     eval "${bbl_vars}"
