@@ -33,3 +33,15 @@ locals {
   upgrade_pas_secret_root = "${local.pcf_team_secret_root}/${var.pas_upgrade_pipeline}"
   upgrade_om_secret_root = "${local.pcf_team_secret_root}/${var.om_upgrade_pipeline}"
 }
+
+output "pcf_concourse_team" {
+  value = "${var.pcf_concourse_team}"
+}
+
+output "om_install_pipeline" {
+  value = "${var.om_install_pipeline}"
+}
+
+output "om_upgrade_pipeline" {
+  value = "${var.om_upgrade_pipeline}"
+}
