@@ -15,11 +15,18 @@ default_stemcell_version=97.15
 default_stemcell_sha=f3fa12c62892de8df5d404a6fb0875a3fb340569
 default_web_vm_type=small
 default_db_vm_type=small
+default_db_disk_type=100GB
 default_worker_vm_type=small
-default_db_disk_type=50GB
+default_worker_ephemeral_disk_extension=100GB_ephemeral_disk
 
 prepare () {
-  git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
+  if [ ! -d ${work_dir}/concourse-pipeline-samples ] ; then
+    git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
+  else
+    pushd ${work_dir}/concourse > /dev/null
+      git pull
+    popd > /dev/null
+  fi
 }
 
 environment () {
@@ -86,28 +93,35 @@ deploy_concourse () {
   bosh upload-stemcell --sha1 ${concourse_stemcell_sha:-$default_stemcell_sha} \
     https://bosh.io/d/stemcells/bosh-vsphere-esxi-${concourse_stemcell_os:-$default_stemcell_os}-go_agent?v=${concourse_stemcell_version:-$default_stemcell_version}
 
+  # grab the credhub certificate from the BBL state
+  credhub set --name /bosh-$(bbl env-id)/concourse/credhub_ca_cert --type value --value="$(bosh interpolate --path /credhub_ca/ca ${state_dir}/vars/director-vars-store.yml)
+$(bosh interpolate --path /uaa_ssl/certificate ${state_dir}/vars/director-vars-store.yml)"
+
   # deploy with TLS, a static web IP, and github authentication
-  bosh -n -e "$(bbl env-id)" deploy -d concourse ${work_dir}/concourse/cluster/concourse.yml \
+  bosh -n -e "$(bbl env-id)" deploy -d concourse --no-redact ${work_dir}/concourse/cluster/concourse.yml \
     -l ${work_dir}/concourse/versions.yml \
     --vars-file ${state_dir}/vars/director-vars-store.yml \
     --vars-file ${state_dir}/vars/cloud-config-vars.yml \
     --vars-file ${work_dir}/bootstrap/concourse-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/static-web.yml \
+    -o ${work_dir}/concourse/cluster/operations/credhub.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-port.yml \
     -o ${work_dir}/concourse/cluster/operations/tls-vars.yml \
     -o ${work_dir}/concourse/cluster/operations/tls.yml \
-    -o ${work_dir}/concourse/cluster/operations/basic-auth.yml \
+    -o ${work_dir}/concourse/cluster/operations/add-local-users.yml \
     -o ${work_dir}/concourse/cluster/operations/github-auth.yml \
+    -o ${work_dir}/concourse/cluster/operations/worker-ephemeral-disk.yml \
     --var web_vm_type=${concourse_web_vm_type:-$default_web_vm_type} \
     --var db_vm_type=${concourse_db_vm_type:-$default_db_vm_type} \
     --var db_persistent_disk_type=${concourse_db_disk_type:-$default_db_disk_type} \
-    --var worker_vm_type=${concourse_worker_vm_type:-$default_worker_vm_type}
+    --var worker_vm_type=${concourse_worker_vm_type:-$default_worker_vm_type} \
+    --var worker_ephemeral_disk=${worker_ephemeral_disk_extension:-$default_worker_ephemeral_disk_extension}
 
     concourse_login
 }
 
 concourse_login () {
-  fly --target "${env_id}"  login --team-name main --concourse-url=${concourse_url} --ca-cert=${ca_cert_file} --username="${concourse_main_basic_user}" --password="${concourse_main_basic_password}"
+  fly --target "${env_id}"  login --team-name main --concourse-url=${concourse_url} --ca-cert=${ca_cert_file} --username="${concourse_main_local_user}" --password="${concourse_main_local_password}"
 }
 
 login() {
