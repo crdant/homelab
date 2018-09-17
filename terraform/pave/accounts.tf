@@ -185,7 +185,7 @@ resource "null_resource" "bbl_user" {
 }
 
 output "bbl_user" {
-  value = "${var.bbl_username}@{var.domain}"
+  value = "${var.bbl_username}@${var.domain}"
 }
 
 output "bbl_password" {

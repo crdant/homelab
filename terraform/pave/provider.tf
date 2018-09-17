@@ -16,5 +16,5 @@ provider "vsphere" {
 }
 
 output "vcenter_fqdn" {
-  value = "locals.vcenter_fqdn"
+  value = "${local.vcenter_fqdn}"
 }
