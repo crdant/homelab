@@ -23,4 +23,16 @@ resource "local_file" "router_certificate" {
 resource "local_file" "router_private_key" {
   content  = "${acme_certificate.router.private_key_pem}"
   filename = "${var.key_dir}/${acme_certificate.router.certificate_domain}/privkey.pem"
+
+  provisioner "file" {
+    content  = "${acme_certificate.router.private_key_pem}${acme_certificate.router.certificate_pem}"
+    destination  = "/tmp/server.pem"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.admin_user}"
+      password = "${var.current_router_password}"
+      host     = "${local.router_fqdn}"
+    }
+  }
 }
