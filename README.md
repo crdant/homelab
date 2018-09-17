@@ -1,6 +1,6 @@
 ***Lots more to come here, this is just a quick placeholder***
 
-Start with ESXi on your single host along with a datastore. Also an EdgeRouter X.
+Start with ESXi on your single host along with disks defined (one SSD and one spinning). Also an EdgeRouter X.
 
 1. Run `prepare` to set up GCP and your local working directory.
 2. Download the vCenter installer and the BIGIP Virtual Edition installer. Put them in the work directory.
