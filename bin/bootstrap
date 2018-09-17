@@ -20,7 +20,7 @@ default_worker_vm_type=small
 default_worker_ephemeral_disk_extension=100GB_ephemeral_disk
 
 prepare () {
-  if [ ! -d ${work_dir}/concourse-pipeline-samples ] ; then
+  if [ ! -d ${work_dir}/concourse ] ; then
     git clone https://github.com/concourse/concourse-bosh-deployment.git ${work_dir}/concourse
   else
     pushd ${work_dir}/concourse > /dev/null
