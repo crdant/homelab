@@ -116,20 +116,20 @@ COMMAND
 }
 
 resource "null_resource" "bosh_director_group" {
-/*
-  provisioner "remote-exec" {
-    inline = [
-      "/usr/lib/vmware-vmafd/bin/dir-cli ssogroup create --name ${var.bosh_director_group} --description 'Services accounts for BOSH director installations'\""
-    ]
 
-    connection {
-      type     = "ssh"
-      user     = "${data.terraform_remote_state.vsphere.vcenter_user}"
-      password = "${data.terraform_remote_state.vsphere.vcenter_password}"
-      host = "${local.vcenter_fqdn}"
-    }
-  }
-*/
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "/usr/lib/vmware-vmafd/bin/dir-cli ssogroup create --name ${var.bosh_director_group} --description 'Services accounts for BOSH director installations'"
+  #   ]
+  #
+  #   connection {
+  #     type     = "ssh"
+  #     user     = "${data.terraform_remote_state.vsphere.vcenter_user}"
+  #     password = "${data.terraform_remote_state.vsphere.vcenter_password}"
+  #     host = "${local.vcenter_fqdn}"
+  #   }
+  # }
+
   provisioner "local-exec" {
     command = "govc permissions.set -principal ${var.bosh_director_group}@${var.domain} -role '${var.bosh_director_role}' --group"
 
