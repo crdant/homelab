@@ -8,11 +8,6 @@ variable "hosts_folder" {
   default = "hosts"
 }
 
-variable "infrastructure_folder" {
-  type = "string"
-  default = "infrastructure"
-}
-
 variable "template_folder" {
   type = "string"
   default = "templates"
@@ -55,21 +50,15 @@ resource "vsphere_folder" "infrastructure" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_folder" "templates" {
-  path          = "${var.template_folder}"
-  type          = "vm"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
 resource "vsphere_folder" "bosh_templates" {
-  path          = "${vsphere_folder.templates.path}/${var.bosh_template_folder}"
+  path          = "${data.terraform_remote_state.pave.template_folder_name}/${var.bosh_template_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on = [ "vsphere_folder.templates" ]
 }
 
 resource "vsphere_folder" "pcf_templates" {
-  path          = "${vsphere_folder.templates.path}/${var.pcf_template_folder}"
+  path          = "${data.terraform_remote_state.pave.template_folder_name}/${var.pcf_template_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
   depends_on = [ "vsphere_folder.templates" ]
