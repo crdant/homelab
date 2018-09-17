@@ -8,3 +8,4 @@ state/*
 !state/README.md
 .terraform
 terraform.tfstate.*.backup
+*.tfstate
