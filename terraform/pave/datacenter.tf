@@ -26,7 +26,7 @@ resource "vsphere_compute_cluster" "homelab" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 
   drs_enabled          = true
-  drs_automation_level = "partiallyAutomated"
+  drs_automation_level = "fullyAutomated"
 
   provisioner "local-exec" {
     command = "govc cluster.change --vsan-enabled ${self.name}"
@@ -42,16 +42,25 @@ resource "vsphere_compute_cluster" "homelab" {
   }
 
   provisioner "local-exec" {
-    command = "govc cluster.add --hostname ${var.vsphere_host} --username ${var.vsphere_user} --password ${var.vsphere_password}"
+    command = "govc cluster.add -cluster ${self.name} --hostname ${local.vsphere_fqdn} --username ${var.vsphere_user} --password ${var.vsphere_password} --noverify"
 
     environment {
       GOVC_INSECURE = "1"
       GOVC_URL = "${local.vcenter_fqdn}"
       GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
       GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
-      GOVC_DATASTORE = "${var.infra_datastore}"
       GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
-      GOVC_CLUSTER = "${self.name}"
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "govc host.autostart.configure --enabled --host ${local.vsphere_fqdn}"
+
+    environment {
+      GOVC_INSECURE = "1"
+      GOVC_URL = "${local.vcenter_fqdn}"
+      GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
+      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
     }
   }
 
@@ -88,6 +97,8 @@ data "vsphere_resource_pool" "last_zone" {
 data "vsphere_datastore" "vsan" {
   name  = "${var.infra_datastore}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+
+  depends_on = [ "vsphere_compute_cluster.homelab" ]
 }
 
 output "bbl_datacenter" {
