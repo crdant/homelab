@@ -251,7 +251,7 @@ resource "local_file" "router_config" {
 
     connection {
       type     = "ssh"
-      user     = "ubnt"
+      user     = "${var.admin_user}"
       password = "${var.current_router_password}"
       host     = "${local.router_fqdn}"
     }
