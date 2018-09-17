@@ -27,7 +27,6 @@ resource "null_resource" "homelab_host" {
     }
   }
 
-  depends_on = [ "vsphere_folder.hosts" ]
 }
 
 resource "null_resource" "autostart" {
