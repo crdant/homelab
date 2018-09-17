@@ -49,7 +49,7 @@ data "template_file" "vcenter_config" {
     vcenter_datastore = "${var.infra_datastore}"
 
     /* network */
-    vcenter_ip           = "${local.vcenter_ip}"
+    vcenter_ip           = "${local.vcenter_server_ip}"
     primary_dns_server   = "${var.dns_servers[0]}"
     secondary_dns_server = "${var.dns_servers[1]}"
     cidr_bits            = "${substr(local.vmware_cidr, -2, -1)}"
@@ -172,7 +172,7 @@ output "vcenter_fqdn" {
 }
 
 output "vcenter_ip" {
-  value = "${local.vcenter_ip}"
+  value = "${local.vcenter_server_ip}"
 }
 
 output "vcenter_ssh_private_key" {

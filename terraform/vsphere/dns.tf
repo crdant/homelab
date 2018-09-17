@@ -26,7 +26,7 @@ resource "google_dns_record_set" "vcenter" {
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${local.vcenter_ip}" ]
+  rrdatas = [ "${local.vcenter_server_ip}" ]
 }
 
 resource "google_dns_record_set" "vcenter_alias" {
