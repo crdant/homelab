@@ -19,7 +19,6 @@ locals {
 data "vsphere_virtual_machine" "bigip_template" {
   name          = "${var.lb_template_name}"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-  depends_on = [ "data.terraform_remote_state.pave.bigip_spec_file" ]
 }
 
 resource "random_pet" "bigip_admin_password" {
@@ -53,11 +52,37 @@ locals {
 
 }
 
+data "vsphere_network" "lb_external" {
+  name          = "${data.terraform_remote_state.pave.lb_external_network}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "lb_internal" {
+  name          = "${data.terraform_remote_state.pave.lb_internal_network}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_network" "infrastructure" {
+  name          = "${data.terraform_remote_state.pave.infrastructure_network}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_resource_pool" "last_resource_pool" {
+  name = "${element(data.terraform_remote_state.pave.director_resource_pool_names,length(data.terraform_remote_state.pave.director_resource_pool_names) - 1)}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
+data "vsphere_datastore" "infrastructure_datastore" {
+  name = "${var.infra_datastore}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+}
+
 resource "vsphere_virtual_machine" "bigip" {
   name             = "${local.bigip_machine_name}"
-  resource_pool_id = "${data.vsphere_resource_pool.last_zone.id}"
-  datastore_id     = "${var.infra_datastore}"
-  folder = "${var.infrastructure_folder}"
+  resource_pool_id = "${data.vsphere_resource_pool.last_resource_pool.id}"
+  datastore_id     = "${data.vsphere_datastore.infrastructure_datastore.id}"
+
+  folder = "${data.terraform_remote_state.pave.infrastructure_folder}"
 
   num_cpus = 2
   memory   = 4096
@@ -90,6 +115,11 @@ resource "vsphere_virtual_machine" "bigip" {
     template_uuid = "${data.vsphere_virtual_machine.bigip_template.id}"
 
     customize {
+      linux_options {
+        host_name = "${var.bigip_management_host}"
+        domain    = "${var.domain}"
+      }
+
       network_interface {
         ipv4_address = "${local.bigip_management_ip}"
         ipv4_netmask = "${substr(local.infrastructure_cidr, -2, -1)}"
@@ -122,13 +152,13 @@ resource "vsphere_virtual_machine" "bigip" {
   }
 
   provisioner "local-exec" {
-    command = "govc vm.power --on --vm.ipath /${data.vsphere_datacenter.homelab.name}/vm/${var.infrastructure_folder}/${local.bigip_machine_name}"
+    command = "govc vm.power --on --vm.ipath /${data.vsphere_datacenter.homelab.name}/vm/${data.terraform_remote_state.pave.infrastructure_folder}/${local.bigip_machine_name}"
 
     environment {
       GOVC_INSECURE = "1"
-      GOVC_URL = "${local.vcenter_fqdn}"
-      GOVC_USERNAME = "${data.terraform_remote_state.vsphere.vcenter_user}"
-      GOVC_PASSWORD = "${data.terraform_remote_state.vsphere.vcenter_password}"
+      GOVC_URL = "${var.vcenter_ip}"
+      GOVC_USERNAME = "${var.vcenter_user}"
+      GOVC_PASSWORD = "${var.vcenter_password}"
       GOVC_DATACENTER = "${data.vsphere_datacenter.homelab.name}"
     }
   }
