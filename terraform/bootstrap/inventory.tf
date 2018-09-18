@@ -44,24 +44,16 @@ resource "vsphere_folder" "hosts" {
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
 }
 
-resource "vsphere_folder" "infrastructure" {
-  path          = "${var.infrastructure_folder}"
-  type          = "vm"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
 resource "vsphere_folder" "bosh_templates" {
   path          = "${data.terraform_remote_state.pave.template_folder_name}/${var.bosh_template_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-  depends_on = [ "vsphere_folder.templates" ]
 }
 
 resource "vsphere_folder" "pcf_templates" {
   path          = "${data.terraform_remote_state.pave.template_folder_name}/${var.pcf_template_folder}"
   type          = "vm"
   datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-  depends_on = [ "vsphere_folder.templates" ]
 }
 
 resource "vsphere_folder" "bosh_bootloader" {
@@ -80,16 +72,12 @@ output "opsman_vm_folder" {
   value = "/${data.vsphere_datacenter.homelab.name}/vm/${var.pcf_folder}"
 }
 
-output "infra_inventory_folder" {
-  value = "/${data.vsphere_datacenter.homelab.name}/vm/${var.infrastructure_folder}"
-}
-
 output "pcf_inventory_folder" {
   value = "${data.vsphere_datacenter.homelab.name}/vm/${var.pcf_folder}"
 }
 
 output "pcf_template_folder" {
-  value = "${data.vsphere_datacenter.homelab.name}/vm/${vsphere_folder.templates.path}/${var.pcf_template_folder}"
+  value = "${data.vsphere_datacenter.homelab.name}/vm/${data.terraform_remote_state.pave.template_folder_name}/${var.pcf_template_folder}"
 }
 
 output "pcf_disk_folder" {
