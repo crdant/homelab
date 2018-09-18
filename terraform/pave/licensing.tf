@@ -6,7 +6,7 @@ variable "vcenter_license" {
   type = "string"
 }
 
-/*
+
 resource "vsphere_license" "vcenter_license" {
   license_key = "${var.vcenter_license}"
 
@@ -20,7 +20,7 @@ resource "vsphere_license" "vcenter_license" {
     }
   }
 }
-*/
+
 
 resource "vsphere_license" "vsphere_license" {
   license_key = "${var.vsphere_license}"
