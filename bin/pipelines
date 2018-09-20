@@ -26,7 +26,7 @@ terraform_vars () {
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
-prepare () {
+prepare_pipelines () {
   download_pipelines
   setup_concourse
 }
@@ -105,14 +105,14 @@ set_pipelines () {
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
-      prepare )
-        prepare
-        ;;
       init )
         init pipelines
         ;;
       apply )
         apply pipelines
+        ;;
+      prepare )
+        prepare_pipelines
         ;;
       set )
         set_pipelines
@@ -133,9 +133,7 @@ if [ $# -gt 0 ]; then
   done
 fi
 
-prepare
-plan
-patch
-up
-login
-deploy
+init pipelines
+apply pipelines
+prepare_pipelines
+set_pipelines
