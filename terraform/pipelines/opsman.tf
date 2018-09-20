@@ -3,11 +3,6 @@ variable "opsman_version_regex" {
   default = "^2\\.3\\..*$$"
 }
 
-variable "opsman_admin_username" {
-  type = "string"
-  default = "arceus"
-}
-
 variable "vm_disk_type" {
   type = "string"
   default = "thin"
@@ -38,7 +33,7 @@ locals {
 
 
 data "template_file" "opsman_install_vars" {
-  template = "${file("${var.template_dir}/pipelines/opsman-vars.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/opsman-vars.yml")}"
   vars {
     opsman_version_regex =  "${var.opsman_version_regex}"
 
@@ -121,10 +116,6 @@ resource "local_file" "opsman_install_vars" {
   filename = "${var.work_dir}/pipelines/opsman-vars.yml"
 }
 
-resource "random_pet" "opsman_admin_password" {
-  length = 4
-}
-
 resource "random_pet" "opsman_ssh_password" {
   length = 4
 }
@@ -139,13 +130,10 @@ resource "random_pet" "credhub_encryption_key" {
 }
 
 data "template_file" "opsman_install_secrets" {
-  template = "${file("${var.template_dir}/pipelines/opsman-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/opsman-secrets.yml")}"
 
   vars {
     pipeline_secret_root = "${local.install_om_secret_root}"
-    # Leave opsman_client_id/opsman_client_secret blank; opsman_admin_username/opsman_admin_password needs to be specified
-    opsman_admin_username = "${var.opsman_admin_username}"
-    opsman_admin_password = "${random_pet.opsman_admin_password.id}"
     opsman_ssh_password = "${random_pet.opsman_ssh_password.id}"
     opsman_decryption_pwd = "${random_pet.opsman_decryption_password.id}"
 
@@ -180,7 +168,7 @@ COMMAND
 }
 
 data "template_file" "opsman_upgrade_vars" {
-  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-vars.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/opsman-upgrade-vars.yml")}"
   vars {
     opsman_version_regex =  "${var.opsman_version_regex}"
 
@@ -210,11 +198,11 @@ data "template_file" "opsman_upgrade_vars" {
 
 resource "local_file" "opsman_upgrade_vars" {
   content  = "${data.template_file.opsman_upgrade_vars.rendered}"
-  filename = "${var.work_dir}/pipelines/opsman-upgrade-vars.yml"
+  filename = "${var.work_dir}/pipelines/opsman/opsman-upgrade-vars.yml"
 }
 
 data "template_file" "opsman_upgrade_secrets" {
-  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/opsman-upgrade-secrets.yml")}"
 
   vars {
     pipeline_secret_root = "${local.upgrade_om_secret_root}"

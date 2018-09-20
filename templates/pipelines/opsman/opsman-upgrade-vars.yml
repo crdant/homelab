@@ -1,0 +1,24 @@
+
+opsman_timeout_seconds: 3600 # time to wait for new OM VM to come up
+
+opsman_major_minor_version: ${opsman_version_regex}  # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
+opsman_domain_or_ip_address: ${opsman_domain}        # FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
+
+# vCenter configuration
+vcenter_url: ${vcenter_host}
+vcenter_datastore: ${vcenter_datastore}        # vCenter datastore name to deploy Ops Manager in
+vcenter_datacenter: ${vcenter_datacenter}
+vcenter_insecure: ${vcenter_insecure}  # true or false
+vcenter_ca_cert: ${vcenter_ca_cert}
+vcenter_resource_pool: ${opsman_resource_pool}
+
+om_vm_folder: ${opsman_vm_folder}
+opsman_ip: ${opsman_resource_pool}
+netmask: ${opsman_netmask}
+gateway: ${opsman_gateway}
+dns: ${opsman_dns_servers}
+ntp: ${opsman_ntp_servers}
+# vCenter network name to use to deploy Ops Manager in
+opsman_network: ${opsman_vm_network}
+# Disk type for Ops Manager VM (thick|thin)
+opsman_disk_type: ${opsman_disk_type}
