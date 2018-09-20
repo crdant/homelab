@@ -81,11 +81,13 @@ concourse_uaa () {
   # create a UAA client for Concourse to access Credhub
   uaac target $(echo $BOSH_ENVIRONMENT | cut -d ":" -f2 | tr -d '/'):8443 --ca-cert <(bbl director-ca-cert)
   uaac token client get uaa_admin --secret "${uaa_admin_client_secret}"
-  uaac client get ${concourse_credhub_client_id:-concourse}
-  if [ ! $? ] ; then
+  set +e
+  if ! uaac client get ${concourse_credhub_client_id:-concourse} > /dev/null ; then
+    echo "Adding UAA client..."
     concourse_credhub_client_secret="$(grep concourse_credhub_client_secret ${state_dir}/vars/cloud-config-vars.yml | cut -d ":" -f2 | tr -d ' ')"
     uaac client add ${concourse_credhub_client_id:-concourse} --name "${concourse_fqdn}" --secret ${concourse_credhub_client_secret} --scope uaa.none --authorized_grant_types client_credentials --authorities "credhub.write,credhub.read";
   fi
+  set -e
 }
 
 deploy_concourse () {
