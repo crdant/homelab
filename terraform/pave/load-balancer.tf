@@ -17,6 +17,9 @@ locals {
 
   bigip_management_ip = "${cidrhost(local.infrastructure_cidr, 10)}"
   bigip_management_gateway = "${cidrhost(local.infrastructure_cidr, 2)}"
+
+  bigip_ha_ip = "${cidrhost(local.balancer_ha_cidr, 10)}"
+  bigip_ha_gateway = "${cidrhost(local.balancer_ha_cidr, 2)}"
 }
 
 data "template_file" "bigip_spec" {
@@ -26,7 +29,7 @@ data "template_file" "bigip_spec" {
     management_network = "${data.vsphere_network.infrastructure.name}"
     internal_network = "${data.vsphere_network.lb_internal.name}"
     external_network = "${data.vsphere_network.lb_external.name}"
-    ha_network = "${data.vsphere_network.infrastructure.name}"
+    ha_network = "${data.vsphere_network.lb_ha.name}"
   }
 }
 
@@ -61,7 +64,7 @@ resource "local_file" "bigip_spec" {
       GOVC_RESOURCE_POOL = "/${data.vsphere_datacenter.homelab.name}/host/${data.vsphere_compute_cluster.homelab.name}/Resources/${element(var.resource_pools, length(var.resource_pools) - 1)}"
     }
   }
-  
+
   depends_on = [ "vsphere_compute_cluster.homelab" ]
 }
 

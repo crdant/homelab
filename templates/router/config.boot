@@ -746,7 +746,7 @@ firewall {
             action accept
             description "Allow local access to configure the load balancer environment"
             destination {
-                address ${balancer_external_cidr}
+                address ${infrastructure_cidr}
                 port 4444
             }
             log disable
@@ -759,7 +759,7 @@ firewall {
             action accept
             description "Allow VPN Access to configure the load balancer environment"
             destination {
-                address ${balancer_external_cidr}
+                address ${infrastructure_cidr}
                 port 4444
             }
             log disable

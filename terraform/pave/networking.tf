@@ -58,6 +58,7 @@ locals {
   infrastructure_ip = "${cidrhost(local.infrastructure_cidr,2)}"
   lb_internal_ip = "${cidrhost(local.balancer_internal_cidr,2)}"
   lb_external_ip = "${cidrhost(local.balancer_external_cidr,2)}"
+  lb_ha_ip = "${cidrhost(local.balancer_ha_cidr,2)}"
   deployment_ip = "${cidrhost(local.deployment_cidr,2)}"
   services_ip = "${cidrhost(local.services_cidr,2)}"
   pks_clusters_ip = "${cidrhost(local.container_cidr,2)}"
@@ -91,6 +92,11 @@ variable "load_balancer_internal_portgroup" {
 variable "load_balancer_external_portgroup" {
   type = "string"
   default = "bigip_external"
+}
+
+variable "load_balancer_ha_portgroup" {
+  type = "string"
+  default = "bigip_ha"
 }
 
 resource "vsphere_host_port_group" "vsan" {
@@ -230,6 +236,27 @@ data "vsphere_network" "lb_external" {
   depends_on    = [ "vsphere_distributed_port_group.lb_external" ]
 }
 
+resource "vsphere_distributed_port_group" "lb_ha" {
+  name                            = "${var.load_balancer_ha_portgroup}"
+  distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
+
+  provisioner "local-exec" {
+    command = "${join(" ", local.nic_add_script)}"
+    environment {
+      SWITCH    = "${data.vsphere_distributed_virtual_switch.pcf.name}"
+      PORTGROUP = "${self.name}"
+      IP = "${local.lb_ha_ip}"
+      NETMASK = "${local.lb_ha_netmask}"
+    }
+  }
+}
+
+data "vsphere_network" "lb_ha" {
+  name          = "${vsphere_distributed_port_group.lb_ha.name}"
+  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
+  depends_on    = [ "vsphere_distributed_port_group.lb_ha" ]
+}
+
 resource "vsphere_distributed_port_group" "infrastructure" {
   name                            = "${var.infrastructure_portgroup}"
   distributed_virtual_switch_uuid = "${data.vsphere_distributed_virtual_switch.pcf.id}"
@@ -324,6 +351,10 @@ output "lb_internal_network" {
 
 output "lb_external_network" {
   value = "${data.vsphere_network.lb_external.name}"
+}
+
+output "lb_ha_network" {
+  value = "${data.vsphere_network.lb_ha.name}"
 }
 
 output "infrastructure_network" {

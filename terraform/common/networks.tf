@@ -31,6 +31,7 @@ locals {
   # load balancer subnets
   balancer_external_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,0)}"
   balancer_internal_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,1)}"
+  balancer_ha_cidr = "${cidrsubnet(cidrsubnet(var.lab_cidr,4,5),10,2)}"
 }
 
 locals {
@@ -42,6 +43,9 @@ locals {
 
   lb_external_gateway = "${cidrhost(local.balancer_external_cidr,1)}"
   lb_external_netmask = "${cidrnetmask(local.balancer_external_cidr)}"
+
+  lb_ha_gateway = "${cidrhost(local.balancer_ha_cidr,1)}"
+  lb_ha_netmask = "${cidrnetmask(local.balancer_ha_cidr)}"
 
   deployment_gateway = "${cidrhost(local.deployment_cidr,1)}"
   deployment_netmask = "${cidrnetmask(local.deployment_cidr)}"
