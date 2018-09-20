@@ -45,13 +45,13 @@ data "template_file" "opsman_install_vars" {
     # opsman network info
     opsman_domain = "${local.opsman_fqdn}"
     opsman_dns_servers = "${join(",", var.dns_servers)}"
-    opsman_gateway = "${data.terraform_remote_state.pave.infrastructure_gateway}"
+    opsman_gateway = "${local.infrastructure_gateway}"
     opsman_ip_address = "${local.opsman_ip}"
-    opsman_netmask = "${data.terraform_remote_state.pave.infrastructure_netmask}"
+    opsman_netmask = "${local.infrastructure_netmask}"
     opsman_ntp_servers = "${join(",", var.ntp_servers)}"
 
     # opsman vm parameters config
-    opsman_resource_pool = "${data.terraform_remote_state.pave.opsman_resource_pool}"
+    opsman_resource_pool = "${data.terraform_remote_state.pave.om_resource_pool}"
     opsman_vm_folder = "${data.terraform_remote_state.bbl.opsman_vm_folder}"
     opsman_vm_name = "${local.opsman_vm_name}"
     opsman_vm_host = "${data.terraform_remote_state.pave.vsphere_host}"
@@ -187,14 +187,14 @@ data "template_file" "opsman_upgrade_vars" {
     # opsman network info
     opsman_domain = "${local.opsman_fqdn}"
     opsman_dns_servers = "${join(",", var.dns_servers)}"
-    opsman_gateway = "${data.terraform_remote_state.pave.infrastructure_gateway}"
+    opsman_gateway = "${local.infrastructure_gateway}"
     opsman_ip_address = "${local.opsman_ip}"
-    opsman_netmask = "${data.terraform_remote_state.pave.infrastructure_netmask}"
+    opsman_netmask = "${local.infrastructure_netmask}"
     opsman_ntp_servers = "${join(",", var.ntp_servers)}"
 
     # opsman vm parameters config
-    opsman_resource_pool = "${data.terraform_remote_state.pave.opsman_resource_pool}"
-    opsman_vm_folder = "${data.terraform_remote_state.pave.infra_inventory_folder}"
+    opsman_resource_pool = "${data.terraform_remote_state.pave.om_resource_pool}"
+    opsman_vm_folder = "${data.terraform_remote_state.pave.infrastructure_folder}"
     opsman_vm_network = "${data.terraform_remote_state.pave.infrastructure_network}"
     opsman_disk_type = "${var.vm_disk_type}"
 

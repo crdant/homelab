@@ -82,7 +82,10 @@ fi
 
 # leverage the various YML files BBL creates to add environment variables
 bbl_vars_entries="$(cat ${state_dir}/vars/*.yml 2> /dev/null | sort | uniq )"
-variables=( uaa_admin_client_secret concourse_url concourse_main_local_user concourse_main_local_password concourse_pcf_local_user concourse_pcf_local_password om_install_pipeline om_upgrade_pipeline )
+variables=( uaa_admin_client_secret concourse_url concourse_main_local_user concourse_main_local_password
+  concourse_pcf_local_user concourse_pcf_local_password om_install_pipeline om_upgrade_pipeline
+  bigip_external_ip
+)
 regex="$(printf "^%s\|" ${variables[@]})"
 regex="${regex%??}"
 if [ -n "${bbl_vars_entries}" ] ; then

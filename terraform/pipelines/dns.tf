@@ -1,3 +1,7 @@
+variable "bigip_external_ip" {
+  type = "string"
+}
+
 data "google_dns_managed_zone" "homelab" {
   name     = "homelab"
 }
@@ -29,7 +33,7 @@ resource "google_dns_record_set" "apps_domain" {
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${data.terraform_remote_state.pave.bigip_external_ip}" ]
+  rrdatas = [ "${var.bigip_external_ip}" ]
 }
 
 resource "google_dns_record_set" "system_domain" {
@@ -39,7 +43,7 @@ resource "google_dns_record_set" "system_domain" {
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${data.terraform_remote_state.pave.bigip_external_ip}" ]
+  rrdatas = [ "${var.bigip_external_ip}" ]
 }
 
 locals {
