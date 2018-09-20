@@ -174,13 +174,13 @@ output "bigip_admin_password" {
 }
 
 output "bigip_management_ip" {
-  value = "{local.bigip_management_ip}"
+  value = "${local.bigip_management_ip}"
 }
 
 output "bigip_internal_ip" {
-  value = "{local.bigip_internal_ip}"
+  value = "${local.bigip_internal_ip}"
 }
 
 output "bigip_external_ip" {
-  value = "{local.bigip_external_ip}"
+  value = "${local.bigip_external_ip}"
 }
