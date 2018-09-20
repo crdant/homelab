@@ -38,12 +38,6 @@ variable "pcf_template_folder" {
   default = "pcf_templates"
 }
 
-resource "vsphere_folder" "hosts" {
-  path          = "${var.hosts_folder}"
-  type          = "host"
-  datacenter_id = "${data.vsphere_datacenter.homelab.id}"
-}
-
 resource "vsphere_folder" "bosh_templates" {
   path          = "${data.terraform_remote_state.pave.template_folder_name}/${var.bosh_template_folder}"
   type          = "vm"
