@@ -33,7 +33,7 @@ locals {
 
 
 data "template_file" "opsman_install_vars" {
-  template = "${file("${var.template_dir}/pipelines/opsman/opsman-vars.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/vars.yml")}"
   vars {
     opsman_version_regex =  "${var.opsman_version_regex}"
 
@@ -130,7 +130,7 @@ resource "random_pet" "credhub_encryption_key" {
 }
 
 data "template_file" "opsman_install_secrets" {
-  template = "${file("${var.template_dir}/pipelines/opsman/opsman-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/secrets.yml")}"
 
   vars {
     pipeline_secret_root = "${local.install_om_secret_root}"
@@ -168,7 +168,7 @@ COMMAND
 }
 
 data "template_file" "opsman_upgrade_vars" {
-  template = "${file("${var.template_dir}/pipelines/opsman/opsman-upgrade-vars.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/upgrade-vars.yml")}"
   vars {
     opsman_version_regex =  "${var.opsman_version_regex}"
 
@@ -202,7 +202,7 @@ resource "local_file" "opsman_upgrade_vars" {
 }
 
 data "template_file" "opsman_upgrade_secrets" {
-  template = "${file("${var.template_dir}/pipelines/opsman/opsman-upgrade-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/opsman/upgrade-secrets.yml")}"
 
   vars {
     pipeline_secret_root = "${local.upgrade_om_secret_root}"

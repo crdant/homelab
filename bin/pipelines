@@ -96,10 +96,10 @@ set_pipelines () {
   om_upgrade_pipeline="$(echo "${outputs}" | jq --raw-output .om_upgrade_pipeline.value)"
   fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_install_pipeline}" \
     --config "${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml" \
-    --load-vars-from "${work_dir}/pipelines/opsman-vars.yml"
+    --load-vars-from "${work_dir}/pipelines/opsman/vars.yml"
   fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_upgrade_pipeline}" \
     --config "${work_dir}/pcf-pipelines/upgrade-ops-manager/vsphere/pipeline.yml" \
-    --load-vars-from "${work_dir}/pipelines/opsman-upgrade-vars.yml"
+    --load-vars-from "${work_dir}/pipelines/opsman/upgrade-vars.yml"
 }
 
 if [ $# -gt 0 ]; then
