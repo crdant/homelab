@@ -70,10 +70,13 @@ data "template_file" "opsman_install_vars" {
     director_host = "${local.director_fqdn}"
 
     # availability zones for the director
+    az_1_name = "${var.availability_zones[0]}"
     az_1_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
     az_1_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[0]}"
+    az_2_name = "${var.availability_zones[1]}"
     az_2_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
     az_2_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[1]}"
+    az_3_name = "${var.availability_zones[2]}"
     az_3_cluster_name = "${data.terraform_remote_state.pave.director_cluster}"
     az_3_rp_name = "${data.terraform_remote_state.pave.director_resource_pool_names[2]}"
 
@@ -113,7 +116,7 @@ data "template_file" "opsman_install_vars" {
 
 resource "local_file" "opsman_install_vars" {
   content  = "${data.template_file.opsman_install_vars.rendered}"
-  filename = "${var.work_dir}/pipelines/opsman-vars.yml"
+  filename = "${var.work_dir}/pipelines/opsman/vars.yml"
 }
 
 resource "random_pet" "opsman_ssh_password" {
@@ -157,7 +160,7 @@ data "template_file" "opsman_install_secrets" {
 
 resource "local_file" "opsman_install_secrets" {
   content  = "${data.template_file.opsman_install_secrets.rendered}"
-  filename = "${var.key_dir}/pipelines/opsman-secrets.yml"
+  filename = "${var.key_dir}/pipelines/opsman/secrets.yml"
 
   provisioner "local-exec" {
     command =<<COMMAND
@@ -198,7 +201,7 @@ data "template_file" "opsman_upgrade_vars" {
 
 resource "local_file" "opsman_upgrade_vars" {
   content  = "${data.template_file.opsman_upgrade_vars.rendered}"
-  filename = "${var.work_dir}/pipelines/opsman/opsman-upgrade-vars.yml"
+  filename = "${var.work_dir}/pipelines/opsman/upgrade-vars.yml"
 }
 
 data "template_file" "opsman_upgrade_secrets" {
@@ -223,7 +226,7 @@ data "template_file" "opsman_upgrade_secrets" {
 
 resource "local_file" "opsman_upgrade_secrets" {
   content  = "${data.template_file.opsman_upgrade_secrets.rendered}"
-  filename = "${var.key_dir}/pipelines/opsman-upgrade-secrets.yml"
+  filename = "${var.key_dir}/pipelines/opsman/upgrade-secrets.yml"
 
   provisioner "local-exec" {
     command =<<COMMAND

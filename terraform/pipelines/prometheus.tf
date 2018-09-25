@@ -37,7 +37,7 @@ resource "random_pet" "prometheus_grafana_secret_key" {
 }
 
 data "template_file" "prometheus_secrets" {
-  template = "${file("${var.template_dir}/pipelines/prometheus-secrets.yml")}"
+  template = "${file("${var.template_dir}/pipelines/prometheus/secrets.yml")}"
   vars {
     # from the manifest
     prometheus_secret_root = "${local.prometheus_secret_root}"

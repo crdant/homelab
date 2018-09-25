@@ -1,0 +1,16 @@
+# The IaaS name for which stemcell to download. This must match the IaaS name
+# within the stemcell to download, e.g. "vsphere", "aws", "azure", "google" must be lowercase.
+iaas_type: ${iaas_type}
+
+# Ops Manager information and admin credentials
+opsman_domain: ${opsman_domain}
+opsman_ip_address: ${opsman_domain}
+
+# Either opsman_client_id/opsman_client_secret or opsman_admin_username/opsman_admin_password needs to be specified.
+# If you are using opsman_admin_username/opsman_admin_password, edit opsman_client_id/opsman_client_secret to be an empty value.
+# If you are using opsman_client_id/opsman_client_secret, edit opsman_admin_username/opsman_admin_password to be an empty value.
+opsman_client_id: ""
+opsman_client_secret: ""
+
+# no proxy here, but need to makes sure the pipelines address it
+company_proxy_domain: ""
