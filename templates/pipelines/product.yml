@@ -1,0 +1,5 @@
+product_name: "${slug}"
+product_slug: "${slug}"
+product_version: "${version_regex}"
+product_version_regex: "${version_regex}"
+product_globs: "${globs}"

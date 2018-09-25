@@ -78,3 +78,27 @@ resource "local_file" "prometheus_private_key" {
   content  = "${acme_certificate.prometheus.private_key_pem}"
   filename = "${var.key_dir}/${acme_certificate.prometheus.certificate_domain}/privkey.pem"
 }
+
+resource "acme_certificate" "registry" {
+  account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
+  common_name               = "${local.registry_fqdn}"
+
+  dns_challenge {
+    provider = "gcloud"
+
+    config {
+      GCE_SERVICE_ACCOUNT_FILE = "${var.key_file}"
+      GCE_PROJECT  = "${var.project}"
+    }
+  }
+}
+
+resource "local_file" "registry_certificate" {
+  content  = "${acme_certificate.registry.certificate_pem}"
+  filename = "${var.key_dir}/${acme_certificate.registry.certificate_domain}/cert.pem"
+}
+
+resource "local_file" "registry_private_key" {
+  content  = "${acme_certificate.registry.private_key_pem}"
+  filename = "${var.key_dir}/${acme_certificate.registry.certificate_domain}/privkey.pem"
+}

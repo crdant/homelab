@@ -1,0 +1,10 @@
+networks: |
+  ${networks}
+
+properties: |
+  ${properties}
+
+resources: |
+  ${resources}
+
+errands_to_disable: ${errands_to_disable}

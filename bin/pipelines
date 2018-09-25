@@ -14,10 +14,14 @@ concourse_github_secret="$(security find-generic-password -a "Concourse Secret" 
 default_pcf_pipelines_version="v0.23.6"
 default_github_user=${USER}
 
-pipelines_work_dir=${work_dir}/pcf-pipelines
-pcf_install_pipeline_path="install-pcf/vsphere"
-tile_upgrade_pipeline_path="upgrade-tile"
+pcf_pipelines_work_dir="${work_dir}/pcf-pipelines"
+sample_pipelines_work_dir="${work_dir}/concourse-pipeline-samples/pipelines"
+
+om_install_pipeline_path="install-pcf/vsphere"
 om_upgrade_pipeline_path="upgrade-ops-manager/vsphere"
+
+tile_install_pipeline_path="vmware/install-harbor"
+tile_upgrade_pipeline_path="upgrade-tile"
 
 terraform_vars () {
   env -i BASEDIR=${BASEDIR} \
@@ -38,10 +42,10 @@ download_pipelines() {
   tar -xzf "${work_dir}/pcf-pipelines-${pcf_pipelines_version:-$default_pcf_pipelines_version}.tgz" -C "${work_dir}"
   transform_pipelines
 
-  if [ ! -d ${work_dir}/concourse-pipeline-samples ] ; then
-    git clone https://github.com/pivotalservices/concourse-pipeline-samples.git ${work_dir}/concourse-pipeline-samples
+  if [ ! -d ${sample_pipelines_work_dir} ] ; then
+    git clone https://github.com/pivotalservices/concourse-pipeline-samples.git ${sample_pipelines_work_dir}
   else
-    pushd ${work_dir}/concourse-pipeline-samples > /dev/null
+    pushd ${sample_pipelines_work_dir} > /dev/null
       git pull
     popd > /dev/null
   fi
@@ -56,11 +60,15 @@ download_pipelines() {
 }
 
 transform_pipelines() {
-  local pipelines=( $pcf_install_pipeline_path $tile_upgrade_pipeline_path $om_upgrade_pipeline_path )
+  local pipelines=( $om_install_pipeline_path $om_upgrade_pipeline_path $tile_install_pipeline_path $tile_upgrade_pipeline_path )
 
   for pipeline_path in "${pipelines[@]}"
   do
-    pipeline_file="${pipelines_work_dir}/${pipeline_path}/pipeline.yml"
+    if [ -f "${sample_pipelines_work_dir}/${pipeline_path}/pipeline.yml" ] ; then
+      pipeline_file="${sample_pipelines_work_dir}/${pipeline_path}/pipeline.yml"
+    else
+      pipeline_file="${pcf_pipelines_work_dir}/${pipeline_path}/pipeline.yml"
+    fi
     echo "transforming ${pipeline_file}"
 
     # new style replacement
@@ -69,12 +77,10 @@ transform_pipelines() {
 
     # apply operations files
     if [ -d "${pipelines_dir}/${pipeline_path}/ops" ] ; then
-      echo "found it: ${pipelines_dir}/${pipeline_path}/ops"
-      ops_files="$(ls ${pipelines_dir}/${pipeline_path}/ops)"
+      ops_files="$(ls ${pipelines_dir}/${pipeline_path}/ops | sort)"
       for ops_file in "${ops_files[@]}"
       do
         ops_file="${pipelines_dir}/${pipeline_path}/ops/${ops_file}"
-        echo "applying ops file: ${ops_file}"
         cp ${pipeline_file} ${pipeline_file}.orig
         cat "${pipeline_file}.orig" | yaml-patch -o ${ops_file} > ${pipeline_file}
       done
@@ -91,16 +97,38 @@ setup_concourse () {
 }
 
 set_pipelines () {
+  set_opsman_pipelines
+  set_tile_pipelines "harbor"
+  set_tile_pipelines "minio"
+}
+
+set_opsman_pipelines () {
   outputs="$(outputs pipelines)"
   om_install_pipeline="$(echo "${outputs}" | jq --raw-output .om_install_pipeline.value)"
   om_upgrade_pipeline="$(echo "${outputs}" | jq --raw-output .om_upgrade_pipeline.value)"
   fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_install_pipeline}" \
-    --config "${work_dir}/pcf-pipelines/install-pcf/vsphere/pipeline.yml" \
+    --config "${pcf_pipelines_work_dir}/install-pcf/vsphere/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
     --load-vars-from "${work_dir}/pipelines/opsman/vars.yml"
   fly -t "${env_id}-pcf" set-pipeline --pipeline "${om_upgrade_pipeline}" \
-    --config "${work_dir}/pcf-pipelines/upgrade-ops-manager/vsphere/pipeline.yml" \
+    --config "${pcf_pipelines_work_dir}/upgrade-ops-manager/vsphere/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
     --load-vars-from "${work_dir}/pipelines/opsman/upgrade-vars.yml"
 }
+
+set_tile_pipelines () {
+  tile="${1}"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "deploy-${tile}" \
+    --config "${sample_pipelines_work_dir}/vmware/install-harbor/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/product.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/vars.yml"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "upgrade-${tile}" \
+    --config "${pcf_pipelines_work_dir}/upgrade-tile/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/product.yml"
+}
+
 
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
@@ -116,6 +144,10 @@ if [ $# -gt 0 ]; then
         ;;
       set )
         set_pipelines
+        ;;
+      tile )
+        set_tile_pipelines $2
+        shift
         ;;
       install )
         install

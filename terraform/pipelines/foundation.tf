@@ -1,3 +1,7 @@
+variable "iaas" {
+  type = "string"
+}
+
 variable "pivnet_token" {
   type = "string"
 }
@@ -7,27 +11,30 @@ variable "opsman_admin_username" {
   default = "arceus"
 }
 
+variable "availability_zones" {
+  type = "list"
+  default = [ "AZ01", "AZ02", "AZ03" ]
+}
+
+variable "product_globs" {
+  type = "string"
+  default = "*.pivotal"
+}
+
 data "template_file" "foundation" {
   template = "${file("${var.template_dir}/pipelines/foundation.yml")}"
 
   vars {
     # IAAS type
-    iaas_type = "${iaas_type}"
+    iaas_type = "${var.iaas}"
 
     # Ops Manager information and admin credentials
     opsman_domain = "${local.opsman_fqdn}"
-
-    # shared networking configuration for all tiles
-    az_1_name = "${az_1_name}"
-    az_2_name = "${az_2_name}"
-    az_3_name = "${az_3_name}"
-    services_network_name = "${services_network_name}"
-    dynamic_services_network_name = "${dynamic_services_network_name}"
   }
 }
 
 resource "local_file" "foundation" {
-  content  = "${data.template_file.foundation_vars.rendered}"
+  content  = "${data.template_file.foundation.rendered}"
   filename = "${var.work_dir}/pipelines/foundation.yml"
 }
 
@@ -48,8 +55,8 @@ data "template_file" "team_secrets" {
   }
 }
 
-resource "local_file" "foundation" {
-  content  = "${data.template_file.foundation_vars.rendered}"
+resource "local_file" "team_secrets" {
+  content  = "${data.template_file.team_secrets.rendered}"
   filename = "${var.key_dir}/pipelines/team-secrets.yml"
 
   provisioner "local-exec" {

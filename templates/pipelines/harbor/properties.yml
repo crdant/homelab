@@ -1,0 +1,21 @@
+.properties.admin_password:
+  value:
+    secret: ((admin_password))
+.properties.auth_mode:
+  value: ${auth_mode}
+.properties.hostname:
+  value: ${registry_fqdn}
+.properties.no_proxy:
+  value: 127.0.0.1,localhost,ui
+.properties.registry_storage:
+  value: ${storage_type}
+.properties.server_cert_key:
+  value:
+    cert_pem: |
+      ${certificate}
+    private_key_pem: |
+      ${private_key}
+.properties.with_clair:
+  value: ${with_clair}
+.properties.with_notary:
+  value: ${with_notary}
