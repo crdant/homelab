@@ -4,7 +4,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/secrets.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
 
-secret_root="/concourse/pcf"
+secret_root="/concourse/pivotal_cloud_foundry/deploy-opsman"
 
 download () {
   product_slug=${1}
@@ -28,6 +28,9 @@ if [ $# -gt 0 ]; then
     case $1 in
       --windows | --w)
         windows=1
+        ;;
+      --xenial | --x)
+        xenial=1
         ;;
       --release | --release-version | -r)
         release=${2}
@@ -56,6 +59,8 @@ slug="stemcells"
 
 if [ -n "$windows" ] ; then
   slug="stemcells-windows-server"
+elif [ -n "$xenial" ] ; then
+  slug="stemcells-ubuntu-xenial"
 fi
 
 if [ -z "$release" ] ; then
@@ -63,9 +68,8 @@ if [ -z "$release" ] ; then
   exit 1
 fi
 
-om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
-om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
-om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+om_username=$(credhub get --name ${secret_root}/opsman_admin_username --output-json | jq --raw-output '.value')
+om_password=$(credhub get --name ${secret_root}/opsman_admin_password --output-json | jq --raw-output '.value')
 
 if [ -n "$download" ] ; then
   download ${slug} ${release}
