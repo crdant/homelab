@@ -47,8 +47,29 @@ locals {
       "${cidrhost(local.deployment_cidr, -4)}",
       "${cidrhost(local.deployment_cidr, -3)}"
     ]
+  pas_mysql_ips = [
+      "${cidrhost(local.deployment_cidr, -20)}",
+      "${cidrhost(local.deployment_cidr, -19)}",
+      "${cidrhost(local.deployment_cidr, -18)}"
+    ]
 }
 
 output "vcenter_server_ip" {
-  value = "local.vcenter_ip"
+  value = "${local.vcenter_server_ip}"
+}
+
+output "gorouter_ips" {
+  value = "${local.gorouter_ips}"
+}
+
+output "brain_ips" {
+  value = "${local.brain_ips}"
+}
+
+output "tcp_router_ips" {
+  value = "${local.tcp_router_ips}"
+}
+
+output "pas_mysql_ips" {
+  value = "${local.pas_mysql_ips}"
 }
