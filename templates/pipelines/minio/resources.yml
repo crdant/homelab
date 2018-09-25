@@ -1,0 +1,18 @@
+broker:
+  instances: automatic
+  persistent_disk:
+    size_mb: automatic
+  instance_type:
+    id: automatic
+register-on-demand-service-broker:
+  instances: automatic
+  instance_type:
+    id: automatic
+unregister_on_demand_service_broker:
+  instances: automatic
+  instance_type:
+    id: automatic
+upgrade_all_service_instances:
+  instances: automatic
+  instance_type:
+    id: automatic

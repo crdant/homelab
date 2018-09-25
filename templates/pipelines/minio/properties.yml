@@ -1,0 +1,19 @@
+.properties.allow_paid_service_plans:
+  value: false
+.properties.apply_open_security_group:
+  value: false
+.properties.org:
+  value: ${org}
+.properties.space:
+  value: ${space}
+.properties.minio_vm_type:
+  value: ${vm_type}
+.properties.minio_disk_type:
+  value: ${disk_type}
+.properties.minio_number_of_vms:
+  value: ${number_of_vms}
+.properties.minio_multi_select:
+  value:
+    - name: ${availability_zone_1}
+    - name: ${availability_zone_2}
+    - name: ${availability_zone_3}

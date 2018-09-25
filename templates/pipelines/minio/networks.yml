@@ -1,0 +1,10 @@
+network:
+  name: ${network}
+other_availability_zones:
+- name: ${availability_zone_1}
+- name: ${availability_zone_2}
+- name: ${availability_zone_3}
+singleton_availability_zone:
+  name: ${singleton_availability_zone}
+service_network:
+  name: ${network}
