@@ -31,7 +31,7 @@ vcenter_license=${VCENTER_LICENSE}
 
 # DNS
 domain=crdant.net
-subdomain=cloud.${domain}
+subdomain=pcf.${domain}
 dns_ttl=60
 
 # NTP
