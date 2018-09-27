@@ -1,0 +1,13 @@
+# base domain for PKS - # e.g. pks.mydomain.com
+pcf_pks_domain: ${pks_domain}
+# domain for PKS API - # e.g. api.pks.mydomain.com
+pcf_pks_api_domain: ${pks_api_domain}
+
+# PKS CLI client ID to be created (if applicable) by post-deploy job "create-pks-cli-user"
+pks_cli_username: ((pks_cli_user.username))  # username to be created in PKS UAA
+pks_cli_password: ((pks_cli_user.password))  # password for PKS user to be created
+pks_cli_useremail: ${email} # email address for PKS user to be created
+
+pivnet_token: ((pivnet_token))
+opsman_admin_username: ((opsman_admin_username))
+opsman_admin_password: ((opsman_admin_password))

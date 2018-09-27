@@ -13,6 +13,11 @@ variable "pks_syslog_port" {
   default = "36433"
 }
 
+variable "pks_cli_username" {
+  type = "string"
+  default = "arceus"
+}
+
 resource "random_integer" "pks_singleton_zone" {
   min     = 0
   max     = 2
@@ -82,6 +87,21 @@ resource "local_file" "pks_product_vars" {
   filename = "${var.work_dir}/pipelines/pks/product.yml"
 }
 
+data "template_file" "pks_params" {
+  template = "${file("${var.template_dir}/pipelines/pks/params.yml")}"
+  vars {
+    # shared networking configuration for all tiles
+    pks_domain = "${local.pks_subdomain}"
+    pks_api_domain = "api.${local.pks_subdomain}"
+    email = "${var.email}"
+  }
+}
+
+resource "local_file" "pks_params" {
+  content  = "${data.template_file.pks_params.rendered}"
+  filename = "${var.work_dir}/pipelines/pks/params.yml"
+}
+
 data "template_file" "pks_vars" {
   template = "${file("${var.template_dir}/pipelines/vars.yml")}"
   vars {
@@ -98,6 +118,10 @@ resource "local_file" "pks_vars" {
   filename = "${var.work_dir}/pipelines/pks/vars.yml"
 }
 
+resource "random_pet" "pks_cli_password" {
+  length = 4
+}
+
 data "template_file" "pks_secrets" {
   template = "${file("${var.template_dir}/pipelines/pks/secrets.yml")}"
   vars {
@@ -111,6 +135,10 @@ data "template_file" "pks_secrets" {
     # they are still stored for the future
     certificate = "${replace(acme_certificate.pks_wildcard.certificate_pem, "\n", "\n      ")}"
     private_key = "${replace(acme_certificate.pks_wildcard.private_key_pem, "\n", "\n      ")}"
+
+    # pks cli user
+    pks_cli_username = "${var.pks_cli_username}"
+    pks_cli_password = "${random_pet.pks_cli_password.id}"
   }
 
 }
@@ -125,4 +153,12 @@ eval "$(bbl print-env)"
 credhub import --file ${self.filename}
 COMMAND
   }
+}
+
+output "pks_cli_username" {
+  value = "${var.pks_cli_username}"
+}
+
+output "pks_cli_password" {
+  value = "${random_pet.pks_cli_password.id}"
 }

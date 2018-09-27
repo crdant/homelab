@@ -99,7 +99,7 @@ setup_concourse () {
 set_pipelines () {
   set_opsman_pipelines
   set_tile_pipelines "harbor"
-  set_tile_pipelines "pks"
+  set_pks_pipelines
   set_tile_pipelines "pas"
   set_tile_pipelines "minio"
 }
@@ -131,6 +131,19 @@ set_tile_pipelines () {
     --load-vars-from "${work_dir}/pipelines/${tile}/product.yml"
 }
 
+set_pks_pipelines () {
+  tile="pks"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "deploy-${tile}" \
+    --config "${sample_pipelines_work_dir}/pcf/pks/install-pks/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/product.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/params.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/vars.yml"
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "upgrade-${tile}" \
+    --config "${pcf_pipelines_work_dir}/upgrade-tile/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
+    --load-vars-from "${work_dir}/pipelines/${tile}/product.yml"
+}
 
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do

@@ -24,9 +24,7 @@ locals {
   system_domain = "${var.pcf_system_prefix}.${local.pas_subdomain}"
   apps_domain_wildcard = "*.${local.apps_domain}"
   system_domain_wildcard = "*.${local.system_domain}"
-
   mysql_proxy_fqdn = "${var.mysql_proxy_host}.${local.pas_subdomain}"
-
 }
 
 locals {
