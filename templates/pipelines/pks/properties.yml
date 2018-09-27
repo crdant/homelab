@@ -141,7 +141,7 @@
 .properties.syslog_migration_selector.enabled.port:
   value: ${syslog_port}
 .properties.syslog_migration_selector.enabled.tls_enabled:
-  value: false
+  value: true
 .properties.syslog_migration_selector.enabled.transport_protocol:
   value: tcp
 .properties.telemetry_selector:
