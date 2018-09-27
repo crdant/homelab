@@ -1,0 +1,125 @@
+.pivotal-container-service.pks_tls:
+  value:
+    cert_pem: |
+      ${certificate}
+    private_key_pem: |
+      ${private_key}
+.properties.cloud_provider:
+  value: vSphere
+.properties.cloud_provider.vsphere.vcenter_master_creds:
+  value:
+    identity: (( vcenter_account.username )) # vcenter_admin_username
+    password: (( vcenter_account.password )) # vcenter_admin_password
+.properties.cloud_provider.vsphere.vcenter_ip:
+  value: ${vcenter_host}
+.properties.cloud_provider.vsphere.vcenter_dc:
+  value: ${vcenter_datacenter}
+.properties.cloud_provider.vsphere.vcenter_ds:
+  value: ${vcenter_datastore}
+.properties.cloud_provider.vsphere.vcenter_vms:
+  value: ${vcenter_folder} # The name should be the same as the VM Folder in the Ops Manager Director tile, under the vCenter config page.
+.properties.network_selector:
+  value: flannel
+.properties.pks-vrli:
+  value: disabled
+.properties.pks_api_hostname:
+  value: ${pks_service_host}
+.properties.plan1_selector:
+  value: Plan Active
+.properties.plan1_selector.active.name:
+  value: "single-master"  # the name that appears for end users to choose
+.properties.plan1_selector.active.description:
+  value: "A cluster with a single master."
+.properties.plan1_selector.active.master_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan1_selector.active.worker_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan1_selector.active.master_instances:
+  value: 1
+.properties.plan1_selector.active.master_vm_type:
+  value: medium
+.properties.plan1_selector.active.master_persistent_disk_type:
+  value: "10240"
+.properties.plan1_selector.active.worker_vm_type:
+  value: medium
+.properties.plan1_selector.active.worker_persistent_disk_type:
+  value: "10240"
+.properties.plan1_selector.active.worker_instances:
+  value: 3    # The number of K8s worker instances
+.properties.plan1_selector.active.errand_vm_type:
+  value: micro
+.properties.plan1_selector.active.addons_spec:
+  value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+.properties.plan1_selector.active.allow_privileged_containers:
+  value: false  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+.properties.plan1_selector.active.disable_deny_escalating_exec:
+  value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
+.properties.plan2_selector:
+  value: Plan Active
+.properties.plan2_selector.active.name:
+  value: "multi-master"  # the name that appears for end users to choose
+.properties.plan2_selector.active.description:
+  value: "A cluster with multiple masters"
+.properties.plan2_selector.active.master_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan2_selector.active.worker_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan2_selector.active.master_instances:
+  value: 3
+.properties.plan2_selector.active.master_vm_type:
+  value: medium
+.properties.plan2_selector.active.master_persistent_disk_type:
+  value: "10240"
+.properties.plan2_selector.active.worker_vm_type:
+  value: medium
+.properties.plan2_selector.active.worker_persistent_disk_type:
+  value: "10240"
+.properties.plan2_selector.active.worker_instances:
+  value: 3    # The number of K8s worker instances
+.properties.plan2_selector.active.errand_vm_type:
+  value: micro
+.properties.plan2_selector.active.addons_spec:
+  value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+.properties.plan2_selector.active.allow_privileged_containers:
+  value: false  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+.properties.plan2_selector.active.disable_deny_escalating_exec:
+  value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
+.properties.plan3_selector:
+  value: Plan Inactive
+.properties.proxy_selector:
+  value: Disabled
+.properties.syslog_migration_selector:
+  value: enabled
+.properties.syslog_migration_selector.enabled.address:
+  value: ${syslog_host}
+.properties.syslog_migration_selector.enabled.port:
+  value: ${syslog_port}
+.properties.syslog_migration_selector.enabled.tls_enabled:
+  value: false
+.properties.syslog_migration_selector.enabled.transport_protocol:
+  value: tcp
+.properties.telemetry_selector:
+  value: disabled
+.properties.uaa:
+  value: internal
+.properties.uaa_pks_cli_access_token_lifetime:
+  value: 600
+.properties.uaa_pks_cli_refresh_token_lifetime:
+  value: 21600
+.properties.vm_extensions:
+  value:
+  - public_ip
+.properties.wavefront:
+  value: disabled

@@ -33,6 +33,16 @@ variable "pas_upgrade_pipeline" {
   default = "upgrade-pas"
 }
 
+variable "pks_install_pipeline" {
+  type = "string"
+  default = "deploy-pks"
+}
+
+variable "pks_upgrade_pipeline" {
+  type = "string"
+  default = "upgrade-pks"
+}
+
 locals {
   pcf_team_secret_root = "/concourse/${var.pcf_concourse_team}"
 }
@@ -50,6 +60,11 @@ locals {
 locals {
   install_harbor_secret_root = "${local.pcf_team_secret_root}/${var.harbor_install_pipeline}"
   upgrade_harbor_secret_root = "${local.pcf_team_secret_root}/${var.harbor_upgrade_pipeline}"
+}
+
+locals {
+  install_pks_secret_root = "${local.pcf_team_secret_root}/${var.pks_install_pipeline}"
+  upgrade_pks_secret_root = "${local.pcf_team_secret_root}/${var.pks_upgrade_pipeline}"
 }
 
 output "pcf_concourse_team" {
