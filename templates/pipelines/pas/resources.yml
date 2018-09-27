@@ -1,0 +1,44 @@
+backup_restore:
+  instances: automatic
+  persistent_disk:
+    size_mb: automatic
+  instance_type:
+    id: automatic
+blobstore:
+  instances: automatic
+  persistent_disk:
+    size_mb: automatic
+  instance_type:
+    id: automatic
+compute:
+  instances: automatic
+  instance_type:
+    id: automatic
+control:
+  instances: automatic
+  instance_type:
+    id: automatic
+database:
+  instances: automatic
+  persistent_disk:
+    size_mb: automatic
+  instance_type:
+    id: automatic
+ha_proxy:
+  instances: automatic
+  instance_type:
+    id: automatic
+mysql_monitor:
+  instances: automatic
+  instance_type:
+    id: automatic
+router:
+  instances: automatic
+  instance_type:
+    id: automatic
+tcp_router:
+  instances: 0
+  persistent_disk:
+    size_mb: automatic
+  instance_type:
+    id: automatic

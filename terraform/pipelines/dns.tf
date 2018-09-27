@@ -59,3 +59,13 @@ resource "google_dns_record_set" "prometheus" {
 
   rrdatas = [ "${local.prometheus_ip}" ]
 }
+
+resource "google_dns_record_set" "mysql_proxy" {
+  name    = "${local.mysql_proxy_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = "${local.pas_mysql_ips}"
+}
