@@ -130,7 +130,7 @@
   value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
 .properties.plan3_selector.active.allow_privileged_containers:
   value: true  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
-.properties.plan_2_selector.active.disable_deny_escalating_exec:
+.properties.plan3_selector.active.disable_deny_escalating_exec:
   value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
 .properties.proxy_selector:
   value: Disabled
