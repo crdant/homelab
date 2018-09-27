@@ -99,6 +99,8 @@ setup_concourse () {
 set_pipelines () {
   set_opsman_pipelines
   set_tile_pipelines "harbor"
+  set_tile_pipelines "pks"
+  set_tile_pipelines "pas"
   set_tile_pipelines "minio"
 }
 
