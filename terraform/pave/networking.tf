@@ -81,22 +81,22 @@ variable "services_portgroup" {
 
 variable "pks_portgroup" {
   type = "string"
-  default = "pks_clusters"
+  default = "pks-clusters"
 }
 
 variable "load_balancer_internal_portgroup" {
   type = "string"
-  default = "bigip_internal"
+  default = "bigip-internal"
 }
 
 variable "load_balancer_external_portgroup" {
   type = "string"
-  default = "bigip_external"
+  default = "bigip-external"
 }
 
 variable "load_balancer_ha_portgroup" {
   type = "string"
-  default = "bigip_ha"
+  default = "bigip-ha"
 }
 
 resource "vsphere_host_port_group" "vsan" {
