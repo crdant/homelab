@@ -11,9 +11,8 @@ concourse_target=${env_id}-${concourse_team}
 concourse_url="concourse.bootstrap.${domain}"
 pipeline_file=${work_dir}/pcf-pipelines/upgrade-tile/pipeline.yml
 
-om_creds=$(credhub get --name ${secret_root}/opsman_admin --output-json)
-om_username=$(echo ${om_creds} | jq --raw-output '.value.username')
-om_password=$(echo ${om_creds} | jq --raw-output '.value.password')
+om_username=$(credhub get --name ${secret_root}/opsman_admin_username --output-json | jq --raw-output '.value')
+om_password=$(credhub get --name ${secret_root}/opsman_admin_password --output-json | jq --raw-output '.value')
 
 download=
 upload=
