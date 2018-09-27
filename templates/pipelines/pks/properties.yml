@@ -8,8 +8,8 @@
   value: vSphere
 .properties.cloud_provider.vsphere.vcenter_master_creds:
   value:
-    identity: (( vcenter_account.username )) # vcenter_admin_username
-    password: (( vcenter_account.password )) # vcenter_admin_password
+    identity: ((vcenter_account.username)) # vcenter_admin_username
+    password: ((vcenter_account.password)) # vcenter_admin_password
 .properties.cloud_provider.vsphere.vcenter_ip:
   value: ${vcenter_host}
 .properties.cloud_provider.vsphere.vcenter_dc:
@@ -97,7 +97,41 @@
 .properties.plan2_selector.active.disable_deny_escalating_exec:
   value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
 .properties.plan3_selector:
-  value: Plan Inactive
+  value: Plan Active
+.properties.plan3_selector.active.name:
+  value: "privileged"  # the name that appears for end users to choose
+.properties.plan3_selector.active.description:
+  value: "A single-master cluster with pivileged mode enabled."
+.properties.plan3_selector.active.master_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan3_selector.active.worker_az_placement:
+  value:
+  - ${availability_zone_1}
+  - ${availability_zone_2}
+  - ${availability_zone_3}
+.properties.plan3_selector.active.master_instances:
+  value: 1
+.properties.plan3_selector.active.master_vm_type:
+  value: medium
+.properties.plan3_selector.active.master_persistent_disk_type:
+  value: "10240"
+.properties.plan3_selector.active.worker_vm_type:
+  value: medium
+.properties.plan3_selector.active.worker_persistent_disk_type:
+  value: "10240"
+.properties.plan3_selector.active.worker_instances:
+  value: 3    # The number of K8s worker instances
+.properties.plan3_selector.active.errand_vm_type:
+  value: micro
+.properties.plan3_selector.active.addons_spec:
+  value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+.properties.plan3_selector.active.allow_privileged_containers:
+  value: true  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+.properties.plan_2_selector.active.disable_deny_escalating_exec:
+  value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
 .properties.proxy_selector:
   value: Disabled
 .properties.syslog_migration_selector:
