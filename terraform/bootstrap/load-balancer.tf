@@ -38,16 +38,16 @@ resource "random_pet" "bigip_root_password" {
 locals {
   bigip_machine_name = "${var.env_id}-${var.lb_template_name}"
 
-  bigip_management_ip = "${cidrhost(local.infrastructure_cidr, 10)}"
+  bigip_management_ip = "${cidrhost(local.infrastructure_cidr, 9)}"
   bigip_management_gateway = "${cidrhost(local.infrastructure_cidr, 2)}"
 
-  bigip_internal_ip = "${cidrhost(local.balancer_internal_cidr, 10)}"
+  bigip_internal_ip = "${cidrhost(local.balancer_internal_cidr, 9)}"
   bigip_internal_gateway = "${cidrhost(local.balancer_internal_cidr, 2)}"
 
-  bigip_external_ip = "${cidrhost(local.balancer_external_cidr, 10)}"
+  bigip_external_ip = "${cidrhost(local.balancer_external_cidr, 9)}"
   bigip_external_gateway = "${cidrhost(local.balancer_external_cidr, 2)}"
 
-  bigip_ha_ip = "${cidrhost(local.balancer_ha_cidr, 10)}"
+  bigip_ha_ip = "${cidrhost(local.balancer_ha_cidr, 9)}"
   bigip_ha_gateway = "${cidrhost(local.balancer_ha_cidr, 2)}"
 }
 
@@ -175,6 +175,14 @@ output "bigip_admin_password" {
 
 output "bigip_management_ip" {
   value = "${local.bigip_management_ip}"
+}
+
+output "bigip_management_fqdn" {
+  value = "${local.bigip_management_fqdn}"
+}
+
+output "bigip_management_alias" {
+  value = "${local.bigip_management_alias}"
 }
 
 output "bigip_internal_ip" {
