@@ -33,10 +33,11 @@ resource "random_integer" "minio_singleton_zone" {
 }
 
 data "template_file" "minio_networks" {
-  template = "${file("${var.template_dir}/pipelines/minio/networks.yml")}"
+  template = "${file("${var.template_dir}/pipelines/networks-with-service-network.yml")}"
   vars {
     # shared networking configuration for all tiles
     network = "${data.terraform_remote_state.pave.services_network}"
+    service_network = "${data.terraform_remote_state.pave.services_network}"
 
     availability_zone_1 = "${var.availability_zones[0]}"
     availability_zone_2 = "${var.availability_zones[1]}"

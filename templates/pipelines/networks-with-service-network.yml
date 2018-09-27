@@ -7,4 +7,4 @@ other_availability_zones:
 singleton_availability_zone:
   name: ${singleton_availability_zone}
 service_network:
-  name: ${network}
+  name: ${service_network}

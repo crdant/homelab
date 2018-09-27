@@ -19,10 +19,11 @@ resource "random_integer" "pks_singleton_zone" {
 }
 
 data "template_file" "pks_networks" {
-  template = "${file("${var.template_dir}/pipelines/networks.yml")}"
+  template = "${file("${var.template_dir}/pipelines/networks-with-service-network.yml")}"
   vars {
     # shared networking configuration for all tiles
     network = "${data.terraform_remote_state.pave.services_network}"
+    service_network = "${data.terraform_remote_state.pave.pks_clusters_network}"
 
     availability_zone_1 = "${var.availability_zones[0]}"
     availability_zone_2 = "${var.availability_zones[1]}"
@@ -35,7 +36,7 @@ data "template_file" "pks_networks" {
 data "template_file" "pks_properties" {
   template = "${file("${var.template_dir}/pipelines/pks/properties.yml")}"
   vars {
-    pks_service_host = "${local.pks_subdomain}"
+    pks_service_host = "api.${local.pks_subdomain}"
 
     # service plans
     availability_zone_1 = "${var.availability_zones[0]}"
@@ -52,8 +53,8 @@ data "template_file" "pks_properties" {
     syslog_host = "${var.pks_syslog_host}"
     syslog_port = "${var.pks_syslog_port}"
 
-    certificate = "${replace(acme_certificate.pks_wildcard.certificate_pem, "\n", "\n        ")}"
-    private_key = "${replace(acme_certificate.pks_wildcard.private_key_pem, "\n", "\n        ")}"
+    certificate = "${replace(acme_certificate.pks_wildcard.certificate_pem, "\n", "\n      ")}"
+    private_key = "${replace(acme_certificate.pks_wildcard.private_key_pem, "\n", "\n      ")}"
   }
 }
 
