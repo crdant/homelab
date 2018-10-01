@@ -116,15 +116,7 @@ data "template_file" "opsman_install_vars" {
 
 resource "local_file" "opsman_install_vars" {
   content  = "${data.template_file.opsman_install_vars.rendered}"
-<<<<<<< Updated upstream
   filename = "${var.work_dir}/pipelines/opsman/vars.yml"
-=======
-  filename = "${var.key_dir}/pipelines/opsman-vars.yml"
-}
-
-resource "random_pet" "opsman_admin_password" {
-  length = 4
->>>>>>> Stashed changes
 }
 
 resource "random_pet" "opsman_ssh_password" {
