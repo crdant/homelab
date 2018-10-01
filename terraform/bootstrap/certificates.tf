@@ -22,6 +22,7 @@ resource "local_file" "concourse_private_key" {
   filename = "${var.key_dir}/${acme_certificate.concourse.certificate_domain}/privkey.pem"
 }
 
+<<<<<<< Updated upstream
 resource "acme_certificate" "balancer" {
   account_key_pem           = "${acme_registration.letsencrypt.account_key_pem}"
   common_name               = "${local.bigip_management_fqdn}"
@@ -49,6 +50,8 @@ resource "local_file" "balancer_private_key" {
   filename = "${var.key_dir}/${acme_certificate.balancer.certificate_domain}/privkey.pem"
 }
 
+=======
+>>>>>>> Stashed changes
 output "concourse_cert_file" {
   value = "${local_file.concourse_certificate.filename}"
 }

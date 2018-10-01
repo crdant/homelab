@@ -116,7 +116,15 @@ data "template_file" "opsman_install_vars" {
 
 resource "local_file" "opsman_install_vars" {
   content  = "${data.template_file.opsman_install_vars.rendered}"
+<<<<<<< Updated upstream
   filename = "${var.work_dir}/pipelines/opsman/vars.yml"
+=======
+  filename = "${var.key_dir}/pipelines/opsman-vars.yml"
+}
+
+resource "random_pet" "opsman_admin_password" {
+  length = 4
+>>>>>>> Stashed changes
 }
 
 resource "random_pet" "opsman_ssh_password" {
@@ -160,7 +168,11 @@ data "template_file" "opsman_install_secrets" {
 
 resource "local_file" "opsman_install_secrets" {
   content  = "${data.template_file.opsman_install_secrets.rendered}"
+<<<<<<< Updated upstream
   filename = "${var.key_dir}/pipelines/opsman/secrets.yml"
+=======
+  filename = "${var.key_dir}/pipelines/opsman-secrets.yml"
+>>>>>>> Stashed changes
 
   provisioner "local-exec" {
     command =<<COMMAND
@@ -171,13 +183,18 @@ COMMAND
 }
 
 data "template_file" "opsman_upgrade_vars" {
+<<<<<<< Updated upstream
   template = "${file("${var.template_dir}/pipelines/opsman/upgrade-vars.yml")}"
+=======
+  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-vars.yml")}"
+>>>>>>> Stashed changes
   vars {
     opsman_version_regex =  "${var.opsman_version_regex}"
 
     # opsman network info
     opsman_domain = "${local.opsman_fqdn}"
     opsman_dns_servers = "${join(",", var.dns_servers)}"
+<<<<<<< Updated upstream
     opsman_gateway = "${local.infrastructure_gateway}"
     opsman_ip_address = "${local.opsman_ip}"
     opsman_netmask = "${local.infrastructure_netmask}"
@@ -186,6 +203,16 @@ data "template_file" "opsman_upgrade_vars" {
     # opsman vm parameters config
     opsman_resource_pool = "${data.terraform_remote_state.pave.om_resource_pool}"
     opsman_vm_folder = "${data.terraform_remote_state.pave.infrastructure_folder}"
+=======
+    opsman_gateway = "${data.terraform_remote_state.pave.infrastructure_gateway}"
+    opsman_ip_address = "${local.opsman_ip}"
+    opsman_netmask = "${data.terraform_remote_state.pave.infrastructure_netmask}"
+    opsman_ntp_servers = "${join(",", var.ntp_servers)}"
+
+    # opsman vm parameters config
+    opsman_resource_pool = "${data.terraform_remote_state.pave.opsman_resource_pool}"
+    opsman_vm_folder = "${data.terraform_remote_state.pave.infra_inventory_folder}"
+>>>>>>> Stashed changes
     opsman_vm_network = "${data.terraform_remote_state.pave.infrastructure_network}"
     opsman_disk_type = "${var.vm_disk_type}"
 
@@ -201,11 +228,19 @@ data "template_file" "opsman_upgrade_vars" {
 
 resource "local_file" "opsman_upgrade_vars" {
   content  = "${data.template_file.opsman_upgrade_vars.rendered}"
+<<<<<<< Updated upstream
   filename = "${var.work_dir}/pipelines/opsman/upgrade-vars.yml"
 }
 
 data "template_file" "opsman_upgrade_secrets" {
   template = "${file("${var.template_dir}/pipelines/opsman/upgrade-secrets.yml")}"
+=======
+  filename = "${var.key_dir}/pipelines/opsman_vars.yml"
+}
+
+data "template_file" "opsman_upgrade_secrets" {
+  template = "${file("${var.template_dir}/pipelines/opsman-upgrade-secrets.yml")}"
+>>>>>>> Stashed changes
 
   vars {
     pipeline_secret_root = "${local.upgrade_om_secret_root}"
@@ -226,7 +261,11 @@ data "template_file" "opsman_upgrade_secrets" {
 
 resource "local_file" "opsman_upgrade_secrets" {
   content  = "${data.template_file.opsman_upgrade_secrets.rendered}"
+<<<<<<< Updated upstream
   filename = "${var.key_dir}/pipelines/opsman/upgrade-secrets.yml"
+=======
+  filename = "${var.key_dir}/pipelines/opsman-upgrade-secrets.yml"
+>>>>>>> Stashed changes
 
   provisioner "local-exec" {
     command =<<COMMAND
