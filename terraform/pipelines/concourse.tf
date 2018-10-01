@@ -72,8 +72,21 @@ locals {
   upgrade_pks_secret_root = "${local.pcf_team_secret_root}/${var.pks_upgrade_pipeline}"
 }
 
+resource "random_pet" "pcf_concourse_password" {
+  length = 4
+}
+
 output "pcf_concourse_team" {
   value = "${var.pcf_concourse_team}"
+}
+
+output "pcf_concourse_user" {
+  value = "${var.pcf_concourse_user}"
+}
+
+output "pcf_concourse_password" {
+  value = "${random_pet.pcf_concourse_password.id}"
+  sensitive = true
 }
 
 output "om_install_pipeline" {
@@ -90,21 +103,4 @@ output "harbor_install_pipeline" {
 
 output "harbor_upgrade_pipeline" {
   value = "${var.harbor_upgrade_pipeline}"
-}
-
-resource "random_pet" "pcf_concourse_password" {
-  length = 4
-}
-
-output "pcf_concourse_team" {
-  value = "${var.pcf_concourse_team}"
-}
-
-output "pcf_concourse_user" {
-  value = "${var.pcf_concourse_user}"
-}
-
-output "pcf_concourse_password" {
-  value = "${random_pet.pcf_concourse_password.id}"
-  sensitive = true
 }
