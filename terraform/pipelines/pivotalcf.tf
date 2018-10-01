@@ -33,4 +33,6 @@ locals {
 locals {
   pks_subdomain = "pks.${var.domain}"
   pks_api_fqdn = "api.${local.pks_subdomain}"
+
+  pks_domain_wildcard = "*.${local.pks_api_fqdn}"
 }
