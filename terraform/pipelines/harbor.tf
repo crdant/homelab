@@ -84,6 +84,7 @@ data "template_file" "harbor_product_vars" {
 
   vars {
     # shared networking configuration for all tiles
+    name = "harbor-container-registry"
     slug = "harbor-container-registry"
     version_regex = "${var.harbor_version_regex}"
     globs =  "${var.product_globs}"

@@ -76,6 +76,7 @@ data "template_file" "minio_product_vars" {
   template = "${file("${var.template_dir}/pipelines/product.yml")}"
   vars {
     # shared networking configuration for all tiles
+    name = "minio"
     slug = "minio"
     version_regex = "${var.minio_version_regex}"
     globs = "${var.product_globs}"

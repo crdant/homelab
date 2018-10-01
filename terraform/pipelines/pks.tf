@@ -76,6 +76,7 @@ data "template_file" "pks_product_vars" {
 
   vars {
     # shared networking configuration for all tiles
+    name = "pivotal-container-service"
     slug = "pivotal-container-service"
     version_regex = "${var.pks_version_regex}"
     globs =  "${var.product_globs}"
