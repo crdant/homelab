@@ -9,6 +9,8 @@ set -e
 concourse_github_client="$(security find-generic-password -a "Concourse Client" -s github.com -w)"
 concourse_github_secret="$(security find-generic-password -a "Concourse Secret" -s github.com -w)"
 
+concourse_github_token="$(security find-generic-password -a "Concourse Token" -s github.com -w)"
+
 # defaults that can be overridden in ${BASEDIR}/lib/env.sh, essentially these are currently
 # per my most recent major rebuild
 default_pcf_pipelines_version="v0.23.6"
@@ -16,6 +18,7 @@ default_github_user=${USER}
 
 pcf_pipelines_work_dir="${work_dir}/pcf-pipelines"
 sample_pipelines_work_dir="${work_dir}/concourse-pipeline-samples/pipelines"
+prometheus_pipeline_work_dir="${work_dir}/prometheus"
 
 om_install_pipeline_path="install-pcf/vsphere"
 om_upgrade_pipeline_path="upgrade-ops-manager/vsphere"
@@ -26,15 +29,12 @@ tile_upgrade_pipeline_path="upgrade-tile"
 terraform_vars () {
   env -i BASEDIR=${BASEDIR} \
     pivnet_token=${PIVNET_TOKEN} \
+    github_token=${concourse_github_token} \
     trusted_certificates="$(cat ${key_dir}/letsencrypt.pem)" \
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
-<<<<<<< Updated upstream
 prepare_pipelines () {
-=======
-prepare () {
->>>>>>> Stashed changes
   download_pipelines
   setup_concourse
 }
@@ -55,7 +55,7 @@ download_pipelines() {
   fi
 
   if [ ! -d ${work_dir}/prometheus ] ; then
-    git clone https://github.com/bosh-prometheus/prometheus-boshrelease.git ${work_dir}/prometheus
+    git clone https://github.com/pivotal-cf/pcf-prometheus-pipeline.git ${prometheus_pipeline_work_dir}
   else
     pushd ${work_dir}/prometheus > /dev/null
       git pull
@@ -102,6 +102,8 @@ setup_concourse () {
 
 set_pipelines () {
   set_opsman_pipelines
+  set_prometheus_pipelines
+
   set_tile_pipelines "harbor"
   set_pks_pipelines
   set_tile_pipelines "pas"
@@ -120,6 +122,13 @@ set_opsman_pipelines () {
     --config "${pcf_pipelines_work_dir}/upgrade-ops-manager/vsphere/pipeline.yml" \
     --load-vars-from "${work_dir}/pipelines/foundation.yml" \
     --load-vars-from "${work_dir}/pipelines/opsman/upgrade-vars.yml"
+}
+
+set_prometheus_pipelines() {
+  fly -t "${env_id}-pcf" set-pipeline --pipeline "deploy-prometheus" \
+    --config "${prometheus_pipeline_work_dir}/pipeline/pipeline.yml" \
+    --load-vars-from "${work_dir}/pipelines/foundation.yml" \
+    --load-vars-from "${work_dir}/pipelines/prometheus/params.yml"
 }
 
 set_tile_pipelines () {

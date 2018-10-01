@@ -64,6 +64,10 @@ secrets () {
   read -p "Enter the Github Client Secret for concourse: " concourse_client_secret
   security add-generic-password -a "Concourse Secret" -s github.com -p ${concourse_client_secret} -U
   echo ""
+
+  read -p "Enter the Github Token for concourse to acccess private repos: " concourse_github_token
+  security add-generic-password -a "Concourse Token" -s github.com -p ${concourse_github_token} -U
+  echo ""
 }
 
 if [ $# -gt 0 ]; then

@@ -6,6 +6,10 @@ variable "pivnet_token" {
   type = "string"
 }
 
+variable "github_token" {
+  type = "string"
+}
+
 variable "opsman_admin_username" {
   type = "string"
   default = "arceus"
@@ -49,6 +53,7 @@ data "template_file" "team_secrets" {
     # from the manifest
     pcf_team_secret_root = "${local.pcf_team_secret_root}"
     pivnet_token = "${var.pivnet_token}"
+    github_token = "${var.github_token}"
 
     opsman_admin_username = "${var.opsman_admin_username}"      # Username for Ops Manager admin account
     opsman_admin_password = "${random_pet.opsman_admin_password.id}"       # Password for Ops Manager admin account
