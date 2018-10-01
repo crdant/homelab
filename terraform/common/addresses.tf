@@ -31,27 +31,26 @@ locals {
   opsman_ip = "${cidrhost(local.infrastructure_cidr,10)}"
   director_ip = "${cidrhost(local.infrastructure_cidr,11)}"
 
+  # pas load balanaced
+  pas_wildcard_ip = "${cidrhost(local.balancer_external_cidr,10)}"
+  tcp_router_ip = "${cidrhost(local.balancer_external_cidr,20)}"
+  pas_ssh_ip = "${cidrhost(local.balancer_external_cidr,30)}"
+
   # pas statics
   gorouter_ips = [
       "${cidrhost(local.deployment_cidr, -15)}",
-      "${cidrhost(local.deployment_cidr, -14)}",
-      "${cidrhost(local.deployment_cidr, -13)}"
     ]
   brain_ips = [
       "${cidrhost(local.deployment_cidr, -10)}",
-      "${cidrhost(local.deployment_cidr, -9)}",
-      "${cidrhost(local.deployment_cidr, -8)}"
     ]
   tcp_router_ips = [
       "${cidrhost(local.deployment_cidr, -5)}",
-      "${cidrhost(local.deployment_cidr, -4)}",
-      "${cidrhost(local.deployment_cidr, -3)}"
     ]
   pas_mysql_ips = [
       "${cidrhost(local.deployment_cidr, -20)}",
-      "${cidrhost(local.deployment_cidr, -19)}",
-      "${cidrhost(local.deployment_cidr, -18)}"
     ]
+
+  pks_wildcard_ip = "${cidrhost(local.balancer_external_cidr, 20)}"
 }
 
 output "vcenter_server_ip" {
@@ -72,4 +71,8 @@ output "tcp_router_ips" {
 
 output "pas_mysql_ips" {
   value = "${local.pas_mysql_ips}"
+}
+
+output "pks_wildcard_ip" {
+  value = "${local.pks_wildcard_ip}"
 }
