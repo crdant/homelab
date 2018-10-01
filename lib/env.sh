@@ -27,7 +27,6 @@ region=us-east1
 
 # software you download before
 vcenter_iso_path="${work_dir}/VMware-VCSA-all-6.7.0-8546234.iso"
-vcenter_license=${VCENTER_LICENSE}
 
 # DNS
 domain=crdant.net
