@@ -15,7 +15,17 @@ variable "pas_syslog_port" {
 
 variable "tcp_routing_ports" {
   type = "string"
-  default = "1024-65536"
+  default = "1024-65535"
+}
+
+variable "small_footprint_globs" {
+  type = "string"
+  default = "srt*.pivotal"
+}
+
+variable "cell_count" {
+  type = "string"
+  default = "3"
 }
 
 resource "random_integer" "pas_singleton_zone" {
@@ -27,7 +37,7 @@ data "template_file" "pas_networks" {
   template = "${file("${var.template_dir}/pipelines/networks.yml")}"
   vars {
     # shared networking configuration for all tiles
-    network = "${data.terraform_remote_state.pave.services_network}"
+    network = "${data.terraform_remote_state.pave.deployment_network}"
 
     availability_zone_1 = "${var.availability_zones[0]}"
     availability_zone_2 = "${var.availability_zones[1]}"
@@ -53,6 +63,10 @@ data "template_file" "pas_properties" {
     custom_ca_certificate = "${replace(file("${var.key_dir}/letsencrypt.pem"), "\n", "\n    ")}"
     tcp_routing_ports = "${var.tcp_routing_ports}"
 
+    # uaa
+    uaa_certificate = "${replace(acme_certificate.uaa.certificate_pem, "\n", "\n      ")}"
+    uaa_private_key = "${replace(acme_certificate.uaa.private_key_pem, "\n", "\n      ")}"
+
     # syslog
     syslog_host = "${var.pas_syslog_host}"
     syslog_port = "${var.pas_syslog_port}"
@@ -75,7 +89,11 @@ data "template_file" "pas_resources" {
   template = "${file("${var.template_dir}/pipelines/pas/resources.yml")}"
   vars {
     # shared networking configuration for all tiles
-
+    control_instances = "${length(local.brain_ips)}"
+    compute_instances = "${length(var.cell_count)}"
+    database_instances = "${length(local.pas_mysql_ips)}"
+    router_instances = "${length(local.gorouter_ips)}"
+    tcp_router_instances = "${length(local.tcp_router_ips)}"
   }
 }
 
@@ -84,9 +102,10 @@ data "template_file" "pas_product_vars" {
 
   vars {
     # shared networking configuration for all tiles
+    name = "cf"
     slug = "elastic-runtime"
     version_regex = "${var.pas_version_regex}"
-    globs =  "${var.product_globs}"
+    globs =  "${var.small_footprint_globs}"
   }
 }
 
@@ -130,6 +149,10 @@ data "template_file" "pas_secrets" {
     # they are still stored for the future
     certificate = "${replace(acme_certificate.pas_wildcard.certificate_pem, "\n", "\n      ")}"
     private_key = "${replace(acme_certificate.pas_wildcard.private_key_pem, "\n", "\n      ")}"
+
+    # uaa - same caveat as above
+    uaa_certificate = "${replace(acme_certificate.uaa.certificate_pem, "\n", "\n      ")}"
+    uaa_private_key = "${replace(acme_certificate.uaa.private_key_pem, "\n", "\n      ")}"
   }
 
 }

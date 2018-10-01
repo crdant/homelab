@@ -11,15 +11,15 @@ blobstore:
   instance_type:
     id: automatic
 compute:
-  instances: automatic
+  instances: ${compute_instances}
   instance_type:
     id: automatic
 control:
-  instances: automatic
+  instances: ${control_instances}
   instance_type:
     id: automatic
 database:
-  instances: automatic
+  instances: ${database_instances}
   persistent_disk:
     size_mb: automatic
   instance_type:
@@ -33,11 +33,11 @@ mysql_monitor:
   instance_type:
     id: automatic
 router:
-  instances: automatic
+  instances: ${router_instances}
   instance_type:
     id: automatic
 tcp_router:
-  instances: 0
+  instances: ${tcp_router_instances}
   persistent_disk:
     size_mb: automatic
   instance_type:
