@@ -5,7 +5,7 @@ variable "prometheus_host" {
 
 variable "prometheus_install_pipeline" {
   type = "string"
-  default = "install-prometheus"
+  default = "deploy-prometheus"
 }
 
 locals {
