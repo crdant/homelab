@@ -33,7 +33,7 @@ resource "google_dns_record_set" "apps_domain" {
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${var.bigip_external_ip}" ]
+  rrdatas = [ "${local.pas_wildcard_ip}" ]
 }
 
 resource "google_dns_record_set" "system_domain" {
@@ -43,7 +43,27 @@ resource "google_dns_record_set" "system_domain" {
 
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
-  rrdatas = [ "${var.bigip_external_ip}" ]
+  rrdatas = [ "${local.pas_wildcard_ip}" ]
+}
+
+resource "google_dns_record_set" "pas_ssh" {
+  name    = "${local.pas_ssh_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.pas_ssh_ip}" ]
+}
+
+resource "google_dns_record_set" "pcf_ssh" {
+  name    = "${local.tcprouter_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.tcp_router_ip}" ]
 }
 
 locals {
@@ -68,4 +88,14 @@ resource "google_dns_record_set" "mysql_proxy" {
   managed_zone = "${data.google_dns_managed_zone.homelab.name}"
 
   rrdatas = "${local.pas_mysql_ips}"
+}
+
+resource "google_dns_record_set" "pks_api" {
+  name    = "${local.pks_api_fqdn}."
+  type = "A"
+  ttl  = "${var.dns_ttl}"
+
+  managed_zone = "${data.google_dns_managed_zone.homelab.name}"
+
+  rrdatas = [ "${local.pks_wildcard_ip}" ]
 }

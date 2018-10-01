@@ -24,10 +24,13 @@ locals {
   system_domain = "${var.pcf_system_prefix}.${local.pas_subdomain}"
   apps_domain_wildcard = "*.${local.apps_domain}"
   system_domain_wildcard = "*.${local.system_domain}"
+
   mysql_proxy_fqdn = "${var.mysql_proxy_host}.${local.pas_subdomain}"
+  pas_ssh_fqdn = "ssh.${local.pas_subdomain}"
+  tcprouter_fqdn = "tcp.${var.pcf_apps_prefix}.${local.pas_subdomain}"
 }
 
 locals {
   pks_subdomain = "pks.${var.domain}"
-  pks_domain_wildcard = "*.${local.pks_subdomain}"
+  pks_api_fqdn = "api.${local.pks_subdomain}"
 }
