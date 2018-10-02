@@ -107,6 +107,7 @@ set_pipelines () {
   set_tile_pipelines "harbor"
   set_pks_pipelines
   set_tile_pipelines "pas"
+  set_tile_pipelines "credhub"
   set_tile_pipelines "minio"
 }
 
@@ -166,6 +167,9 @@ if [ $# -gt 0 ]; then
         ;;
       apply )
         apply pipelines
+        ;;
+      outputs )
+        outputs pipelines
         ;;
       prepare )
         prepare_pipelines
