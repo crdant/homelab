@@ -1,0 +1,14 @@
+{
+  "kind": "tm:ltm:profile:client-ssl:client-sslstate",
+  "name": "${profile}",
+  "partition": "${partition}",
+  "certKeyChain": [
+    {
+      "name": "default",
+      "appService": "none",
+      "cert": "/${partition}/${certificate}.crt",
+      "chain": "none",
+      "key": "/${partition}/${private_key}.key"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "kind": "tm:sys:crypto:key:keystate",
+  "command": "install",
+  "name": "/${partition}/${private_key}",
+  "partition": "${partition}",
+  "fromLocalFile": "${private_key_tempfile_path}"
+}

@@ -16,6 +16,32 @@
   "mobileAppTunnel": "disabled",
   "nat64": "disabled",
   "pool": "/${partition}/${pool}",
+  "profiles": [
+    {
+      "kind": "tm:ltm:virtual:profiles:profilesstate",
+      "name": "http",
+      "partition": "Common",
+      "context": "all"
+    },
+    {
+      "kind": "tm:ltm:virtual:profiles:profilesstate",
+      "name": "tcp-lan-optimized",
+      "partition": "Common",
+      "context": "all"
+    },
+    {
+      "kind": "tm:ltm:virtual:profiles:profilesstate",
+      "name": "${ssl_client_profile}",
+      "partition": "${partition}",
+      "context": "clientside"
+    },
+    {
+      "kind": "tm:ltm:virtual:profiles:profilesstate",
+      "name": "serverssl",
+      "partition": "Common",
+      "context": "serverside"
+    }
+  ],
   "rateLimit": "disabled",
   "rateLimitDstMask": 0,
   "rateLimitMode": "object",
@@ -34,10 +60,5 @@
   "vsIndex": 12,
   "vlans": [
     "/Common/external"
-  ],
-  "vlansReference": [
-    {
-      "link": "https://localhost/mgmt/tm/net/vlan/~Common~external?ver=13.1.1"
-    }
   ]
 }

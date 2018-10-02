@@ -1,0 +1,7 @@
+{
+  "kind": "tm:sys:crypto:cert:certstate",
+  "command": "install",
+  "name": "/${partition}/${certificate}",
+  "partition": "${partition}",
+  "fromLocalFile": "${certificate_tempfile_path}"
+}

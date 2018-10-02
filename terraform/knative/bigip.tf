@@ -39,6 +39,7 @@ data "template_file" "virtual_server" {
     cluster_bigip_ip = "${local.cluster_bigip_ip}"
     port = "${var.cluster_port}"
     snat_pool = "${restapi_object.snat_pool.id}"
+    ssl_client_profile = "${restapi_object.ssl_profile.id}"
   }
 }
 
@@ -131,6 +132,94 @@ resource "restapi_object" "snat_pool" {
   data = "${data.template_file.snat_pool.rendered}"
 
   read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.partition.id}~${var.cluster}"
+}
+
+locals {
+  certificate_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}.crt"
+  private_key_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}.key"
+}
+
+resource "null_resource" "certificate_file" {
+  provisioner "file" {
+    content      = "${file("${var.key_dir}/${data.terraform_remote_state.pipelines.pks_subdomain}/cert.pem")}"
+    destination  = "${local.certificate_tempfile_path}"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.bigip_admin_user}"
+      password = "${data.terraform_remote_state.bbl.bigip_admin_password}"
+      host     = "${data.terraform_remote_state.bbl.bigip_management_fqdn}"
+    }
+  }
+}
+
+data "template_file" "certificate" {
+  template = "${file("${var.template_dir}/cluster/certificate.json")}"
+  vars {
+    certificate = "${var.cluster}-certificate"
+    certificate_tempfile_path = "${local.certificate_tempfile_path}"
+    partition = "${restapi_object.partition.id}"
+  }
+}
+
+resource "restapi_object" "certificate" {
+  path = "/mgmt/tm/sys/crypto/cert"
+  data = "${data.template_file.certificate.rendered}"
+
+  read_path = "/mgmt/tm/sys/crypto/cert/~${restapi_object.partition.id}~${var.cluster}"
+
+  depends_on = [ "null_resource.certificate_file" ]
+}
+
+resource "null_resource" "private_key_file" {
+  provisioner "file" {
+    content      = "${file("${var.key_dir}/${data.terraform_remote_state.pipelines.pks_subdomain}/privkey.pem")}"
+    destination  = "${local.private_key_tempfile_path}"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.bigip_admin_user}"
+      password = "${data.terraform_remote_state.bbl.bigip_admin_password}"
+      host     = "${data.terraform_remote_state.bbl.bigip_management_fqdn}"
+    }
+  }
+}
+
+data "template_file" "private_key" {
+  template = "${file("${var.template_dir}/cluster/private_key.json")}"
+  vars {
+    private_key = "${var.cluster}-private-key"
+    private_key_tempfile_path = "${local.private_key_tempfile_path}"
+    partition = "${restapi_object.partition.id}"
+  }
+}
+
+resource "restapi_object" "private_key" {
+  path = "/mgmt/tm/sys/crypto/key"
+  data = "${data.template_file.private_key.rendered}"
+
+  read_path = "/mgmt/tm/sys/crypto/key/~${restapi_object.partition.id}~${var.cluster}"
+
+  depends_on = [ "null_resource.private_key_file" ]
+}
+
+data "template_file" "ssl_profile" {
+  template = "${file("${var.template_dir}/cluster/ssl_profile.json")}"
+  vars {
+    profile = "pks-cluster-${var.cluster}-ssl-profile"
+    certificate = "${var.cluster}-certificate"
+    private_key = "${var.cluster}-private-key"
+    partition = "${restapi_object.partition.id}"
+  }
+}
+
+resource "restapi_object" "ssl_profile" {
+  path = "/mgmt/tm/ltm/profile/client-ssl"
+  data = "${data.template_file.ssl_profile.rendered}"
+
+  read_path = "/mgmt/tm/ltm/profile/client-ssl/~${restapi_object.partition.id}~pks-cluster-${var.cluster}-ssl-profile"
+
+  depends_on = [ "restapi_object.certificate", "restapi_object.private_key" ]
 }
 
 output "partition" {
