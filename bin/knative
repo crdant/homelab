@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
+
+set -e
+
+default_knative_cluster="knative"
+cluster="${knative_cluster:-$default_knative_cluster}"
+
+backend_config () {
+  cat <<CONFIG
+credentials = <<CREDENTIALS
+  $(cat ${key_file})
+CREDENTIALS
+region = "${region}"
+bucket = "${statefile_bucket}"
+prefix = "${cluster}-cluster"
+CONFIG
+}
+
+terraform_vars () {
+  knative_cluster_ip_json="$(pks cluster ${cluster} --json | jq .kubernetes_master_ips)"
+
+  jq_query=$(jq -n \
+    --arg cluster ${cluster} \
+    --argjson cluster_ips "$knative_cluster_ip_json" \
+    'env + {
+      cluster_ips: $cluster_ips,
+      cluster: $cluster,
+    }'
+  )
+
+  env -i BASEDIR="${BASEDIR}" \
+    jq_query="${jq_query}" \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n "$jq_query"'
+}
+
+cluster () {
+  pks create-cluster ${knative_cluster} --plan privileged --external-hostname ${knative_cluster:-$default_knative_cluster}.${pks_subdomain}
+  pks get-credentials ${knative_cluster}
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      cluster )
+        cluster
+        ;;
+      init )
+        init knative
+        ;;
+      apply )
+        apply knative
+        ;;
+      destroy )
+        destroy knative
+        ;;
+      outputs )
+        outputs knative
+        ;;
+      vars )
+        terraform_vars
+        ;;
+      *)
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+    exit
+  done
+fi
+
+init knative
+apply knative

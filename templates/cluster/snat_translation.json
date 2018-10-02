@@ -1,0 +1,18 @@
+{
+  "kind": "tm:ltm:snat-translation:snat-translationstate",
+  "name": "${snat_translation}",
+  "partition": "${partition}",
+  "address": "${internal_ip}",
+  "arp": "enabled",
+  "connectionLimit": 0,
+  "enabled": true,
+  "inheritedTrafficGroup": "true",
+  "ipIdleTimeout": "indefinite",
+  "tcpIdleTimeout": "indefinite",
+  "trafficGroup": "/Common/traffic-group-1",
+  "trafficGroupReference": {
+    "link": "https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1"
+  },
+  "udpIdleTimeout": "indefinite",
+  "unit": 1
+}

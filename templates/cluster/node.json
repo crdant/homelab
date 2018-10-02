@@ -1,0 +1,20 @@
+{
+  "kind": "tm:ltm:node:nodestate",
+  "name": "${node_name}-${node_index}",
+  "partition": "${partition}",
+  "address": "${ip_address}",
+  "connectionLimit": 0,
+  "dynamicRatio": 1,
+  "ephemeral": "false",
+  "fqdn": {
+    "addressFamily": "ipv4",
+    "autopopulate": "disabled",
+    "downInterval": 5,
+    "interval": "3600"
+  },
+  "logging": "disabled",
+  "monitor": "default",
+  "rateLimit": "disabled",
+  "ratio": 1,
+  "session": "user-enabled"
+}

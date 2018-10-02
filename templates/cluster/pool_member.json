@@ -1,0 +1,17 @@
+{
+  "kind": "tm:ltm:pool:members:membersstate",
+  "name": "${pool_member}:${port}",
+  "partition": "${partition}",
+  "connectionLimit": 0,
+  "dynamicRatio": 1,
+  "ephemeral": "false",
+  "fqdn": {
+    "autopopulate": "disabled"
+  },
+  "inheritProfile": "enabled",
+  "logging": "disabled",
+  "monitor": "default",
+  "priorityGroup": 0,
+  "rateLimit": "disabled",
+  "ratio": 1
+}

@@ -1,0 +1,8 @@
+{
+  "kind": "tm:ltm:snatpool:snatpoolstate",
+  "name": "${snat_pool}",
+  "partition": "${partition}",
+  "members": [
+    "/${partition}/${snat_translation}"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "kind": "tm:ltm:virtual:virtualstate",
+  "name": "${virtual_server}",
+  "partition": "${partition}",
+  "addressStatus": "yes",
+  "autoLasthop": "default",
+  "cmpEnabled": "yes",
+  "connectionLimit": 0,
+  "description": "PKS cluster ${cluster}",
+  "destination": "/${partition}/${cluster_bigip_ip}:${port}",
+  "enabled": true,
+  "gtmScore": 0,
+  "ipProtocol": "tcp",
+  "mask": "255.255.255.255",
+  "mirror": "disabled",
+  "mobileAppTunnel": "disabled",
+  "nat64": "disabled",
+  "pool": "/${partition}/${pool}",
+  "rateLimit": "disabled",
+  "rateLimitDstMask": 0,
+  "rateLimitMode": "object",
+  "rateLimitSrcMask": 0,
+  "serviceDownImmediateAction": "none",
+  "source": "0.0.0.0/0",
+  "sourceAddressTranslation": {
+    "pool": "/${partition}/${snat_pool}",
+    "type": "snat"
+  },
+  "sourcePort": "preserve",
+  "synCookieStatus": "not-activated",
+  "translateAddress": "enabled",
+  "translatePort": "enabled",
+  "vlansEnabled": true,
+  "vsIndex": 12,
+  "vlans": [
+    "/Common/external"
+  ],
+  "vlansReference": [
+    {
+      "link": "https://localhost/mgmt/tm/net/vlan/~Common~external?ver=13.1.1"
+    }
+  ]
+}
