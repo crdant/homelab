@@ -1,0 +1,10 @@
+.properties.allow_paid_service_plans:
+  value: false
+.properties.apply_open_security_group:
+  value: false
+.properties.credhub_broker_enable_global_access_to_plans:
+  value: true
+.properties.org:
+  value: ${org}
+.properties.space:
+  value: ${space}

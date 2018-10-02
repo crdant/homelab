@@ -1,0 +1,8 @@
+delete-all:
+  instances: automatic
+  instance_type:
+    id: automatic
+deploy-all:
+  instances: automatic
+  instance_type:
+    id: automatic
