@@ -50,7 +50,7 @@ data "template_file" "minio_networks" {
 data "template_file" "minio_properties" {
   template = "${file("${var.template_dir}/pipelines/minio/properties.yml")}"
   vars {
-    org = "minio"
+    org = "tools"
     space = "storage"
 
     # for the service plan
