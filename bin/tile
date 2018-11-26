@@ -4,7 +4,7 @@ BASEDIR=`dirname $0`/..
 . "${BASEDIR}/lib/secrets.sh"
 . "${BASEDIR}/lib/generate_passphrase.sh"
 
-secret_root="/concourse/pcf"
+secret_root="/concourse/pivotal_cloud_foundry"
 
 concourse_team=pcf
 concourse_target=${env_id}-${concourse_team}
