@@ -5,7 +5,7 @@ resource "random_pet" "bigip_password" {
 data "template_file" "partition" {
   template = "${file("${var.template_dir}/cluster/partition.json")}"
   vars {
-    partition_name = "${var.cluster}"
+    partition = "${var.cluster}"
   }
 }
 
@@ -14,11 +14,24 @@ resource "restapi_object" "partition" {
   data = "${data.template_file.partition.rendered}"
 }
 
+data "template_file" "apps_partition" {
+  template = "${file("${var.template_dir}/cluster/partition.json")}"
+  vars {
+    partition = "${var.cluster}-apps"
+  }
+}
+
+resource "restapi_object" "apps_partition" {
+  path = "/mgmt/tm/auth/partition"
+  data = "${data.template_file.apps_partition.rendered}"
+}
+
 data "template_file" "user" {
   template = "${file("${var.template_dir}/cluster/user.json")}"
   vars {
     username = "${var.cluster}"
     partition = "${restapi_object.partition.id}"
+    apps_partition = "${restapi_object.apps_partition.id}"
     password = "${random_pet.bigip_password.id}"
   }
 }
@@ -134,6 +147,40 @@ resource "restapi_object" "snat_pool" {
   read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.partition.id}~${var.cluster}"
 }
 
+
+data "template_file" "apps_snat_translation" {
+  template = "${file("${var.template_dir}/cluster/snat_translation.json")}"
+  vars {
+    snat_translation = "${var.cluster}-apps"
+    partition = "${restapi_object.partition.id}"
+    internal_ip = "${local.cluster_bigip_internal_ip}"
+  }
+}
+
+resource "restapi_object" "apps_snat_translation" {
+  path = "/mgmt/tm/ltm/snat-translation"
+  data = "${data.template_file.apps_snat_translation.rendered}"
+
+  read_path = "/mgmt/tm/ltm/snat-translation/~${restapi_object.partition.id}~${var.cluster}-apps"
+}
+
+data "template_file" "apps_snat_pool" {
+  template = "${file("${var.template_dir}/cluster/snat_pool.json")}"
+  vars {
+    snat_pool = "${var.cluster}-apps"
+    snat_translation = "${restapi_object.snat_translation.id}"
+    partition = "${restapi_object.partition.id}"
+    internal_ip = "${local.cluster_bigip_internal_ip}"
+  }
+}
+
+resource "restapi_object" "apps_snat_pool" {
+  path = "/mgmt/tm/ltm/snatpool"
+  data = "${data.template_file.apps_snat_pool.rendered}"
+
+  read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.partition.id}~${var.cluster}-apps"
+}
+
 locals {
   certificate_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}.crt"
   private_key_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}.key"
@@ -166,7 +213,7 @@ resource "restapi_object" "certificate" {
   path = "/mgmt/tm/sys/crypto/cert"
   data = "${data.template_file.certificate.rendered}"
 
-  read_path = "/mgmt/tm/sys/crypto/cert/~${restapi_object.partition.id}~${var.cluster}"
+  read_path = "/mgmt/tm/sys/crypto/cert/~${restapi_object.partition.id}~${var.cluster}-certificate"
 
   depends_on = [ "null_resource.certificate_file" ]
 }
@@ -198,7 +245,7 @@ resource "restapi_object" "private_key" {
   path = "/mgmt/tm/sys/crypto/key"
   data = "${data.template_file.private_key.rendered}"
 
-  read_path = "/mgmt/tm/sys/crypto/key/~${restapi_object.partition.id}~${var.cluster}"
+  read_path = "/mgmt/tm/sys/crypto/key/~${restapi_object.partition.id}~${var.cluster}-private-key"
 
   depends_on = [ "null_resource.private_key_file" ]
 }

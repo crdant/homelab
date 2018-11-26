@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+BASEDIR=`dirname $0`/..
+. "${BASEDIR}/lib/env.sh"
+. "${BASEDIR}/lib/generate_passphrase.sh"
+. "${BASEDIR}/lib/terraform.sh"
+
+set -e
+
+create_cluster=
+init_terraform=
+apply_terraform=
+destroy_terraform=
+outputs_terraform=
+vars_terraform=
+
+backend_config () {
+  cat <<CONFIG
+credentials = <<CREDENTIALS
+  $(cat ${key_file})
+CREDENTIALS
+region = "${region}"
+bucket = "${statefile_bucket}"
+prefix = "${cluster}-cluster"
+CONFIG
+}
+
+terraform_vars () {
+  cluster_ip_json="$(pks cluster ${cluster} --json | jq .kubernetes_master_ips)"
+
+  jq_query=$(jq -n \
+    --arg cluster ${cluster} \
+    --argjson cluster_ips "$cluster_ip_json" \
+    'env + {
+      cluster_ips: $cluster_ips,
+      cluster: $cluster,
+    }'
+  )
+
+  env -i BASEDIR="${BASEDIR}" \
+    jq_query="${jq_query}" \
+    bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n "$jq_query"'
+}
+
+create () {
+  pks create-cluster ${cluster} --plan privileged --external-hostname ${cluster:-$default_cluster}.${pks_subdomain}
+  pks get-credentials ${cluster}
+}
+
+if [ $# -gt 0 ]; then
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --cluster-name | --name | -n)
+        cluster=${2}
+        shift
+        ;;
+      create )
+        create_cluster=1
+        ;;
+      init )
+        init_terraform=1
+        ;;
+      apply )
+        apply_terraform=1
+        ;;
+      destroy )
+        destroy_terraform=1
+        ;;
+      outputs )
+        outputs_terraform=1
+        ;;
+      vars )
+        vars_terraform=1
+        ;;
+      *)
+        echo "Unrecognized option: $1" 1>&2
+        exit 1
+        ;;
+    esac
+    shift
+  done
+fi
+
+if [ -z "$cluster" ] ; then
+  echo "Cluster name not specified. Please provide the argument '-n, --cluster-name' with a name for the cluster"
+  exit 1
+fi
+
+if [ -z "$create_cluster" ] && [ -z "$init_terraform" ] && [ -z "${apply_terraform}" ] && [ -z "${destroy_terraform}" ] && [ -z "${outputs_terraform}" ] && [ -z "${vars_terraform}"] ; then
+  init_terraform=1
+  apply_terrafrom=1
+fi
+
+if [ -n "$create_cluster" ] ; then
+  create
+fi
+
+if [ -n "$init_terraform" ] ; then
+  # make a terraform directory for this cluster
+  mkdir ${terraform_dir}/${cluster}
+  ln -s ${terraform_dir}/cluster/* ${terraform_dir}/${cluster}
+
+  init ${cluster}
+fi
+
+if [ -n "$apply_terraform" ] ; then
+  apply ${cluster}
+fi
+
+if [ -n "$destroy_terraform" ] ; then
+  destroy ${cluster}
+fi
+
+if [ -n "$outputs_terraform" ] ; then
+  outputs ${cluster}
+fi
+
+if [ -n "$vars_terraform" ] ; then
+  terraform_vars
+fi

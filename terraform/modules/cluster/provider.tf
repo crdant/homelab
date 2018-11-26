@@ -18,6 +18,7 @@ provider "restapi" {
   username = "${var.bigip_admin_user}"
   password = "${data.terraform_remote_state.bbl.bigip_admin_password}"
   id_attribute = "name"
+  insecure = "true"    # temporary
 
   write_returns_object = true
 }
