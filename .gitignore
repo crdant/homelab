@@ -9,3 +9,4 @@ state/*
 .terraform
 terraform.tfstate.*.backup
 *.tfstate
+terraform/data/
