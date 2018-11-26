@@ -1,5 +1,5 @@
 {
   "kind": "tm:auth:partition:partitionstate",
-  "name": "${partition_name}",
-  "fullPath": "${partition_name}"
+  "name": "${partition}",
+  "fullPath": "${partition}"
 }

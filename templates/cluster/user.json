@@ -7,10 +7,11 @@
   "partitionAccess": [
     {
       "name": "${partition}",
-      "role": "operator",
-      "nameReference": {
-        "link": "https://localhost/mgmt/tm/auth/partition/${partition}?ver=13.1.1"
-      }
+      "role": "operator"
+    },
+    {
+      "name": "${apps_partition}",
+      "role": "operator"
     }
   ]
 }
