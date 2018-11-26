@@ -12,6 +12,7 @@ apply_terraform=
 destroy_terraform=
 outputs_terraform=
 vars_terraform=
+error_out=
 
 backend_config () {
   cat <<CONFIG
@@ -42,7 +43,7 @@ terraform_vars () {
 }
 
 create () {
-  pks create-cluster ${cluster} --plan privileged --external-hostname ${cluster:-$default_cluster}.${pks_subdomain}
+  pks create-cluster ${cluster} --plan ${plan} --external-hostname ${cluster}.${pks_subdomain}
   pks get-credentials ${cluster}
 }
 
@@ -51,6 +52,10 @@ if [ $# -gt 0 ]; then
     case $1 in
       --cluster-name | --name | -n)
         cluster=${2}
+        shift
+        ;;
+      --service-plan | --plan | -p)
+        plan=${2}
         shift
         ;;
       create )
@@ -73,7 +78,7 @@ if [ $# -gt 0 ]; then
         ;;
       *)
         echo "Unrecognized option: $1" 1>&2
-        exit 1
+        error_out=1
         ;;
     esac
     shift
@@ -82,6 +87,16 @@ fi
 
 if [ -z "$cluster" ] ; then
   echo "Cluster name not specified. Please provide the argument '-n, --cluster-name' with a name for the cluster"
+  error_out=1
+fi
+
+if [ -z "$plan" ] ; then
+  echo "Service plan not specified. Please provide the argument '-p, --service-plan' with a valid PKS service plan from the list below."
+  pks plans
+  error_out=1
+fi
+
+if [ -n "${error_out}" ] ; then
   exit 1
 fi
 
