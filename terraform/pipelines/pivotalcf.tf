@@ -34,5 +34,17 @@ locals {
   pks_subdomain = "pks.${var.domain}"
   pks_api_fqdn = "api.${local.pks_subdomain}"
 
-  pks_domain_wildcard = "*.${local.pks_api_fqdn}"
+  pks_domain_wildcard = "*.${local.pks_subdomain}"
+}
+
+output "apps_domain" {
+  value = "${local.apps_domain}"
+}
+
+output "system_domain" {
+  value = "${local.system_domain}"
+}
+
+output "pks_subdomain" {
+  value = "${local.pks_subdomain}"
 }
