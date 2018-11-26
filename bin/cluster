@@ -98,6 +98,7 @@ if [ -n "$init_terraform" ] ; then
   # make a terraform directory for this cluster
   mkdir ${terraform_dir}/${cluster}
   ln -s ${terraform_dir}/cluster/* ${terraform_dir}/${cluster}
+  echo "${terraform_dir}/${cluster}" >> ${BASEDIR}/.gitignore
 
   init ${cluster}
 fi
