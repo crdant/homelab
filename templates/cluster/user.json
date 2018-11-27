@@ -6,12 +6,8 @@
   "password": "${password}",
   "partitionAccess": [
     {
-      "name": "${partition}",
-      "role": "operator"
-    },
-    {
-      "name": "${apps_partition}",
-      "role": "operator"
+      "name": "all-partitions",
+      "role": "admin"
     }
   ]
 }

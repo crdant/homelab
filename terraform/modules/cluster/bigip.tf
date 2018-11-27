@@ -147,13 +147,12 @@ resource "restapi_object" "snat_pool" {
   read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.partition.id}~${var.cluster}"
 }
 
-
 data "template_file" "apps_snat_translation" {
   template = "${file("${var.template_dir}/cluster/snat_translation.json")}"
   vars {
     snat_translation = "${var.cluster}-apps"
-    partition = "${restapi_object.partition.id}"
-    internal_ip = "${local.cluster_bigip_internal_ip}"
+    partition = "${restapi_object.apps_partition.id}"
+    internal_ip = "${local.apps_bigip_internal_ip}"
   }
 }
 
@@ -161,16 +160,16 @@ resource "restapi_object" "apps_snat_translation" {
   path = "/mgmt/tm/ltm/snat-translation"
   data = "${data.template_file.apps_snat_translation.rendered}"
 
-  read_path = "/mgmt/tm/ltm/snat-translation/~${restapi_object.partition.id}~${var.cluster}-apps"
+  read_path = "/mgmt/tm/ltm/snat-translation/~${restapi_object.apps_partition.id}~${var.cluster}-apps"
 }
 
 data "template_file" "apps_snat_pool" {
   template = "${file("${var.template_dir}/cluster/snat_pool.json")}"
   vars {
     snat_pool = "${var.cluster}-apps"
-    snat_translation = "${restapi_object.snat_translation.id}"
-    partition = "${restapi_object.partition.id}"
-    internal_ip = "${local.cluster_bigip_internal_ip}"
+    snat_translation = "${restapi_object.apps_snat_translation.id}"
+    partition = "${restapi_object.apps_partition.id}"
+    internal_ip = "${local.apps_bigip_internal_ip}"
   }
 }
 
@@ -178,8 +177,10 @@ resource "restapi_object" "apps_snat_pool" {
   path = "/mgmt/tm/ltm/snatpool"
   data = "${data.template_file.apps_snat_pool.rendered}"
 
-  read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.partition.id}~${var.cluster}-apps"
+  read_path = "/mgmt/tm/ltm/snatpool/~${restapi_object.apps_partition.id}~${var.cluster}-apps"
 }
+
+# cluster certificate and SSL configuration
 
 locals {
   certificate_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}.crt"
@@ -269,8 +270,105 @@ resource "restapi_object" "ssl_profile" {
   depends_on = [ "restapi_object.certificate", "restapi_object.private_key" ]
 }
 
+# wildcard certificate and SSL configuration
+
+locals {
+  wildcard_certificate_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}-wildcard.crt"
+  wildcard_private_key_tempfile_path = "/var/tmp/${data.terraform_remote_state.pipelines.pks_subdomain}-wildcard.key"
+  common_partition = "Common"
+}
+
+resource "null_resource" "wildcard_certificate_file" {
+  provisioner "file" {
+    content      = "${acme_certificate.cluster_wildcard.certificate_pem}"
+    destination  = "${local.wildcard_certificate_tempfile_path}"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.bigip_admin_user}"
+      password = "${data.terraform_remote_state.bbl.bigip_admin_password}"
+      host     = "${data.terraform_remote_state.bbl.bigip_management_fqdn}"
+    }
+  }
+}
+
+data "template_file" "wildcard_certificate" {
+  template = "${file("${var.template_dir}/cluster/certificate.json")}"
+  vars {
+    certificate = "${var.cluster}-wildcard-certificate"
+    certificate_tempfile_path = "${local.wildcard_certificate_tempfile_path}"
+    partition = "${local.common_partition}"
+  }
+}
+
+resource "restapi_object" "wildcard_certificate" {
+  path = "/mgmt/tm/sys/crypto/cert"
+  data = "${data.template_file.wildcard_certificate.rendered}"
+
+  read_path = "/mgmt/tm/sys/crypto/cert/~${local.common_partition}~${var.cluster}-wildcard-certificate"
+
+  depends_on = [ "null_resource.certificate_file" ]
+}
+
+resource "null_resource" "wildcard_private_key_file" {
+  provisioner "file" {
+    content      = "${acme_certificate.cluster_wildcard.private_key_pem}"
+    destination  = "${local.wildcard_private_key_tempfile_path}"
+
+    connection {
+      type     = "ssh"
+      user     = "${var.bigip_admin_user}"
+      password = "${data.terraform_remote_state.bbl.bigip_admin_password}"
+      host     = "${data.terraform_remote_state.bbl.bigip_management_fqdn}"
+    }
+  }
+}
+
+data "template_file" "wildcard_private_key" {
+  template = "${file("${var.template_dir}/cluster/private_key.json")}"
+  vars {
+    private_key = "${var.cluster}-wildcard-private-key"
+    private_key_tempfile_path = "${local.wildcard_private_key_tempfile_path}"
+    partition = "${local.common_partition}"
+  }
+}
+
+resource "restapi_object" "wildcard_private_key" {
+  path = "/mgmt/tm/sys/crypto/key"
+  data = "${data.template_file.wildcard_private_key.rendered}"
+
+  read_path = "/mgmt/tm/sys/crypto/key/~${local.common_partition}~${var.cluster}-wildcard-private-key"
+
+  depends_on = [ "null_resource.private_key_file" ]
+}
+
+data "template_file" "wildcard_ssl_profile" {
+  template = "${file("${var.template_dir}/cluster/ssl_profile.json")}"
+  vars {
+    profile = "${var.cluster}-wildcard-ssl-profile"
+    certificate = "${var.cluster}-wildcard-certificate"
+    private_key = "${var.cluster}-wildcard-private-key"
+    partition = "${local.common_partition}"
+  }
+}
+
+resource "restapi_object" "wildcard_ssl_profile" {
+  path = "/mgmt/tm/ltm/profile/client-ssl"
+  data = "${data.template_file.wildcard_ssl_profile.rendered}"
+
+  read_path = "/mgmt/tm/ltm/profile/client-ssl/~${local.common_partition}~${var.cluster}-wildcard-ssl-profile"
+
+  depends_on = [ "restapi_object.certificate", "restapi_object.private_key" ]
+}
+
+# outputs
+
 output "partition" {
   value = "${restapi_object.partition.id}"
+}
+
+output "apps_partition" {
+  value = "${restapi_object.apps_partition.id}"
 }
 
 output "user" {
