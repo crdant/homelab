@@ -29,9 +29,11 @@ terraform_vars () {
   cluster_ip_json="$(pks cluster ${cluster} --json | jq .kubernetes_master_ips)"
 
   jq_query=$(jq -n \
-    --arg cluster ${cluster} \
-    --argjson cluster_ips "$cluster_ip_json" \
+    --arg cluster "${cluster}" \
+    --argjson cluster_ips "${cluster_ip_json}" \
+    --arg cluster_index ${ip_offset} \
     'env + {
+      cluster_index: $cluster_index,
       cluster_ips: $cluster_ips,
       cluster: $cluster,
     }'
@@ -43,8 +45,11 @@ terraform_vars () {
 }
 
 create () {
-  pks create-cluster ${cluster} --plan ${plan} --external-hostname ${cluster}.${pks_subdomain}
-  pks get-credentials ${cluster}
+  if [ -n "${nodes}" ] ; then
+    nodes_arg="--num-nodes ${nodes}"
+  fi
+  pks create-cluster ${cluster} --plan ${plan} --external-hostname ${cluster}.pks.${domain} ${nodes_arg}
+  # pks get-credentials ${cluster}
 }
 
 if [ $# -gt 0 ]; then
@@ -56,6 +61,14 @@ if [ $# -gt 0 ]; then
         ;;
       --service-plan | --plan | -p)
         plan=${2}
+        shift
+        ;;
+      --num-nodes | --nodes | --workers | -w)
+        nodes=${2}
+        shift
+        ;;
+      --ip_offset | --offset | -i)
+        ip_offset=${2}
         shift
         ;;
       create )
@@ -90,9 +103,14 @@ if [ -z "$cluster" ] ; then
   error_out=1
 fi
 
-if [ -z "$plan" ] ; then
+if [ -z "${plan}" ] && [ -n "${create_cluster}" ]; then
   echo "Service plan not specified. Please provide the argument '-p, --service-plan' with a valid PKS service plan from the list below."
   pks plans
+  error_out=1
+fi
+
+if [ -z "$ip_offset" ] && [ -n "${apply_terraform}" ] ; then
+  echo "IP address offset not provided. Please provide the argument '-i, --ip_offset' with the IP address offset for the cluster load balancer"
   error_out=1
 fi
 
