@@ -14,6 +14,15 @@ terraform_vars () {
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
+renew () {
+  target vsphere "acme_certificate.esxi"
+  target vsphere "local_file.esxi_certificate"
+  target vsphere "local_file.esxi_private_key"
+  target vsphere "acme_certificate.vcenter"
+  target vsphere "local_file.vcenter_certificate"
+  target vsphere "local_file.vcenter_private_key"
+}
+
 if [ $# -gt 0 ]; then
   while [ $# -gt 0 ]; do
     case $1 in
@@ -31,6 +40,9 @@ if [ $# -gt 0 ]; then
         ;;
       vars )
         terraform_vars
+        ;;
+      renew )
+        renew
         ;;
       *)
         echo "Unrecognized option: $1" 1>&2

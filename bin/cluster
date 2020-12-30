@@ -67,7 +67,7 @@ if [ $# -gt 0 ]; then
         nodes=${2}
         shift
         ;;
-      --ip_offset | --offset | -i)
+      --ip-offset | --offset | -i)
         ip_offset=${2}
         shift
         ;;

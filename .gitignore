@@ -10,3 +10,4 @@ state/*
 terraform.tfstate.*.backup
 *.tfstate
 terraform/data/
+/Users/crdant/workspace/homelab/bin/../terraform/functions

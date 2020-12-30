@@ -17,6 +17,18 @@ apply () {
   popd > /dev/null
 }
 
+target () {
+  component=${1}
+  resource=${2}
+  pushd "${terraform_dir}/${component}" > /dev/null
+    terraform apply \
+      --input=false \
+      --auto-approve \
+      --var-file=<(terraform_vars) \
+      --target "${terraform_dir}/${component}"
+  popd > /dev/null
+}
+
 destroy () {
   component=${1}
   pushd "${terraform_dir}/${component}" > /dev/null

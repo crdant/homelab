@@ -71,6 +71,15 @@ up () {
   . "${BASEDIR}/lib/env.sh"
 }
 
+renew () {
+  target pipelines "acme_certificate.concourse"
+  target pipelines "local_file.concourse_certificate"
+  target pipelines "local_file.concourse_private_key"
+  target pipelines "acme_certificate.balancer"
+  target pipelines "local_file.balancer_certificate"
+  target pipelines "local_file.balancer_private_key"
+}
+
 deploy () {
   eval "$(bbl print-env)"
   concourse_uaa
@@ -161,6 +170,9 @@ if [ $# -gt 0 ]; then
         ;;
       down )
         down
+        ;;
+      renew )
+        renew
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2

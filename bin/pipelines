@@ -34,6 +34,27 @@ terraform_vars () {
     bash -c 'set -a ; . "${BASEDIR}/lib/env.sh" ; set +a ; jq -n env'
 }
 
+renew () {
+  target pipelines "acme_certificate.opsman"
+  target pipelines "local_file.opsman_certificate"
+  target pipelines "local_file.opsman_private_key"
+  target pipelines "acme_certificate.pas_wildcard"
+  target pipelines "local_file.pas_wildcard_certificate"
+  target pipelines "local_file.pas_wildcard_private_key"
+  target pipelines "acme_certificate.uaa"
+  target pipelines "local_file.uaa_certificate"
+  target pipelines "local_file.uaa_private_key"
+  target pipelines "acme_certificate.pks_wildcard"
+  target pipelines "local_file.pks_wildcard_certificate"
+  target pipelines "local_file.pks_wildcard_private_key"
+  target pipelines "acme_certificate.prometheus"
+  target pipelines "local_file.prometheus_certificate"
+  target pipelines "local_file.prometheus_private_key"
+  target pipelines "acme_certificate.registry"
+  target pipelines "local_file.registry_certificate"
+  target pipelines "local_file.registry_private_key"
+}
+
 prepare_pipelines () {
   download_pipelines
   setup_concourse
@@ -186,6 +207,9 @@ if [ $# -gt 0 ]; then
         ;;
       destroy )
         destroy
+        ;;
+      renew )
+        renew
         ;;
       * )
         echo "Unrecognized option: $1" 1>&2
